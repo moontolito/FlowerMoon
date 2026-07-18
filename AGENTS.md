@@ -31,6 +31,8 @@ Debbie is a sheet-metal nesting application being migrated from a single-file HT
 
 ## Architecture principles
 
+- Support Python `>=3.13,<3.15`. Use the latest stable Python 3.13.x for primary development and validation, treat Python 3.14 as a secondary compatibility target, and do not use Python 3.14-only features while 3.13 is the minimum.
+
 - Separate packages for UI, application/use-case services, domain models, geometry, nesting strategies, imports/exports, and persistence.
 - Keep domain and geometry code independent of PySide6, file dialogs, widgets, and rendering.
 - Use explicit immutable value objects where practical. Avoid hidden global state, shared mutable singletons, and state derived independently in several layers.
