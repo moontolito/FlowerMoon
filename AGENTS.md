@@ -54,9 +54,12 @@ Debbie is a sheet-metal nesting application being migrated from a single-file HT
 - Preserve part identity, source drawing identity, quantity, orientation, grain/directional constraints when introduced, and batch/work identity through import, nesting, editing, persistence, and export.
 - Each work owns its batch multiplier, stock pool, demand, layouts, unplaced parts, and results. Do not share stock or merge layouts across works in the MVP.
 - Centralize boundary, spacing, edge-touch, orientation, and collision rules. Validate every automatically generated, manually moved, transferred, rotated, restored, imported, persisted, and exported placement with the same validator contract.
+- The first solver supports only `Deterministic Left-to-Right Rectangular Placement` and declares `Free rectangular placement — non-guillotine`; it is not a cut sequence, toolpath, or machine-readiness guarantee.
+- Normalize solver inputs with explicit stable ordering, use no random search, and record engine version, strategy identifier, decision-policy version, and deterministic objective metadata in every result.
+- Apply objectives lexicographically: placed demand, physical sheet count, nominal full-stock area, unused usable area, then stable tie-breakers. Reconcile structured unplaced demand exactly and never claim a global optimum.
 - Cutting length and cut count must have a documented manufacturing definition and one authoritative implementation. Do not present heuristic rectangle-edge totals as machine-ready cutting data without validation.
 - Never claim optimality unless the objective, constraints, algorithm, termination condition, and evidence support that claim.
-- Use deterministic seeds/orderings where possible so failures and golden results are reproducible.
+- Use explicit stable ordering so failures and golden results are reproducible. Random seeds belong only to a separately approved future stochastic strategy, not the first solver.
 
 ## Testing expectations
 

@@ -81,6 +81,92 @@ The following requirements were approved on 2026-07-18 by **Product Owner: Cuvul
 - One future geometry validator must enforce the approved unit, epsilon, clearance, boundary, trim, and orientation rules for automatic placement, manual editing, rotation, transfer, import, restoration, persistence, and export validation.
 - A geometry transition is not committed merely because it renders successfully; it must satisfy the same model-level validator used by nesting.
 
+## Approved first nesting-engine rules
+
+The following first-engine rules were approved on 2026-07-18 by **Product Owner: Cuvuliuc Nicolae**. They authorize only the bounded solver phase described here; they do not approve editor, reporting, import/export, persistence, or machine-cutting behavior.
+
+### Feasibility class (`NEST-001`)
+
+- Every first-engine result declares `Free rectangular placement — non-guillotine`.
+- Generated placements are collision-free rectangles accepted by the shared geometry validator.
+- The feasibility class does not guarantee a guillotine sequence, machine toolpath, or manufacturability for every cutting machine.
+- User-facing descriptions and future reports must not imply guillotine or machine-ready output.
+- Process-specific feasibility and guillotine-only nesting remain separate future capabilities.
+
+### Strategy contract (`NEST-002`)
+
+- The only approved first strategy is `Deterministic Left-to-Right Rectangular Placement`.
+- It considers only candidates valid for usable stock, boundary clearance, part clearance, allowed orientation, work ownership, and finite available stock.
+- Candidate preference is lexicographic: smallest X; smallest Y; non-rotated before rotated when otherwise equivalent; stable part and stock identifiers as final tie-breakers.
+- Stable identifiers are final explicit tie-breakers only; input normalization must not regenerate IDs or derive business ordering from UUID randomness.
+- Left-to-right is a candidate preference, not a row, shelf, column, guillotine, cutting-line, or machine-sequence guarantee. Valid placements may occur above or below existing parts.
+- The strategy never bypasses collision, clearance, trim, boundary, orientation, ownership, or inventory rules.
+- `Ignore Cutting Lines` is not an approved strategy name.
+- No second strategy is approved. Every later strategy requires its own decision record, contract, tests, and result metadata.
+
+### Objective and stock consumption (`OPT-001`)
+
+Results are compared lexicographically in this order:
+
+1. Maximize placed required demand.
+2. Minimize physical stock sheets consumed.
+3. Minimize total nominal full-stock area consumed.
+4. Minimize unused usable area only as a later tie-breaker.
+5. Apply deterministic stable tie-breakers.
+
+- A later objective never overrides an earlier objective.
+- Stock availability is finite, physical sheets are consumed, and stock pools remain isolated by work.
+- Full-stock area uses nominal full dimensions, not usable dimensions alone.
+- Material cost, remnant value, cutting length, and weighted objectives are excluded.
+- Results record the objective policy and its values.
+- Allowed descriptions include `generated result`, `selected result`, and `best result found by the active deterministic strategy`. The first solver must not claim `optimal nesting`, a `globally optimized layout`, or a global mathematical optimum.
+
+### Deterministic execution and metadata (`OPT-002`)
+
+- The same approved input, decision-policy version, and engine version produces the same result.
+- Input collections use explicit stable ordering and never rely on dictionary hash order, set order, UUID random order, object addresses, or filesystem enumeration.
+- Randomized and stochastic search, seeds, genetic algorithms, simulated annealing, and metaheuristics are excluded.
+- The core may run synchronously. Its API preserves a future cancellation boundary, while UI-thread and background-worker policy remains deferred.
+- Hard runtime targets require benchmarks using representative approved datasets.
+- Every result records engine version, strategy identifier, decision-policy version, and deterministic objective metadata.
+
+### Unplaced demand and result status (`NEST-003`)
+
+- A run may return valid layouts with structured unplaced demand; unplaced items do not invalidate correct layouts.
+- Every unplaced item retains `work_id`, demand identity, part-type identity, remaining quantity, and a structured reason code.
+- Approved initial reason codes are:
+  - `PART_EXCEEDS_ALL_USABLE_STOCK`;
+  - `INSUFFICIENT_STOCK_QUANTITY`;
+  - `NO_VALID_PLACEMENT_FOUND`;
+  - `ORIENTATION_CONSTRAINT`;
+  - `INVALID_INPUT_REJECTED_BEFORE_RUN`.
+- Free-text-only reasons are invalid.
+- Approved initial statuses are:
+  - `COMPLETE`: all valid required demand was placed;
+  - `PARTIAL`: at least one valid required item remains unplaced;
+  - `FAILED_VALIDATION`: input was invalid and the run did not begin.
+- A solver exception is not a valid partial result.
+- Requested demand equals placed instances plus structured unplaced quantity exactly.
+- Production release, Temp Zone, and deletion/cancellation semantics remain pending. This decision does not equate Temp with unplaced demand.
+
+### First-solver implementation boundary
+
+The first solver phase may implement deterministic rectangular placement, this one strategy, shared geometry validation, work-isolated runs, finite stock availability, structured unplaced demand, result status, deterministic result metadata, lexicographic objective evaluation, and unit/golden tests.
+
+It must not implement guillotine planning, cutting lines, toolpaths, common-line cutting, cutting-length optimization, machine simulation, arbitrary angles, mirroring, polygon parts, remnants, cost optimization, cross-work stock sharing, random search, multiple strategies, manual editing, Temp Zone, locks, repeated-layout grouping, PDF/Excel, PySide6, background workers, or persistence.
+
+### Solver decision traceability
+
+Future implementation tests and fixtures must include at least:
+
+- `test_NEST_001_result_declares_non_guillotine_feasibility`;
+- `test_NEST_002_candidate_order_prefers_smallest_x_then_y`;
+- `test_OPT_001_placed_demand_precedes_sheet_count`;
+- `test_OPT_002_same_input_produces_same_result`;
+- `test_NEST_003_partial_result_reconciles_unplaced_quantity`.
+
+These names document future acceptance coverage; no solver tests or solver implementation exist in this decision-only change.
+
 ## Confirmed legacy behavior
 
 ### Coordinates and units
@@ -180,28 +266,24 @@ The following requirements were approved on 2026-07-18 by **Product Owner: Cuvul
 
 ## Pending Debbie vNext decisions
 
-- Whether layouts must be guillotine-cuttable, merely non-overlapping, or selectable by machine/process profile.
 - What “cutting length” and “cut count” must include and whether they are estimates, saw cuts, or machine toolpaths.
-- What makes a job complete when demand remains in Temp or a Temp part is deleted.
+- What production release permits when a result is partial, how Temp relates to structured unplaced demand, and what Temp deletion means.
 - Whether a locked layout is immutable, only preserved during Optimize, or both.
 - Whether editing one representative of a repeated layout edits all repetitions, splits off one physical sheet, or asks the operator.
-- Objective priority for stock selection: placed count, sheet count, material area, cost, remnant value, cut length/time, or a weighted policy.
 - Exact deterministic rounding rule for non-integral part quantity multiplied by work batch multiplier.
 - Which Excel schemas, export contracts, project format, and hidden linear-cutting capability belong to the first Python release.
 - Whether current production requires clamp/keep-out zones beyond four-sided trim.
 
 ## Questions for Product Owner
 
-1. Must every layout be guillotine-cuttable, or are free nesting and non-guillotine layouts valid for the intended machines?
-2. Define cutting length and cut count for Debbie: which boundaries, shared cuts, trim cuts, pierces, and toolpath motions are included?
-3. When unplaced parts remain in Temp, may the job be exported/released, and what status or approval is required?
-4. What should deleting a Temp part mean: cancel demand, hide it temporarily, or remove only a manual staging copy?
-5. Does locking prevent all edits, preserve a layout across recalculation, or both?
-6. When an operator edits a layout shown with repetition greater than one, should the edit apply to all copies or split a single sheet from the group?
-7. What is the ordered optimization objective, including stock inventory, sheet count, material cost/area, remnant value, cut length, and runtime?
-8. How must non-integral `part quantity × work batch multiplier` be rounded?
-9. Which legacy Excel formats and which hidden Linear Cuts capability must be supported in the first stable Python release?
-10. Do current MVP machines require clamp or keep-out zones beyond trim and `boundary_clearance`?
+1. Define cutting length and cut count for Debbie: which boundaries, shared cuts, trim cuts, pierces, and toolpath motions are included?
+2. When structured unplaced demand remains, may the job be exported or released for production, and what status or approval is required?
+3. How should future Temp behavior relate to structured unplaced demand, and what should deleting a Temp item mean?
+4. Does locking prevent all edits, preserve a layout across recalculation, or both?
+5. When an operator edits a layout shown with repetition greater than one, should the edit apply to all copies or split a single sheet from the group?
+6. How must non-integral `part quantity × work batch multiplier` be rounded?
+7. Which legacy Excel formats and which hidden Linear Cuts capability must be supported in the first stable Python release?
+8. Do current MVP machines require clamp or keep-out zones beyond trim and `boundary_clearance`?
 
 ## Deferred capabilities
 

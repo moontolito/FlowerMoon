@@ -24,7 +24,9 @@ The smallest set that blocks domain and geometry foundations is:
 7. `ROT-001` — allowed orientations and per-part restrictions.
 8. `BATCH-001` and `WORK-001` — quantity scope, work identity, and stock ownership.
 
-All decisions in this critical set were approved on 2026-07-18 by Product Owner Cuvuliuc Nicolae. The first domain and geometry decision content gate is therefore passed. Production Python work remains gated until this documentation update is reviewed and committed. `CUT-001` and `METRIC-001` do not block basic rectangle validity, but must be resolved before metrics are named or exported as production information. Other pending records continue to block only their stated later phases.
+All decisions in this critical set were approved on 2026-07-18 by Product Owner Cuvuliuc Nicolae. The first domain and geometry decision content gate passed, and production Python foundation work was authorized after that documentation update was reviewed and committed. `CUT-001` and `METRIC-001` do not block basic rectangle validity, but must be resolved before metrics are named or exported as production information. Other pending records continue to block only their stated later phases.
+
+The first nesting-engine decision gate is also passed for `NEST-001`, `NEST-002`, `OPT-001`, `OPT-002`, and `NEST-003`, approved on 2026-07-18 by Product Owner Cuvuliuc Nicolae. Implementation may begin only after this decision update is reviewed and committed, and only within the single deterministic, non-guillotine rectangular strategy boundary recorded below. Later strategies, machine feasibility, editor behavior, production release, metrics, imports/exports, and persistence remain gated by their own decisions.
 
 ## Decisions required before domain-model implementation
 
@@ -268,7 +270,7 @@ All decisions in this critical set were approved on 2026-07-18 by Product Owner 
 - **Affected future modules:** `domain`, `geometry`, `nesting`, `ui`, process profiles.
 - **Required tests after the decision:** MVP rejects/flags unsupported keep-outs; future keep-out intersection and persistence tests.
 
-## Decisions required before nesting-engine implementation
+## First nesting-engine decisions
 
 ### NEST-001 — Guillotine feasibility requirement
 
@@ -282,10 +284,10 @@ All decisions in this critical set were approved on 2026-07-18 by Product Owner 
   2. Require guillotine feasibility for all MVP layouts. **Implication:** narrower solver scope and clear saw use case.
   3. Accept any non-overlapping rectangle layout. **Implication:** higher yield potential but may not be manufacturable on target equipment.
 - **Recommended default for Debbie vNext:** Option 1; ship only the feasibility class backed by real MVP machines and tests.
-- **Product Owner decision:** **Pending.**
-- **Decision status:** Pending before strategy implementation.
+- **Product Owner decision:** **Approved — first-engine feasibility class `Free rectangular placement — non-guillotine`:** the first engine produces collision-free rectangular placements accepted by the shared geometry validator. It does not guarantee a guillotine cutting sequence, generate a machine toolpath, or guarantee manufacturability for every cutting machine. Every result must expose this feasibility class, and user-facing documentation or future reports must not imply guillotine or machine-ready output. Process-specific feasibility validation and a guillotine-only strategy/solver remain separate future capabilities. **Approver:** Cuvuliuc Nicolae. **Role:** Product Owner. **Approval date:** 2026-07-18.
+- **Decision status:** **Accepted — 2026-07-18.** The first-engine non-guillotine feasibility class and its disclosure requirements are binding; guillotine planning, toolpaths, and machine-specific feasibility remain deferred.
 - **Affected future modules:** `domain`, `nesting`, `validation`, `reporting`, future `toolpath`.
-- **Required tests after the decision:** Strategy output feasibility; rejected incompatible strategy/profile combinations; cut-sequence validation if guillotine is required.
+- **Required tests after the decision:** `test_NEST_001_result_declares_non_guillotine_feasibility`; every result passes shared geometry validation; no cut-sequence or machine-ready claim is emitted. Future machine-profile and guillotine strategies require separate tests when approved.
 
 ### NEST-002 — Strategy names and behavioral contracts
 
@@ -299,10 +301,10 @@ All decisions in this critical set were approved on 2026-07-18 by Product Owner 
   2. Preserve labels and approximate code behavior. **Implication:** superficially compatible but retains ambiguity.
   3. Expose only one MVP strategy. **Implication:** fastest reliable MVP; other strategies remain compatibility backlog.
 - **Recommended default for Debbie vNext:** Option 3 for the first engine, plus Option 1 before adding further strategies. Never use “Ignore Cutting Lines” to mean ignore collision or clearance.
-- **Product Owner decision:** **Pending.**
-- **Decision status:** Pending before strategy parity commitments.
+- **Product Owner decision:** **Approved — one first strategy named `Deterministic Left-to-Right Rectangular Placement`:** it considers only placements valid for the usable stock region, boundary clearance, part clearance, allowed orientation, work ownership, and finite available stock. Candidate order is smallest X, then smallest Y, then non-rotated before rotated when otherwise equivalent, then stable part and stock identifiers as final tie-breakers. It fills from left toward right but may place above or below existing parts; it is not row-only, shelf-only, column-only, guillotine, or a cutting sequence. It never ignores collision or any approved geometry/ownership rule. `Ignore Cutting Lines` is forbidden as a strategy name. No second strategy is approved for the first solver phase; later strategies require separate decisions, contracts, tests, and result metadata. **Approver:** Cuvuliuc Nicolae. **Role:** Product Owner. **Approval date:** 2026-07-18.
+- **Decision status:** **Accepted — 2026-07-18.** The exact first-strategy name, candidate preference contract, validity constraints, and single-strategy boundary are binding.
 - **Affected future modules:** `nesting`, `domain`, `ui`, `documentation`, `reporting`.
-- **Required tests after the decision:** Golden ordering/placement; contract invariants; localized/user-facing descriptions; non-guillotine label checks.
+- **Required tests after the decision:** `test_NEST_002_candidate_order_prefers_smallest_x_then_y`; non-rotated orientation tie preference; stable identifier tie cases; geometry/ownership contract invariants; golden placement fixtures; forbidden `Ignore Cutting Lines` label check.
 
 ### OPT-001 — Optimization objective, tie-breaks, and stock priority
 
@@ -316,10 +318,10 @@ All decisions in this critical set were approved on 2026-07-18 by Product Owner 
   2. Weighted score. **Implication:** flexible but weights are difficult to explain and tune.
   3. Cost-first objective. **Implication:** commercially useful but requires trusted material cost/remnant inputs.
 - **Recommended default for Debbie vNext:** Option 1. Record objective values and strategy in every result. Defer costing and remnant valuation.
-- **Product Owner decision:** **Pending.**
-- **Decision status:** Pending before solver scoring and stock allocation.
+- **Product Owner decision:** **Approved — lexicographic MVP objective:** (1) maximize placed required demand; (2) minimize physical stock sheets consumed; (3) minimize total nominal full-stock area consumed; (4) minimize unused usable area only as a later tie-breaker; (5) apply deterministic stable tie-breakers. A later objective never overrides an earlier objective. All valid required demand takes priority over sheet count, which takes priority over local utilization. Full-stock area uses nominal full dimensions. Cost, remnant value, cutting length, and weighted scoring are excluded. Results record the objective policy and values. Debbie may describe a `generated result`, `selected result`, or `best result found by the active deterministic strategy`, but must not claim a global mathematical optimum or use unsupported terms such as `optimal nesting` or `globally optimized layout`. **Approver:** Cuvuliuc Nicolae. **Role:** Product Owner. **Approval date:** 2026-07-18.
+- **Decision status:** **Accepted — 2026-07-18.** The ordered objective, metadata, and claim restrictions are binding for the first solver; cost, remnants, cutting-length objectives, and weighted scoring remain excluded.
 - **Affected future modules:** `nesting`, `domain`, `metrics`, `reporting`, `ui`.
-- **Required tests after the decision:** Objective priority counterexamples; stable tie cases; scarce-stock cases; explanation metadata; no false optimality claims.
+- **Required tests after the decision:** `test_OPT_001_placed_demand_precedes_sheet_count`; sheet count precedes full-stock area; full-stock area precedes unused usable area; stable tie cases; scarce-stock cases; objective metadata; no false optimality claims.
 
 ### OPT-002 — Determinism, randomization, and computation budget
 
@@ -333,10 +335,10 @@ All decisions in this critical set were approved on 2026-07-18 by Product Owner 
   2. Seeded randomized search. **Implication:** potentially better layouts; seed and time budget become result metadata.
   3. Unseeded randomized search. **Implication:** simplest experimentation but poor reproducibility.
 - **Recommended default for Debbie vNext:** Option 1. Define benchmark-derived responsiveness targets after representative datasets exist; design cancellation now, not randomized search.
-- **Product Owner decision:** **Pending.** Runtime target requires representative job sizes.
-- **Decision status:** Pending before engine execution API; randomization deferred.
+- **Product Owner decision:** **Approved — deterministic first-engine execution:** the same approved input, decision-policy version, and engine version produces the same result. Input collections use explicit stable normalization and must not rely on dictionary hash order, set order, UUID random order, object addresses, or filesystem enumeration. No randomized, seeded, stochastic, genetic, simulated-annealing, metaheuristic, or other random search is used. The engine API supports future cancellation without changing domain geometry contracts; the first core implementation may run synchronously, while UI-thread execution remains deferred. Hard runtime targets require representative approved benchmarks. Each result records engine version, strategy identifier, decision-policy version, and deterministic objective metadata. **Approver:** Cuvuliuc Nicolae. **Role:** Product Owner. **Approval date:** 2026-07-18.
+- **Decision status:** **Accepted — 2026-07-18.** Deterministic normalization, reproducibility, result metadata, and the no-random-search boundary are binding; UI execution policy and benchmark-derived runtime targets remain deferred.
 - **Affected future modules:** `nesting`, `application`, `ui`, `testing`, `reporting`.
-- **Required tests after the decision:** Repeat-run identity; stable ties; cancellation; time-budget behavior; benchmark thresholds on approved datasets.
+- **Required tests after the decision:** `test_OPT_002_same_input_produces_same_result`; input permutation normalization; stable tie ordering; metadata identity; no random dependency. Cancellation contract and benchmark thresholds are tested when their later implementation boundary is reached.
 
 ### NEST-003 — Parts that do not fit and release status
 
@@ -350,10 +352,16 @@ All decisions in this critical set were approved on 2026-07-18 by Product Owner 
   2. Fail the entire run if any part is unplaced. **Implication:** simple completion semantics but hides usable partial work.
   3. Preserve warning-only behavior. **Implication:** compatible but unsafe for production release.
 - **Recommended default for Debbie vNext:** Option 1. Allow draft exports clearly watermarked/statused; require explicit policy for production release.
-- **Product Owner decision:** **Pending.**
-- **Decision status:** Pending before nesting result/status model.
+- **Product Owner decision:** **Approved — structured partial-result contract:** a run may return valid partial results without invalidating correctly generated layouts. Every unplaced item retains `work_id`, demand identity, part-type identity, remaining quantity, and a structured reason code. Initial reason codes are `PART_EXCEEDS_ALL_USABLE_STOCK`, `INSUFFICIENT_STOCK_QUANTITY`, `NO_VALID_PLACEMENT_FOUND`, `ORIENTATION_CONSTRAINT`, and `INVALID_INPUT_REJECTED_BEFORE_RUN`; free-text-only reasons are forbidden. Initial statuses are `COMPLETE` (all valid required demand placed), `PARTIAL` (at least one valid required item remains unplaced), and `FAILED_VALIDATION` (the run did not begin because input was invalid). Solver exceptions are not valid partial results. Unplaced quantity reconciles exactly to requested demand minus placed instances. Draft reporting may later display partial results, but production-release behavior, Temp Zone behavior, and deletion/cancellation semantics remain pending and are not authorized by this decision. **Approver:** Cuvuliuc Nicolae. **Role:** Product Owner. **Approval date:** 2026-07-18.
+- **Decision status:** **Accepted — 2026-07-18.** Structured unplaced demand, quantity reconciliation, and the three result statuses are binding for the first solver; release, Temp, and cancellation semantics remain pending.
 - **Affected future modules:** `domain`, `nesting`, `application`, `ui`, `reporting`, `io`.
-- **Required tests after the decision:** Oversized/inventory/constraint reason codes; quantity reconciliation; release guard; draft export warnings.
+- **Required tests after the decision:** `test_NEST_003_partial_result_reconciles_unplaced_quantity`; each structured reason category; complete/partial/failed-validation status transitions; solver exception distinction. Release guards, Temp behavior, and draft export warnings require their later decisions.
+
+### Accepted first-solver implementation boundary
+
+After this decision update is reviewed and committed, the first solver phase may implement only deterministic rectangular placement; the single approved strategy; shared geometry validation; work-isolated runs; finite stock availability; structured unplaced demand; result status; deterministic result metadata; lexicographic objective evaluation; and unit/golden tests.
+
+The phase must not implement guillotine planning, cutting lines, toolpaths, common-line cutting, cutting-length optimization, machine simulation, arbitrary-angle rotation, mirroring, polygon parts, remnants, cost optimization, cross-work stock sharing, random search, multiple strategies, manual editing, Temp Zone, locks, repeated-layout grouping, PDF/Excel, PySide6, background workers, or persistence. Those capabilities remain deferred or gated by their own decision records.
 
 ## Decisions required before UI/editor implementation
 
@@ -608,7 +616,7 @@ The following are intentionally outside the first Python MVP unless the Product 
 - Common-line cutting and machine-ready toolpath generation (`KERF-002`, `CUT-001`).
 - Arbitrary-angle rotation, mirroring, and polygonal CAD geometry (`ROT-002`).
 - Arbitrary clamp/keep-out polygons (`TRIM-002`).
-- Randomized/metaheuristic optimization and cost/remnant objectives (`OPT-001`, `OPT-002`).
+- Randomized/metaheuristic search and cost/remnant/cutting-length objectives excluded by accepted `OPT-001` and `OPT-002`; any future introduction requires a superseding decision.
 - Hidden linear-cutting migration beyond recording its disposition (`LINEAR-001`).
 - Public plugins, CAD/ERP connectors, licensing, telemetry, and update services (`INT-001`, `COMM-001`, `PRIV-001`).
 

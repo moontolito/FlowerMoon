@@ -35,7 +35,7 @@ The migration is an evidence-led replacement, not a one-step rewrite. `Nesting_T
 
 **Gate status on 2026-07-18:** the first domain and geometry decision content gate is passed for `GEO-001`, `GEO-002`, `GEO-003`, `GEO-004`, `KERF-001`, `TRIM-001`, `ROT-001`, `BATCH-001`, and `WORK-001`, approved by Product Owner Cuvuliuc Nicolae. These decisions establish canonical units and coordinates, the centralized geometry epsilon, clearance and boundary semantics, kerf separation, four-sided trim, orientation sets, and independent work/batch/stock ownership.
 
-Production Python domain-model work may begin only after this documentation update is reviewed and committed. The complete decision register is not resolved. Pending decisions in `PRODUCT_DECISIONS.md` continue to block their relevant phases, including nesting strategy and objective behavior, partial-result/Temp semantics, locks and repeated-layout editing, metrics and cutting calculations, import/export contracts, persistence, and later commercial capabilities. Engineering may prepare fixtures and documentation while those decisions are pending, but must not encode recommendations as requirements or implement a later phase behind unresolved manufacturing assumptions.
+Production Python domain-model work was authorized after that documentation update was reviewed and committed. The complete decision register is not resolved. Pending decisions in `PRODUCT_DECISIONS.md` continue to block their relevant phases, including Temp and production-release semantics, locks and repeated-layout editing, metrics and cutting calculations, import/export contracts, persistence, and later commercial capabilities. Engineering may prepare fixtures and documentation while those decisions are pending, but must not encode recommendations as requirements or implement a later phase behind unresolved manufacturing assumptions.
 
 ## Phase 4 — Python package structure
 
@@ -66,12 +66,16 @@ Production Python domain-model work may begin only after this documentation upda
 
 ## Phase 7 — Nesting engine
 
-- **Objective:** Implement strategies behind a common deterministic contract.
-- **Deliverables:** Baseline strategy, strategy interface, inventory allocator, cancellation/progress hooks, diagnostics, benchmarks, and optional later ports of retained legacy strategies.
-- **Acceptance criteria:** Every output passes the shared validator; demand and inventory reconcile; golden expectations pass within approved tolerances; deterministic runs are reproducible.
+**First-solver decision gate on 2026-07-18:** `NEST-001`, `NEST-002`, `OPT-001`, `OPT-002`, and `NEST-003` are accepted by Product Owner Cuvuliuc Nicolae. Implementation may begin only after this documentation change is reviewed and committed. Approval is limited to `Deterministic Left-to-Right Rectangular Placement` with feasibility class `Free rectangular placement — non-guillotine`, the accepted lexicographic objective, deterministic metadata, finite work-owned stock, and structured unplaced results/statuses. No other strategy is approved; later strategies require separate decisions, contracts, tests, and metadata.
+
+- **Objective:** Implement the one approved strategy behind a stable deterministic contract.
+- **Deliverables:** One deterministic non-guillotine rectangular strategy; stable strategy boundary; finite work-isolated stock allocation; structured unplaced demand; result status; engine/strategy/policy/objective metadata; future cancellation boundary; unit and golden tests.
+- **Acceptance criteria:** Every placement passes the shared validator; demand and inventory reconcile; objective priority and candidate ordering match the accepted contracts; repeated approved inputs reproduce the same result; feasibility and partial status are explicit; golden expectations pass within approved tolerances.
 - **Dependencies:** Phases 3, 5, and 6.
 - **Main risks:** Calling a heuristic “optimal”; strategy and stock selection objectives conflict; free-rectangle worst cases grow excessively.
-- **Do not implement yet:** UI-thread execution, advanced CAD polygons, or unapproved manufacturing constraints.
+- **Do not implement yet:** Additional strategies; guillotine/cutting-line planning; toolpaths or cutting-length optimization; random/metaheuristic search; cost/remnant objectives; UI/background execution; editor/Temp/locks/repetition; reports; import/export; persistence; advanced CAD geometry; or unapproved manufacturing constraints.
+
+The phase is not complete. Editor behavior, metrics/reporting, import/export, persistence, and commercial capabilities remain gated by their own pending decisions and later phases.
 
 ## Phase 8 — Excel import/export
 
