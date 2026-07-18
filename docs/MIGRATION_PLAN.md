@@ -77,6 +77,8 @@ Production Python domain-model work was authorized after that documentation upda
 
 The phase is not complete. Editor behavior, metrics/reporting, import/export, persistence, and commercial capabilities remain gated by their own pending decisions and later phases.
 
+**Implementation checkpoint:** the first pure-Python implementation now provides the approved strategy and metadata, deterministic part/stock normalization, geometry-edge candidates accepted only through the shared validator, finite stock allocation, structured validation/partial results, exact reconciliation checks, an active synchronous cancellation callback boundary, and focused/golden automated tests. A bounded performance review replaced full-layout validation of every rejected candidate with contract-equivalent lazy candidate iteration and incremental shared-predicate checks, retained complete validation for selected commits/final layouts, and added per-run equivalent-stock simulation caching plus a reproducible development benchmark. The simple 100-piece engineering fixture now completes on the current development machine, but this is not a product guarantee. This checkpoint remains uncommitted and subject to Product Owner review. Phase 7 remains in progress pending approved representative production golden datasets, benchmark-derived acceptance targets, and review of dense mixed-dimension scaling; no additional strategy or later-phase capability is implied.
+
 ## Phase 8 — Excel import/export
 
 - **Objective:** Support approved workbook contracts with structured validation.
