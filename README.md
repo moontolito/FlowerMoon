@@ -4,10 +4,28 @@ Debbie vNext now contains its first pure-Python rectangular nesting engine in
 addition to typed domain models and shared geometry validation.
 `Nesting_Tool_alpha_v63.html` remains the stable legacy behavior reference.
 
-The canonical Excel input contract is now specified as `Debbie Nesting
-Workbook` schema 1.0 in `docs/EXCEL_SCHEMA_V1.md`; legacy workbook evidence is
-catalogued separately in `docs/LEGACY_IMPORT_INVENTORY.md`. The Python importer
-has not been implemented yet.
+Canonical `.xlsx` import is implemented for the strict `Debbie Nesting
+Workbook` schema 1.0 specified in `docs/EXCEL_SCHEMA_V1.md`. It operates
+offline, validates the complete workbook atomically, and returns structured
+diagnostics with no partially usable works when any error exists:
+
+```python
+from debbie.importers.excel import import_canonical_workbook
+
+result = import_canonical_workbook("job.xlsx")
+if result.success:
+    works = result.works
+else:
+    errors = result.errors
+```
+
+The adapter accepts `.xlsx` only and identifies itself as
+`canonical_excel_v1`. Legacy workbook evidence is catalogued separately in
+`docs/LEGACY_IMPORT_INVENTORY.md`; no legacy compatibility adapter is
+implemented. Workbook content is treated as untrusted and passes bounded
+archive/XML checks before strict schema validation. Formulas are never
+evaluated; a required formula cell is accepted only when the workbook contains
+a usable cached value, and an empty cache is rejected. There is no import UI.
 
 The only implemented strategy is:
 
@@ -45,10 +63,10 @@ boundary-impossible coordinates are discarded before incremental collision
 checks, and every selected commit still passes the complete shared validator.
 No pixel grid or random search is used.
 
-The Python package requires Python 3.13 or 3.14 and has no runtime
-dependencies. Python 3.13 is the primary development and validation version;
-Python 3.14 is a secondary compatibility target. Python 3.12 and earlier are
-not supported.
+The Python package requires Python 3.13 or 3.14. Canonical workbook import uses
+`openpyxl>=3.1.5,<4` as its only direct runtime dependency. Python 3.13 is the
+primary development and validation version; Python 3.14 is a secondary
+compatibility target. Python 3.12 and earlier are not supported.
 
 To prepare the primary development environment in Windows PowerShell:
 
@@ -75,8 +93,9 @@ commercial performance guarantee. Dense mixed-dimension layouts can still
 produce substantial candidate growth and require representative production
 datasets before performance targets are accepted.
 
-There is no graphical interface, PySide6 integration, import/export,
-persistence, manual layout editing, cutting sequence, guillotine planner, or
-machine toolpath. Generated layouts are not machine-ready and are not
-guaranteed global optima. The current greedy edge-candidate search is intended
-as an understandable deterministic first engine, not an exhaustive optimizer.
+There is no graphical interface, PySide6 integration, Excel export, legacy
+import, persistence, manual layout editing, cutting sequence, guillotine
+planner, or machine toolpath. Generated layouts are not machine-ready and are
+not guaranteed global optima. The current greedy edge-candidate search is
+intended as an understandable deterministic first engine, not an exhaustive
+optimizer.

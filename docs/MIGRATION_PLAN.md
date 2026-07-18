@@ -92,7 +92,9 @@ The phase is not complete. Editor behavior, metrics/reporting, import/export, pe
 - **Main risks:** untrusted/oversized workbook content; formula/external-link behavior; hidden locale conversion; accidental alias heuristics; partial state mutation; deterministic identity drift; lack of representative legacy fixtures.
 - **Do not implement in the canonical first phase:** `.xls`, CSV, macros, formula evaluation, broad legacy recognition, linear cutting, Excel result export, project persistence, UI, ERP/CAD/cloud integration, or automatic repair.
 
-The canonical importer is not implemented. Phase 8 remains in progress, and legacy compatibility/export/persistence/UI gates remain separate.
+**Implementation progress:** the first canonical `.xlsx` schema 1.0 importer is implemented behind the offline `canonical_excel_v1` adapter. It uses strict row-1 headers and locale-independent values, immutable neutral records, structured diagnostics, UUID5 identities, bounded workbook loading, complete cross-reference/effective-region validation, and atomic `Work` construction. Programmatically generated tests cover success, malformed data, deterministic row reordering, resource release, security boundaries, and solver handoff.
+
+Phase 8 remains in progress pending review of this implementation, representative production-scale fixtures, and any separately approved template/preview work. No legacy adapter, Excel export, persistence, or UI work is complete.
 
 ## Phase 9 — Minimal desktop UI
 

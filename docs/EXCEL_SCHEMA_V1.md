@@ -2,7 +2,7 @@
 
 ## Purpose and status
 
-This document is the normative canonical Excel import contract approved by **Product Owner: Cuvuliuc Nicolae** on **2026-07-18** under `IMPORT-001`. It specifies data that a future importer may convert into Debbie vNext `Work` objects. It does not describe an implemented importer or Excel export format.
+This document is the normative canonical Excel import contract approved by **Product Owner: Cuvuliuc Nicolae** on **2026-07-18** under `IMPORT-001`. The `canonical_excel_v1` adapter implements this contract and converts valid workbooks into Debbie vNext `Work` objects. This is not an Excel export format.
 
 The canonical flow is:
 
@@ -180,7 +180,7 @@ Invalid examples include empty part keys, duplicate part keys within one work, z
 
 ## Deterministic identifiers and ordering
 
-The future importer must use a documented namespace-based deterministic ID algorithm. Schema 1.0 approves the following logical identity inputs:
+The importer uses UUID5 with one fixed Debbie canonical-import namespace and the following approved logical identity inputs:
 
 ```text
 work:
@@ -321,4 +321,10 @@ Importer implementation must add at least:
 - `test_IMPORT_001_invalid_trim_stock_combination_fails`;
 - `test_IMPORT_001_unsupported_schema_version_fails`.
 
-No importer tests exist yet because importer implementation has not begun.
+The importer acceptance suite generates `.xlsx` files under pytest temporary directories; no opaque binary fixture is committed. A formula with no cached value is rejected. Programmatic openpyxl fixtures cannot reliably create a cached formula result, so cached-formula acceptance remains covered by the parser contract rather than a fabricated formula-evaluation test. The importer validates a supplied cached value using the normal field rules but cannot prove that Excel's cache is fresh or semantically matches the formula; callers must recalculate and save workbooks in their spreadsheet producer when cache freshness matters.
+
+## Implementation safeguards and limits
+
+The first adapter uses `openpyxl>=3.1.5,<4`, opens with `data_only=True` for cached values and a bounded second read with `data_only=False` for formula detection, disables external-link retention, does not retain VBA, and closes both workbook objects in `finally`. It preflights ZIP member sizes/compression ratios and centrally limits file size, worksheets, used rows/columns, total data rows, text length, integer values, physical stock expansion, and current-domain demand expansion. Limits are conservative safety boundaries rather than product-capacity guarantees; their generous defaults live in `importers/excel/constants.py` and can be lowered for deterministic boundary tests.
+
+The ZIP preflight also rejects macro-enabled content and streams every XML/relationship member to reject DTD and entity declarations before openpyxl parses the package. These checks reduce accidental and malicious resource consumption but do not claim complete protection from every malformed OOXML/XML parser attack. Deployment hardening and representative hostile-file testing remain required before treating arbitrary public uploads as safe; this phase accepts local filesystem paths and does not provide an upload or UI boundary.
