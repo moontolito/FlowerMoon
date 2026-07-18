@@ -4,6 +4,11 @@ Debbie vNext now contains its first pure-Python rectangular nesting engine in
 addition to typed domain models and shared geometry validation.
 `Nesting_Tool_alpha_v63.html` remains the stable legacy behavior reference.
 
+The canonical Excel input contract is now specified as `Debbie Nesting
+Workbook` schema 1.0 in `docs/EXCEL_SCHEMA_V1.md`; legacy workbook evidence is
+catalogued separately in `docs/LEGACY_IMPORT_INVENTORY.md`. The Python importer
+has not been implemented yet.
+
 The only implemented strategy is:
 
 - ID: `left_to_right_rectangular_v1`

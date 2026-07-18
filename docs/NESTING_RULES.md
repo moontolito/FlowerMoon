@@ -81,6 +81,17 @@ The following requirements were approved on 2026-07-18 by **Product Owner: Cuvul
 - One future geometry validator must enforce the approved unit, epsilon, clearance, boundary, trim, and orientation rules for automatic placement, manual editing, rotation, transfer, import, restoration, persistence, and export validation.
 - A geometry transition is not committed merely because it renders successfully; it must satisfy the same model-level validator used by nesting.
 
+### Canonical Excel import protection (`IMPORT-001`)
+
+- The canonical import contract is `Debbie Nesting Workbook` schema `1.0`, defined normatively in `EXCEL_SCHEMA_V1.md`; legacy heuristic layouts are not canonical.
+- Imported authoritative dimensions and process values are millimetres. Part and stock dimensions remain nominal; kerf, part clearance, boundary clearance, and four-sided trim remain separate values.
+- `Allow Rotation = Yes` maps only to `{0°, 90°}` and `No` maps only to `{0°}`. Import does not infer arbitrary angles, mirroring, grain, or face constraints.
+- Every imported work has a positive-integer batch multiplier, independent deterministic identity, demand, process profile, and finite work-owned stock. Parts and stocks from different works are never mixed.
+- Canonical keys and namespace-based deterministic IDs are independent of worksheet and row order. Labels are not identity.
+- Import is atomic: all canonical records, references, effective stock regions, and domain invariants are validated before any usable `Work` objects are returned or active state is changed.
+- Invalid rows are never silently skipped/defaulted. Import failures and warnings use structured diagnostics rather than free text alone.
+- Canonical and legacy adapters remain separate; a future legacy adapter cannot weaken canonical or domain validation.
+
 ## Approved first nesting-engine rules
 
 The following first-engine rules were approved on 2026-07-18 by **Product Owner: Cuvuliuc Nicolae**. They authorize only the bounded solver phase described here; they do not approve editor, reporting, import/export, persistence, or machine-cutting behavior.

@@ -81,12 +81,18 @@ The phase is not complete. Editor behavior, metrics/reporting, import/export, pe
 
 ## Phase 8 — Excel import/export
 
-- **Objective:** Support approved workbook contracts with structured validation.
-- **Deliverables:** Import adapters for retained formats; canonical template; schema/version metadata; field-level diagnostics; agreed result export.
-- **Acceptance criteria:** Fixture matrix passes; locale decimals and aliases behave intentionally; malformed files never partially replace a job; export values come from domain snapshots.
-- **Dependencies:** Phases 3 and 5–7; workbook-format decisions.
-- **Main risks:** Heuristic header detection accepts the wrong table; silent defaults change quantities; style library differences; multi-work ambiguity.
-- **Do not implement yet:** ERP/CAD integration or arbitrary spreadsheet inference.
+**Canonical import gate on 2026-07-18:** `IMPORT-001` is accepted by Product Owner Cuvuliuc Nicolae for the strict `.xlsx` `Debbie Nesting Workbook` schema 1.0 specified in `EXCEL_SCHEMA_V1.md`. Canonical importer implementation may begin only after this documentation update is reviewed and committed. Approval does not select any legacy compatibility adapter and does not accept `LINEAR-001`, `EXPORT-001`, or `PERSIST-001`.
+
+- **Objective:** Convert one canonical, versioned, multi-work workbook into fully validated Debbie domain objects through a deterministic, atomic, structured-diagnostic boundary.
+- **Canonical importer deliverables:** `.xlsx` workbook reader adapter; `Debbie` metadata/version recognition; strict required-sheet/header parser; neutral import records with source provenance; locale-independent value parsing; key/reference/uniqueness validation; deterministic namespace-based IDs; effective-region/domain validation; atomic import result; structured diagnostics; fixture matrix and acceptance tests. A blank canonical template is a separate reviewed deliverable if included.
+- **Canonical importer acceptance criteria:** all `IMPORT-001` traceability tests pass; reordered equivalent rows produce equivalent domain results; multiple works remain isolated; invalid/fractional/default-prone values fail explicitly; all reasonably discoverable errors are reported; any error returns no usable works and mutates no active state; no canonical alias guessing occurs; imported works run through existing domain/geometry/solver contracts without semantic conversion.
+- **Legacy adapter gate:** `LEGACY_IMPORT_INVENTORY.md` records evidence and proposed priority only. Product Owner must select exact retained formats and provide/approve fixtures before any compatibility adapter is implemented.
+- **Separate later phases:** Excel result export remains governed by pending `EXPORT-001`; project persistence remains governed by pending `PERSIST-001`; PySide6 import preview belongs to the UI phase; linear import remains governed by pending `LINEAR-001`.
+- **Dependencies:** Phases 3 and 5–7; accepted `IMPORT-001`; selection of a safe `.xlsx` library during implementation review.
+- **Main risks:** untrusted/oversized workbook content; formula/external-link behavior; hidden locale conversion; accidental alias heuristics; partial state mutation; deterministic identity drift; lack of representative legacy fixtures.
+- **Do not implement in the canonical first phase:** `.xls`, CSV, macros, formula evaluation, broad legacy recognition, linear cutting, Excel result export, project persistence, UI, ERP/CAD/cloud integration, or automatic repair.
+
+The canonical importer is not implemented. Phase 8 remains in progress, and legacy compatibility/export/persistence/UI gates remain separate.
 
 ## Phase 9 — Minimal desktop UI
 

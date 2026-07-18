@@ -40,7 +40,8 @@ Debbie is a sheet-metal nesting application being migrated from a single-file HT
 - Use the approved top-left usable-stock origin with X right and Y down. Use one centralized absolute geometry epsilon of `0.001 mm`; display/export rounding must never affect geometry identity or predicates.
 - Define one kerf model, four-sided trim model, collision predicate, and layout-validity service. Nominal part geometry, `minimum_part_clearance`, `boundary_clearance`, trim, and physical kerf are separate concepts and separately stored values.
 - Make strategy selection explicit through a stable interface. A strategy may propose a layout; shared validation must decide whether it is valid.
-- Imports must produce validated domain objects plus structured diagnostics. Exports must consume domain/application snapshots, not scrape widget state.
+- Canonical imports must be strict, explicitly versioned, atomic, and separate from named legacy compatibility adapters. Treat workbook content as untrusted; normalize by stable canonical keys, never row position, and create domain models only after complete validation succeeds.
+- Imports must produce validated domain objects plus structured diagnostics with stable codes and source provenance. Invalid rows are not silently defaulted/skipped, and a failed import returns no usable works or partial state. Exports must consume domain/application snapshots, not scrape widget state.
 - Persistence must be versioned, transactional where practical, and able to reject or migrate incompatible project formats safely.
 - Long-running nesting, import, and report work must not block the UI thread; cancellation and progress reporting should be designed at service boundaries.
 
