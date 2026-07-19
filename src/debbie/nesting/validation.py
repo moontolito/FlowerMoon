@@ -88,6 +88,14 @@ def validate_work_for_nesting(work: Work) -> PreparedWork:
     }
     effective_regions: dict[StockSpecificationId, Rectangle] = {}
     for specification in stock_specifications.values():
+        allocation = specification.allocation
+        if allocation is not None and allocation.physical_allocation_fraction < 1.0:
+            trim = work.process_profile.trim
+            has_trim = any((trim.left, trim.right, trim.top, trim.bottom))
+            if has_trim or work.process_profile.boundary_clearance > 0.0:
+                raise NestingInputError(
+                    "partial stock allocation with trim or boundary clearance is not approved"
+                )
         try:
             effective_regions[specification.id] = effective_placement_region(
                 specification, work.process_profile

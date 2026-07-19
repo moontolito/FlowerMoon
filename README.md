@@ -4,6 +4,27 @@ Debbie vNext now contains its first pure-Python rectangular nesting engine in
 addition to typed domain models and shared geometry validation.
 `Nesting_Tool_alpha_v63.html` remains the stable legacy behavior reference.
 
+The Python foundation also provides immutable Work-level material identity,
+effective-density provenance, thickness, rectangular stock allocation, and
+deterministic engineering mass calculations. Material-aware Works use explicit
+full and allocated stock geometry; physical allocation is derived while
+commercial allocation remains separate. Planning and nesting-result APIs are:
+
+```python
+from debbie.mass import calculate_nesting_result_mass, calculate_work_mass_plan
+
+plan = calculate_work_mass_plan(work)
+result_mass = calculate_nesting_result_mass(work, nesting_result)
+```
+
+Schema 1.0 imports deliberately remain unclassified: they receive no invented
+material, density, thickness, or allocation values, and mass calculation
+returns a structured `MATERIAL_DATA_REQUIRED` status. The schema 1.1 importer,
+Desktop material/mass integration, material library, remnant inventory, and
+trim-on-allocation rule are not implemented.
+Until that rule is accepted, nesting rejects partial allocations combined with
+non-zero trim or boundary clearance instead of silently choosing a boundary.
+
 Canonical `.xlsx` import is implemented for the strict `Debbie Nesting
 Workbook` schema 1.0 specified in `docs/EXCEL_SCHEMA_V1.md`. It operates
 offline, validates the complete workbook atomically, and returns structured

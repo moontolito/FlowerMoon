@@ -7,9 +7,11 @@ from dataclasses import dataclass, field
 from .errors import DomainValidationError, InvalidQuantityError, OwnershipError, UnknownReferenceError
 from .identifiers import WorkId, require_identifier
 from .layouts import Layout, LayoutInstance
+from .material import MaterialIdentity
 from .parts import DemandItem, PartInstance, PartType, expand_demand_items
 from .process import ProcessProfile
 from .stocks import StockInstance, StockSpecification
+from .thickness import Thickness
 
 
 def _assert_unique(items: tuple[object, ...], *, label: str) -> None:
@@ -31,6 +33,8 @@ class Work:
     stock_instances: tuple[StockInstance, ...] = field(default_factory=tuple)
     layouts: tuple[Layout, ...] = field(default_factory=tuple)
     layout_instances: tuple[LayoutInstance, ...] = field(default_factory=tuple)
+    material: MaterialIdentity | None = None
+    thickness: Thickness | None = None
 
     def __post_init__(self) -> None:
         require_identifier(self.id, WorkId, field="work ID")
@@ -44,6 +48,16 @@ class Work:
         ):
             raise InvalidQuantityError("batch multiplier must be a positive integer")
         object.__setattr__(self, "name", name)
+
+        if (self.material is None) != (self.thickness is None):
+            raise DomainValidationError(
+                "material and thickness must either both be present or both be absent"
+            )
+        if self.material is not None:
+            if not isinstance(self.material, MaterialIdentity):
+                raise DomainValidationError("work material must be MaterialIdentity or None")
+            if not isinstance(self.thickness, Thickness):
+                raise DomainValidationError("work thickness must be Thickness or None")
 
         collection_fields = (
             "part_types",
@@ -68,6 +82,13 @@ class Work:
         )
         for items, label in collections:
             _assert_unique(items, label=label)
+
+        if self.is_material_classified and any(
+            specification.allocation is None for specification in self.stock_specifications
+        ):
+            raise DomainValidationError(
+                "material-classified works require explicit stock allocations"
+            )
 
         part_type_ids = {item.id for item in self.part_types}
         demands_by_id = {item.id: item for item in self.demand_items}
@@ -112,6 +133,10 @@ class Work:
         if owner != self.id:
             raise OwnershipError(f"{label} belongs to work {owner}, not {self.id}")
 
+    @property
+    def is_material_classified(self) -> bool:
+        return self.material is not None and self.thickness is not None
+
     @classmethod
     def from_inputs(
         cls,
@@ -124,6 +149,8 @@ class Work:
         demand_items: tuple[DemandItem, ...] = (),
         stock_specifications: tuple[StockSpecification, ...] = (),
         stock_instances: tuple[StockInstance, ...] = (),
+        material: MaterialIdentity | None = None,
+        thickness: Thickness | None = None,
     ) -> "Work":
         """Build a work and deterministically materialize its demanded pieces."""
 
@@ -137,4 +164,6 @@ class Work:
             part_instances=expand_demand_items(demand_items, batch_multiplier),
             stock_specifications=stock_specifications,
             stock_instances=stock_instances,
+            material=material,
+            thickness=thickness,
         )

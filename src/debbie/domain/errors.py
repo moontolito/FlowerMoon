@@ -13,6 +13,22 @@ class InvalidDimensionError(DomainValidationError):
     """A dimensional value violates its finite/sign policy."""
 
 
+class InvalidMaterialError(DomainValidationError):
+    """Material identity text or provenance is invalid."""
+
+
+class InvalidDensityError(InvalidMaterialError):
+    """Effective material density is not a positive finite value."""
+
+
+class InvalidThicknessError(InvalidDimensionError):
+    """Work thickness is not a positive finite millimetre value."""
+
+
+class InvalidAllocationError(DomainValidationError):
+    """Full, allocated, or commercial stock allocation is invalid."""
+
+
 class InvalidTrimError(DomainValidationError):
     """Trim consumes all of at least one stock dimension."""
 

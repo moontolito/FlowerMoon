@@ -14,6 +14,7 @@ from debbie.importers.excel import (
     import_canonical_workbook,
 )
 from debbie.nesting import ResultStatus, nest_work
+from debbie.mass import MassCalculationStatus, calculate_work_mass_plan
 
 from .conftest import DEFAULT_PART, DEFAULT_STOCK, DEFAULT_WORK
 
@@ -57,6 +58,17 @@ def test_IMPORT_001_recognizes_canonical_metadata(workbook_factory) -> None:
         "mm",
     )
     assert result.adapter_id == ADAPTER_ID == "canonical_excel_v1"
+
+
+def test_IMPORT_001_work_remains_unclassified_for_mass_calculation(workbook_factory) -> None:
+    result = import_canonical_workbook(workbook_factory())
+    assert result.success
+    work = result.works[0]
+    assert work.material is None
+    assert work.thickness is None
+    plan = calculate_work_mass_plan(work)
+    assert plan.status is MassCalculationStatus.MATERIAL_DATA_REQUIRED
+    assert plan.totals is None
 
 
 def test_valid_workbook_builds_existing_domain_objects(workbook_factory) -> None:

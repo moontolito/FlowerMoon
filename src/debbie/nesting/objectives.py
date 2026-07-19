@@ -40,7 +40,8 @@ def evaluate_objective(
     for layout in layouts:
         stock: StockInstance = stock_instances[layout.stock_instance_id]
         specification: StockSpecification = stock_specifications[stock.specification_id]
-        nominal_area += specification.dimensions.length * specification.dimensions.width
+        nominal_full = specification.full_dimensions
+        nominal_area += nominal_full.length * nominal_full.width
         usable = usable_stock_rectangle(specification, layout.process_profile)
         placed_area = 0.0
         for placement in layout.placements:

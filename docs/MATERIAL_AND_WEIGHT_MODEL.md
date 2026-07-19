@@ -204,4 +204,46 @@ Planning and result views should separate physical from commercial measures, exp
 | 11 | How are `PARTIAL` result masses presented per product? | Show batch-level consumed and placed/unplaced masses with a prominent incomplete-demand status; withhold the normal completed-product gross-mass presentation. | Accepted presentation boundary; detailed UI deferred |
 | 12 | Is Zinc-Plated Steel a category or coating over Steel? | Treat this as an unresolved coating model; do not silently collapse it into zinc or uncoated steel. | Pending |
 
-Implementation of schema 1.1, material models, mass-calculation services, UI, exports, persistence, or solver changes remains blocked until the relevant proposed details are reviewed and the implementation task is separately authorized.
+Implementation of schema 1.1, UI, exports, persistence, remnant handling, and any behavior governed by the remaining proposed details stays blocked until separate review and authorization.
+
+## Implementation checkpoint
+
+The first pure-Python domain and calculation foundation now implements the
+accepted portions of `MATERIAL-001`, `THICKNESS-001`, `ALLOCATION-001`, and
+`WEIGHT-001` without implementing schema 1.1 import or Desktop integration.
+
+- `MaterialIdentity`, stable category/grade keys, `Density`, `DensitySource`,
+  and `Thickness` are immutable Work-level values.
+- `Work` preserves a deliberate compatibility boundary: material and thickness
+  are either both present or both absent. Existing schema 1.0 construction
+  remains unclassified and receives no invented values; mass calculation then
+  returns structured `MATERIAL_DATA_REQUIRED` unavailability.
+- `StockAllocation` retains full and allocated rectangles, derives physical
+  fraction without rounding, and enforces the accepted commercial bounds.
+  Legacy stock construction retains a structural full-allocation view only for
+  compatibility; a material-classified Work requires explicit allocation.
+- Allocation containment and commercial bounds are strict input invariants:
+  overshoot is rejected even below geometry epsilon rather than silently
+  clamped. The centralized geometry epsilon remains limited to placement
+  predicates; it does not rewrite full/allocated provenance.
+- For an explicitly allocated stock, `StockSpecification.dimensions` remains
+  the rectangle visible to current nesting and must equal the allocated
+  dimensions. Full dimensions remain allocation provenance. This preserves the
+  current strategy while avoiding exposure of unallocated material.
+- Partial allocation with non-zero Work trim or boundary clearance is rejected
+  at solver preparation with `FAILED_VALIDATION`. This is a safety isolation
+  boundary, not an acceptance of where trim applies; partial allocation with
+  zero trim and zero boundary clearance can use its explicit rectangle.
+- `calculate_work_mass_plan` uses all available Work stock instances;
+  `calculate_nesting_result_mass` uses only stock instances consumed by the
+  supplied result. Both sort by stable identity and use `math.fsum`.
+- COMPLETE exposes per-product values; PARTIAL exposes batch-level consumed and
+  placed/unplaced values but withholds completed-product values;
+  FAILED_VALIDATION produces no fabricated consumption totals.
+
+The origin-anchor proposal and the rule applying Work trim/boundary clearance
+to the allocated rectangle remain unresolved product/manufacturing decisions.
+This implementation adds no allocation offset or remnant shape and does not
+change trim, geometry-validator, or solver-strategy behavior. Schema 1.1 import,
+Desktop presentation, a material library, remnants, costing, export, and
+persistence remain unimplemented.

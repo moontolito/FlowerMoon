@@ -40,7 +40,7 @@ def stock_instance_order_key(
     instance: StockInstance, specifications: dict
 ) -> tuple[float | int | str, ...]:
     specification: StockSpecification = specifications[instance.specification_id]
-    dimensions = specification.dimensions
+    dimensions = specification.full_dimensions
     return (
         dimensions.length * dimensions.width,
         dimensions.length,

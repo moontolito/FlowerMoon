@@ -133,6 +133,18 @@ The intended sequence before the graphical editor phase is:
 4. **Basic desktop integration milestone:** expose the accepted Work material, thickness, allocation, provenance, and mass values through the existing thin desktop/application boundaries without making widget state authoritative.
 5. **Dedicated UI/UX refinement milestone:** review professional information hierarchy, a polished toolbar, visual grouping, consistent spacing, clean table styling, engineering summary cards, an icon system, status presentation, layout-viewer styling, empty/loading/error states, high-DPI behavior, accessibility and contrast, keyboard navigation, validation presentation, operator comprehension, and a Romanian/English text strategy if later approved.
 
+**Domain and mass implementation checkpoint:** milestones 1 and 3 now have a
+pure-Python foundation. Immutable material, density-provenance, thickness, and
+rectangular-allocation value objects extend `Work` and stock definitions through
+an explicit compatibility boundary. Schema 1.0 Works remain unclassified and
+unchanged; classified Works require explicit allocation metadata. Deterministic
+planning and result calculators separate available inventory from consumed
+stock, distinguish COMPLETE/PARTIAL/FAILED_VALIDATION availability, and expose
+structured diagnostics without changing the solver strategy. The schema 1.1
+importer, trim-on-allocation decision, Desktop integration, material library,
+and remnant inventory remain pending; milestone 2 is not implemented, so the
+pre-editor sequence is not complete.
+
 Milestone 5 follows the material/domain, schema 1.1 importer, mass calculator, and basic desktop integration milestones so that its interaction design is tested against real contracts. It precedes the graphical layout editor, release packaging, and commercial-readiness work. None of these milestones is implemented or authorized by this plan update.
 
 Cross-cutting acceptance criteria include homogeneous Work enforcement; exact unit conversion and the reviewed worked example; physical/commercial separation; consumed stock rather than total inventory after nesting; structured `PARTIAL` status with placed/unplaced quantities; schema 1.0 compatibility; no automatic remnant inventory; and preservation of Work-level detail in multi-Work summaries.
