@@ -14,8 +14,14 @@ from PySide6.QtWidgets import (
 from debbie.domain import Layout, Orientation, Work
 from debbie.geometry import effective_placement_region, usable_stock_rectangle
 
+from .theme import COLORS
+
 
 class StockBoundaryItem(QGraphicsRectItem):
+    pass
+
+
+class AllocatedRegionItem(QGraphicsRectItem):
     pass
 
 
@@ -33,15 +39,15 @@ class PartGraphicsItem(QGraphicsRectItem):
     ) -> None:
         super().__init__(rect)
         self.orientation = orientation
-        colors = ("#5b8ff9", "#61d9a3", "#f6bd16", "#7262fd", "#78d3f8")
+        colors = COLORS.graphics_part_fills
         self.setBrush(QBrush(QColor(colors[color_index % len(colors)])))
-        self.setPen(QPen(QColor("#24364b"), 0.8))
+        self.setPen(QPen(QColor(COLORS.graphics_part_outline), 0.65))
         self.setFlag(QGraphicsRectItem.GraphicsItemFlag.ItemIsMovable, False)
         self.setFlag(QGraphicsRectItem.GraphicsItemFlag.ItemClipsChildrenToShape, True)
         self.setAcceptHoverEvents(True)
         if rect.width() >= 35 and rect.height() >= 15:
             text = QGraphicsSimpleTextItem(label, self)
-            text.setBrush(QColor("#102030"))
+            text.setBrush(QColor(COLORS.primary_text))
             text.setPos(rect.x() + 2, rect.y() + 1)
 
 
@@ -58,20 +64,32 @@ class LayoutScene(QGraphicsScene):
             item for item in work.stock_specifications if item.id == stock_instance.specification_id
         )
         profile = layout.process_profile
-        full = stock.dimensions
+        allocation = stock.effective_allocation
+        full = allocation.full_dimensions
+        allocated = allocation.allocated_dimensions
         trim = profile.trim
         full_rect = QRectF(0, 0, full.length, full.width)
         boundary = StockBoundaryItem(full_rect)
-        boundary.setPen(QPen(QColor("#172b4d"), 1.5))
-        boundary.setBrush(QBrush(QColor("#d8dde5")))
+        boundary.setPen(QPen(QColor(COLORS.graphics_full_boundary), 1.2))
+        boundary.setBrush(QBrush(QColor(COLORS.divider)))
         boundary.setZValue(-4)
         self.addItem(boundary)
 
+        allocated_item = AllocatedRegionItem(
+            QRectF(0, 0, allocated.length, allocated.width)
+        )
+        allocated_item.setPen(QPen(QColor(COLORS.accent), 1.2))
+        allocated_item.setBrush(QBrush(QColor(COLORS.graphics_allocated_fill)))
+        allocated_item.setZValue(-3)
+        self.addItem(allocated_item)
+
         usable = usable_stock_rectangle(stock, profile)
         usable_item = UsableRegionItem(QRectF(trim.left, trim.top, usable.length, usable.width))
-        usable_item.setPen(QPen(QColor("#60758a"), 0.8, Qt.PenStyle.DashLine))
-        usable_item.setBrush(QBrush(QColor("#f6f8fa")))
-        usable_item.setZValue(-3)
+        usable_item.setPen(
+            QPen(QColor(COLORS.graphics_usable_boundary), 0.7, Qt.PenStyle.DashLine)
+        )
+        usable_item.setBrush(QBrush(Qt.BrushStyle.NoBrush))
+        usable_item.setZValue(-2)
         self.addItem(usable_item)
 
         effective = effective_placement_region(stock, profile)
@@ -83,9 +101,11 @@ class LayoutScene(QGraphicsScene):
                 effective.width,
             )
         )
-        effective_item.setPen(QPen(QColor("#1f7a5a"), 0.8, Qt.PenStyle.DotLine))
+        effective_item.setPen(
+            QPen(QColor(COLORS.information), 0.8, Qt.PenStyle.DotLine)
+        )
         effective_item.setBrush(QBrush(Qt.BrushStyle.NoBrush))
-        effective_item.setZValue(-2)
+        effective_item.setZValue(-1)
         self.addItem(effective_item)
 
         instances = {item.id: item for item in work.part_instances}
@@ -115,10 +135,22 @@ class LayoutView(QGraphicsView):
         self.layout_scene = LayoutScene(self)
         self.setScene(self.layout_scene)
         self.setRenderHint(QPainter.RenderHint.Antialiasing)
-        self.setBackgroundBrush(QColor("#eef1f5"))
+        self.setBackgroundBrush(QColor(COLORS.soft_panel_background))
         self.setDragMode(QGraphicsView.DragMode.ScrollHandDrag)
         self.setTransformationAnchor(QGraphicsView.ViewportAnchor.AnchorUnderMouse)
         self._zoom = 1.0
+
+    def zoom_in(self) -> None:
+        self._scale_by(1.15)
+
+    def zoom_out(self) -> None:
+        self._scale_by(1 / 1.15)
+
+    def _scale_by(self, factor: float) -> None:
+        proposed = self.transform().m11() * factor
+        if 0.02 <= proposed <= 100:
+            self.scale(factor, factor)
+            self._zoom = proposed
 
     def fit_layout(self) -> None:
         rect = self.scene().sceneRect()
@@ -131,8 +163,5 @@ class LayoutView(QGraphicsView):
 
     def wheelEvent(self, event: QWheelEvent) -> None:
         factor = 1.15 if event.angleDelta().y() > 0 else 1 / 1.15
-        proposed = self.transform().m11() * factor
-        if 0.02 <= proposed <= 100:
-            self.scale(factor, factor)
-            self._zoom = proposed
+        self._scale_by(factor)
         event.accept()

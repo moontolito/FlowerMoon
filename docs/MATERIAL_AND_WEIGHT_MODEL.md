@@ -2,7 +2,7 @@
 
 ## Purpose and status
 
-This document defines the approved product direction and detailed contract for material identity, thickness, partial-sheet allocation, and mass reporting in Debbie vNext. The domain, deterministic mass layer, and canonical schema 1.1 importer are implemented; Desktop material/mass UI, export, persistence, material-library, and remnant behavior remain outside this checkpoint.
+This document defines the approved product direction and detailed contract for material identity, thickness, partial-sheet allocation, and mass reporting in Debbie vNext. The domain, deterministic mass layer, canonical schema 1.1 importer, and professional read-only Desktop presentation are implemented; export, persistence, material-library, and remnant behavior remain outside this checkpoint.
 
 The Product Owner accepted the high-level direction for `MATERIAL-001`, `THICKNESS-001`, `ALLOCATION-001`, and `WEIGHT-001` on 2026-07-19. Rules explicitly labelled **Proposed** remain review items and must not be treated as implemented or binding input behavior. Remnant inventory, material-library ownership, costing, purchasing, ERP integration, and optimization by mass or commercial allocation remain deferred.
 
@@ -194,9 +194,10 @@ Planning and result views now separate available-inventory measures from
 consumed-result measures, keep `PARTIAL` status plus placed/unplaced demand
 visible, and withhold completed-product values for partial results. Display
 rounding remains presentation-only. The Desktop does not present a rectangular
-part estimate as exact part mass or use `scrap` as a catch-all label. A later
-dedicated UI/UX milestone may refine explanation and visual hierarchy without
-changing these contracts.
+part estimate as exact part mass or use `scrap` as a catch-all label. Its
+professional visual baseline now separates planning from consumed-result data,
+uses textual status badges and compact high-value summaries, and keeps detailed
+engineering values selectable without changing these contracts.
 
 ## Product Owner review questions and recommendations
 
@@ -256,6 +257,7 @@ presentation are implemented.
 The origin-anchor proposal and the rule applying Work trim/boundary clearance
 to the allocated rectangle remain unresolved product/manufacturing decisions.
 This implementation adds no allocation offset or remnant shape and does not
-change trim, geometry-validator, or solver-strategy behavior. Dedicated
-Desktop visual refinement, a material library, remnants, costing, export, and
-persistence remain unimplemented.
+change trim, geometry-validator, or solver-strategy behavior. The professional
+read-only Desktop visual baseline is implemented; advanced editor interaction,
+a material library, remnants, costing, export, persistence, and production
+packaging remain unimplemented.

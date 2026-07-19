@@ -2,6 +2,7 @@ from openpyxl import load_workbook
 from PySide6.QtCore import Qt
 
 from debbie.desktop.graphics import (
+    AllocatedRegionItem,
     EffectiveRegionItem,
     LayoutScene,
     PartGraphicsItem,
@@ -128,6 +129,7 @@ def test_layout_scene_renders_regions_parts_orientation_and_is_read_only(qt_app)
     scene.render_layout(work, layout)
     items = scene.items()
     assert sum(isinstance(item, StockBoundaryItem) for item in items) == 1
+    assert sum(isinstance(item, AllocatedRegionItem) for item in items) == 1
     assert sum(isinstance(item, UsableRegionItem) for item in items) == 1
     assert sum(isinstance(item, EffectiveRegionItem) for item in items) == 1
     stock_boundary = next(item for item in items if isinstance(item, StockBoundaryItem))
@@ -172,6 +174,23 @@ def test_rotated_part_uses_oriented_scene_dimensions(qt_app, canonical_workbook)
     item = next(item for item in scene.items() if isinstance(item, PartGraphicsItem))
     assert item.rect().width() == 80
     assert item.rect().height() == 40
+
+
+def test_partial_allocation_scene_distinguishes_full_and_allocated_geometry(
+    qt_app, canonical_workbook_v11_factory
+) -> None:
+    path = canonical_workbook_v11_factory(
+        parts=[["W-1", "P-1", "Panel", 40, 20, 1, "Yes", None]],
+        stocks=[["W-1", "HALF", "Half sheet", 200, 100, 100, 100, 1, 1]],
+    )
+    imported = import_canonical_workbook(path)
+    result = nest_work(imported.works[0])
+    scene = LayoutScene()
+    scene.render_layout(imported.works[0], result.layouts[0])
+    boundary = next(item for item in scene.items() if isinstance(item, StockBoundaryItem))
+    allocated = next(item for item in scene.items() if isinstance(item, AllocatedRegionItem))
+    assert boundary.rect().getRect() == (0.0, 0.0, 200.0, 100.0)
+    assert allocated.rect().getRect() == (0.0, 0.0, 100.0, 100.0)
 
 
 def test_rendering_few_hundred_rectangles_has_no_timing_threshold(qt_app) -> None:

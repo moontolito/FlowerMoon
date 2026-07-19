@@ -8,6 +8,7 @@ from PySide6.QtCore import QCoreApplication, QTimer, Qt
 from PySide6.QtWidgets import QApplication
 
 from .main_window import DebbieMainWindow
+from .theme import apply_application_theme
 
 
 def create_application(argv: list[str] | None = None) -> QApplication:
@@ -16,7 +17,11 @@ def create_application(argv: list[str] | None = None) -> QApplication:
     QApplication.setHighDpiScaleFactorRoundingPolicy(
         Qt.HighDpiScaleFactorRoundingPolicy.PassThrough
     )
-    return QApplication.instance() or QApplication(argv if argv is not None else sys.argv)
+    application = QApplication.instance() or QApplication(
+        argv if argv is not None else sys.argv
+    )
+    apply_application_theme(application)
+    return application
 
 
 def main() -> int:

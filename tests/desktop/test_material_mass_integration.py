@@ -59,10 +59,14 @@ def test_schema_1_0_shows_unavailable_material_without_blocking_nesting(
     assert "Not available in schema 1.0" in window.material_status.text()
     assert "MATERIAL_DATA_REQUIRED" in window.planning_status.text()
     assert window.planning_mass_model.rowCount() == 0
+    assert window.planning_mass_table.isHidden()
+    assert all(card.isHidden() for card in window.planning_cards.values())
     _nest(window, qt_app)
     assert window.session.visible_result.status is ResultStatus.COMPLETE
     assert "MATERIAL_DATA_REQUIRED" in window.result_mass_status.text()
     assert window.result_mass_model.rowCount() == 0
+    assert window.result_mass_table.isHidden()
+    assert all(card.isHidden() for card in window.result_cards.values())
     window.close()
 
 
@@ -81,7 +85,7 @@ def test_schema_1_1_full_allocation_material_planning_and_complete_result(
     assert _displayed(window.stocks_model, 0, 1) == "S-1"
     assert _displayed(window.stocks_model, 0, 7) == "100.00%"
     assert _displayed(window.stocks_model, 0, 8) == "100.00%"
-    assert "AVAILABLE" in window.planning_status.text()
+    assert window.planning_status_badge.text() == "AVAILABLE"
     _nest(window, qt_app)
     values = _summary_values(window.result_mass_model)
     assert "COMPLETE" in window.result_status.text()
@@ -207,7 +211,7 @@ def test_failed_validation_clears_values_and_exposes_diagnostic(
     token, _ = window.session.begin_nesting()
     window._nesting_succeeded(token, failed)
     assert window.result_mass_model.rowCount() == 0
-    assert "FAILED_VALIDATION" in window.result_mass_status.text()
+    assert window.result_mass_badge.text() == "FAILED VALIDATION"
     assert "FAILED_NESTING_VALIDATION" in window.result_mass_status.text()
     assert "INVALID_INPUT_REJECTED_BEFORE_RUN" in window.result_summary.text()
     window.close()
@@ -225,7 +229,7 @@ def test_invalid_result_reconciliation_is_structured_and_does_not_crash(
     token, _ = window.session.begin_nesting()
     window._nesting_succeeded(token, malformed)
     assert window.result_mass_model.rowCount() == 0
-    assert "INVALID_RESULT" in window.result_mass_status.text()
+    assert window.result_mass_badge.text() == "INVALID RESULT"
     assert "RESULT_DATA_MISMATCH" in window.result_mass_status.text()
     window.close()
 
@@ -280,7 +284,7 @@ def test_schema_1_0_to_1_1_replaces_unavailable_state_with_classified_values(
     _import(window, qt_app, canonical_workbook)
     assert "MATERIAL_DATA_REQUIRED" in window.planning_status.text()
     _import(window, qt_app, canonical_workbook_v11_factory())
-    assert "AVAILABLE" in window.planning_status.text()
+    assert window.planning_status_badge.text() == "AVAILABLE"
     assert window.work_info_labels["material_grade"].text() == "AISI 304"
     assert window.planning_mass_model.rowCount() > 0
     window.close()

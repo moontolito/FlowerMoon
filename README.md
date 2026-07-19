@@ -96,18 +96,35 @@ checks, and every selected commit still passes the complete shared validator.
 No pixel grid or random search is used.
 
 The first Debbie Desktop MVP is a read-only PySide6 workflow over the existing
-importer and nesting engine. It imports a canonical workbook, lets an engineer
-select a work and review its process settings, parts, and stocks, runs nesting
-outside the UI thread, and displays layouts, structured diagnostics, and
-unplaced demand. Launch it with either:
+importer and nesting engine. Its professional read-only visual baseline uses a
+central neutral engineering theme, compact information hierarchy, textual
+status badges, consistent tables, intentional empty/busy states, and a refined
+layout viewer. It imports a canonical workbook, lets an engineer select a work
+and review its process settings, parts, and stocks, runs nesting outside the UI
+thread, and displays layouts, structured diagnostics, and unplaced demand.
+
+On Windows, launch the development environment from the repository with:
+
+```text
+Launch Debbie.bat
+```
+
+The launcher resolves its own repository directory, verifies the local
+`.venv313` interpreter, and starts the module without an absolute development
+path. The equivalent development commands remain:
 
 ```powershell
 .\.venv313\Scripts\python.exe -m debbie.desktop
 .\.venv313\Scripts\debbie-desktop.exe
 ```
 
+To create a temporary Desktop shortcut before packaging, right-click
+`Launch Debbie.bat`, choose **Send to → Desktop (create shortcut)**, and
+optionally rename the shortcut to `Debbie`. This is a development convenience,
+not a packaged executable, installer, or production shortcut.
+
 The application opens without a workbook and requires neither Excel, a browser,
-nor internet access. The basic workflow is **Import Excel → select work → Run
+nor internet access. The basic workflow is **Import Workbook → select work → Run
 Nesting → select and inspect a layout**. Input may use canonical `.xlsx`
 `Debbie Nesting Workbook` schema 1.0 or 1.1. Schema 1.0 remains explicitly
 unclassified and shows material/mass as unavailable rather than zero. Schema
@@ -146,9 +163,10 @@ commercial performance guarantee. Dense mixed-dimension layouts can still
 produce substantial candidate growth and require representative production
 datasets before performance targets are accepted.
 
-The desktop is a read-only engineering viewer, not the visually finalized
-Debbie interface. Its material/mass integration is functional presentation,
-not the dedicated UI/UX refinement milestone.
+The Desktop is a professional read-only visual baseline, not the final
+commercial interface. The visual refinement improves hierarchy, navigation,
+status communication, tables, engineering summaries, high-DPI construction,
+and accessibility minimums without changing formulas or backend contracts.
 There is no editing, drag-and-drop placement, Temp Zone, locking, export,
 persistence, legacy import, cutting sequence, guillotine planner, machine
 toolpath, `.exe` bundle, or installer. Generated layouts are non-guillotine,

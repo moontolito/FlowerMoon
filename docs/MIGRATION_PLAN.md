@@ -130,6 +130,17 @@ partially mutates the active valid project. Its diagnostics describe the failed
 attempt while the prior Work, planning summary, and accepted result remain
 active; the next successful import replaces them atomically.
 
+**Professional read-only visual baseline implemented:** the Desktop now uses a
+central token-driven neutral engineering theme and application stylesheet,
+compact header and action toolbar, clear Work selection, scrollable Work /
+Material / Process / Planning hierarchy, restrained summary cards, textual
+status badges, consistent selectable tables, structured empty/busy states, and
+a refined allocation-aware layout scene. The responsive layout is validated at
+1280×720, 1920×1080, and Qt scale factors 1, 1.5, and 2. A repository-relative
+`Launch Debbie.bat` improves development startup while packaging and the final
+installer remain Phase 14 work. This visual milestone changes no importer,
+domain, mass, geometry, or nesting contract and leaves the Desktop read-only.
+
 This checkpoint does not complete the UI/editor phase. Manual placement,
 drag-and-drop, Temp Zone, locks, repeated-layout editing, undo/redo, export,
 persistence, reporting, accessibility review, production datasets, release
@@ -145,7 +156,7 @@ The intended sequence before the graphical editor phase is:
 2. **Canonical Excel 1.1 importer milestone — implemented:** separate strict version-dispatched parsing constructs classified Works from `EXCEL_SCHEMA_V1_1.md`. Schema 1.0 behavior is preserved; no guessed fields, silent upgrade, or legacy fallback exists.
 3. **Mass-calculation milestone:** add one authoritative application/metrics service for rectangular estimates, physical allocation, commercial allocation, consumed-stock result totals, partial-result reconciliation, and display-boundary rounding.
 4. **Basic desktop integration milestone — implemented:** expose the accepted Work material, thickness, allocation, provenance, and mass values through the existing thin desktop/application boundaries without making widget state authoritative.
-5. **Dedicated UI/UX refinement milestone:** review professional information hierarchy, a polished toolbar, visual grouping, consistent spacing, clean table styling, engineering summary cards, an icon system, status presentation, layout-viewer styling, empty/loading/error states, high-DPI behavior, accessibility and contrast, keyboard navigation, validation presentation, operator comprehension, and a Romanian/English text strategy if later approved.
+5. **Dedicated UI/UX refinement milestone — implemented baseline:** professional information hierarchy, action toolbar, visual grouping, consistent spacing, table styling, engineering summary cards, Qt-standard icons, textual status presentation, layout-viewer styling, empty/loading/error states, high-DPI construction, and accessibility minimums are implemented. A future localization strategy still requires approval.
 
 **Domain and mass implementation checkpoint:** milestones 1 and 3 now have a
 pure-Python foundation. Immutable material, density-provenance, thickness, and

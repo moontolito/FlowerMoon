@@ -64,9 +64,12 @@ def test_worker_success_and_unexpected_exception(qt_app) -> None:
 
 def test_window_constructs_empty_with_required_actions_and_warnings(qt_app) -> None:
     window = DebbieMainWindow()
-    assert window.import_button.text() == "Import Excel"
+    assert window.windowTitle() == "Debbie"
+    assert window.import_button.text() == "Import Workbook"
     assert not window.run_button.isEnabled()
     assert window.work_selector.count() == 0
+    assert window.workspace_stack.currentWidget() is window.main_empty_state
+    assert "Import a Debbie workbook" in window.main_empty_state.title_label.text()
     assert "Non-guillotine" in window.warning_label.text()
     assert "not machine-ready" in window.warning_label.text()
     window.layout_view.fit_layout()
@@ -83,7 +86,7 @@ def test_window_state_updates_and_work_switch_hides_result(qt_app) -> None:
     assert window.work_selector.count() == 2
     assert window.parts_model.rowCount() == 1
     assert window.stocks_model.rowCount() == 1
-    assert window.setting_labels["kerf"].text() == "0.20"
+    assert window.setting_labels["kerf"].text() == "0.20 mm"
     assert window.run_button.isEnabled()
     assert window.run_nesting()
     wait_until(qt_app, lambda: window.session.busy_operation is None)
@@ -123,7 +126,7 @@ def test_failed_validation_status_and_diagnostic_are_visible(qt_app) -> None:
     solve_token, _ = window.session.begin_nesting()
     window.session.finish_nesting(solve_token, failed)
     window._refresh_all()
-    assert "FAILED_VALIDATION" in window.result_status.text()
+    assert window.result_status.text() == "FAILED VALIDATION"
     assert "INVALID_INPUT_REJECTED_BEFORE_RUN" in window.result_summary.text()
     window.close()
 

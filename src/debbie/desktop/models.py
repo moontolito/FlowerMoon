@@ -34,6 +34,7 @@ def _short(value: object) -> str:
 
 class ReadOnlyTableModel(QAbstractTableModel):
     headers: tuple[str, ...] = ()
+    header_tooltips: tuple[str, ...] = ()
     numeric_columns: frozenset[int] = frozenset()
 
     def __init__(self, rows: Sequence[Sequence[Any]] = ()) -> None:
@@ -55,6 +56,7 @@ class ReadOnlyTableModel(QAbstractTableModel):
         if not index.isValid() or role not in (
             Qt.ItemDataRole.DisplayRole,
             Qt.ItemDataRole.TextAlignmentRole,
+            Qt.ItemDataRole.ToolTipRole,
         ):
             return None
         if role == Qt.ItemDataRole.TextAlignmentRole:
@@ -64,13 +66,18 @@ class ReadOnlyTableModel(QAbstractTableModel):
                 else Qt.AlignmentFlag.AlignLeft
             )
             return int(Qt.AlignmentFlag.AlignVCenter | horizontal)
-        return self._rows[index.row()][index.column()]
+        value = self._rows[index.row()][index.column()]
+        return str(value) if role == Qt.ItemDataRole.ToolTipRole and value != "" else value
 
     def headerData(self, section: int, orientation: Qt.Orientation, role: int = 0) -> Any:
+        if orientation == Qt.Orientation.Horizontal and 0 <= section < len(self.headers):
+            if role == Qt.ItemDataRole.DisplayRole:
+                return self.headers[section]
+            if role == Qt.ItemDataRole.ToolTipRole and section < len(self.header_tooltips):
+                return self.header_tooltips[section]
+            return None
         if role != Qt.ItemDataRole.DisplayRole:
             return None
-        if orientation == Qt.Orientation.Horizontal and 0 <= section < len(self.headers):
-            return self.headers[section]
         return section + 1
 
     def flags(self, index: QModelIndex) -> Qt.ItemFlag:
@@ -133,18 +140,33 @@ class PartsTableModel(ReadOnlyTableModel):
 class StocksTableModel(ReadOnlyTableModel):
     headers = (
         "Stock Name",
-        "Stock Key / ID",
-        "Quantity",
-        "Full Length (mm)",
-        "Full Width (mm)",
-        "Allocated Length (mm)",
-        "Allocated Width (mm)",
-        "Physical Allocation",
-        "Commercial Allocation",
-        "Usable Length (mm)",
-        "Usable Width (mm)",
-        "Effective Length (mm)",
-        "Effective Width (mm)",
+        "Stock Key",
+        "Qty",
+        "Full L (mm)",
+        "Full W (mm)",
+        "Allocated L (mm)",
+        "Allocated W (mm)",
+        "Physical %",
+        "Commercial %",
+        "Usable L (mm)",
+        "Usable W (mm)",
+        "Effective L (mm)",
+        "Effective W (mm)",
+    )
+    header_tooltips = (
+        "Stock display name",
+        "Canonical Stock Key or stable identifier",
+        "Available physical quantity",
+        "Full source-sheet length",
+        "Full source-sheet width",
+        "Physically allocated nestable length",
+        "Physically allocated nestable width",
+        "Derived physical allocation percentage",
+        "Explicit commercial allocation percentage",
+        "Allocated length after trim",
+        "Allocated width after trim",
+        "Usable length after boundary clearance",
+        "Usable width after boundary clearance",
     )
     numeric_columns = frozenset(range(2, 13))
 
