@@ -79,13 +79,16 @@ def test_stocks_model_reports_full_usable_effective_and_quantity() -> None:
     work = make_work(stock_quantity=2)
     model = StocksTableModel()
     model.set_work(work, make_import_result(work).records)
-    assert model.columnCount() == 9
-    assert displayed(model, 0, 2) == "100.00"
-    assert displayed(model, 0, 4) == 2
-    assert displayed(model, 0, 5) == "93.00"
-    assert displayed(model, 0, 6) == "49.00"
-    assert displayed(model, 0, 7) == "89.00"
-    assert displayed(model, 0, 8) == "45.00"
+    assert model.columnCount() == 13
+    assert displayed(model, 0, 2) == 2
+    assert displayed(model, 0, 3) == "100.00"
+    assert displayed(model, 0, 5) == "100.00"
+    assert displayed(model, 0, 7) == "100.00%"
+    assert displayed(model, 0, 8) == "100.00%"
+    assert displayed(model, 0, 9) == "93.00"
+    assert displayed(model, 0, 10) == "49.00"
+    assert displayed(model, 0, 11) == "89.00"
+    assert displayed(model, 0, 12) == "45.00"
 
 
 def test_diagnostics_and_unplaced_models_preserve_structured_codes() -> None:
@@ -103,7 +106,7 @@ def test_diagnostics_and_unplaced_models_preserve_structured_codes() -> None:
         )
     )
     assert [displayed(diagnostics, 0, column) for column in range(5)] == [
-        "ERROR", "EMPTY_REQUIRED_VALUE", "Parts", 4, "Quantity"
+        "Error", "EMPTY_REQUIRED_VALUE", "Parts", 4, "Quantity"
     ]
 
     work = make_work(stock_quantity=0)

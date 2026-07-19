@@ -35,6 +35,7 @@ from debbie.importers.excel import (
     WorkImportRecord,
     PartImportRecord,
 )
+from debbie.importers.excel.constants import PART_HEADERS, STOCK_HEADERS_V11, WORK_HEADERS_V11
 from debbie.importers.excel.identifiers import (
     demand_item_id,
     part_type_id,
@@ -155,3 +156,56 @@ def canonical_workbook(tmp_path: Path) -> Path:
     workbook.save(path)
     workbook.close()
     return path
+
+
+@pytest.fixture
+def canonical_workbook_v11_factory(tmp_path: Path):
+    counter = 0
+
+    def create(
+        *,
+        work: list[object] | None = None,
+        parts: list[list[object]] | None = None,
+        stocks: list[list[object]] | None = None,
+    ) -> Path:
+        nonlocal counter
+        counter += 1
+        workbook = Workbook()
+        metadata = workbook.active
+        metadata.title = "Debbie"
+        for row in (
+            ["Key", "Value"],
+            ["Format Name", "Debbie Nesting Workbook"],
+            ["Schema Version", "1.1"],
+            ["Units", "mm"],
+            ["Density Units", "g/cm3"],
+        ):
+            metadata.append(row)
+        works = workbook.create_sheet("Works")
+        works.append((*WORK_HEADERS_V11, "Material Description"))
+        works.append(
+            work
+            or [
+                "W-1", "Classified Work", "stainless-steel", "Stainless Steel",
+                "aisi-304", "AISI 304", 3, 7.9, "explicit_override", 1,
+                0, 0, 0, 0, 0, 0, 0, "Production material",
+            ]
+        )
+        part_sheet = workbook.create_sheet("Parts")
+        part_sheet.append((*PART_HEADERS, "Drawing Number"))
+        for row in parts if parts is not None else [
+            ["W-1", "P-1", "Panel", 40, 20, 2, "Yes", "D-1"]
+        ]:
+            part_sheet.append(row)
+        stock_sheet = workbook.create_sheet("Stocks")
+        stock_sheet.append(STOCK_HEADERS_V11)
+        for row in stocks if stocks is not None else [
+            ["W-1", "S-1", "Sheet", 100, 60, 100, 60, 1, 1]
+        ]:
+            stock_sheet.append(row)
+        path = tmp_path / f"desktop-v11-{counter}.xlsx"
+        workbook.save(path)
+        workbook.close()
+        return path
+
+    return create

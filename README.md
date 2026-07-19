@@ -22,9 +22,10 @@ material, density, thickness, or allocation values, and mass calculation
 returns a structured `MATERIAL_DATA_REQUIRED` status. Canonical schema 1.1 is
 implemented through an explicit `canonical_excel_v1_1` path; it requires Work
 material, density, thickness, and full/allocated stock geometry and constructs
-classified Works. Desktop material/mass integration, a material library,
-remnant inventory, export/template generation, and the trim-on-allocation rule
-are not implemented.
+classified Works. The read-only Desktop now presents classified material,
+thickness, density provenance, stock allocation, planning mass, and consumed
+result mass. A material library, remnant inventory, export/template generation,
+and the trim-on-allocation rule are not implemented.
 Until that rule is accepted, nesting rejects partial allocations combined with
 non-zero trim or boundary clearance instead of silently choosing a boundary.
 
@@ -43,6 +44,11 @@ if result.success:
 else:
     errors = result.errors
 ```
+
+If an import attempt fails in the Desktop, `IMPORT-001` keeps the last valid
+project, selected Work, planning summary, and accepted nesting result active;
+only the import-attempt diagnostics and status are updated. A later successful
+import replaces that project atomically.
 
 The adapters accept `.xlsx` only and identify themselves as
 `canonical_excel_v1` or `canonical_excel_v1_1` after metadata-first dispatch.
@@ -103,8 +109,12 @@ unplaced demand. Launch it with either:
 The application opens without a workbook and requires neither Excel, a browser,
 nor internet access. The basic workflow is **Import Excel → select work → Run
 Nesting → select and inspect a layout**. Input may use canonical `.xlsx`
-`Debbie Nesting Workbook` schema 1.0 or 1.1; material-specific Desktop fields
-and mass summaries are not present. Legacy workbook formats are unsupported.
+`Debbie Nesting Workbook` schema 1.0 or 1.1. Schema 1.0 remains explicitly
+unclassified and shows material/mass as unavailable rather than zero. Schema
+1.1 shows Work material and allocation-aware planning and result summaries;
+planning inventory and consumed nesting totals remain separate, and PARTIAL
+results withhold completed-product values. Legacy workbook formats are
+unsupported.
 
 The Python package requires Python 3.13 or 3.14. Canonical workbook import uses
 `openpyxl>=3.1.5,<4`, and the desktop uses `PySide6>=6.10,<6.12`. Python 3.13 is
@@ -136,7 +146,9 @@ commercial performance guarantee. Dense mixed-dimension layouts can still
 produce substantial candidate growth and require representative production
 datasets before performance targets are accepted.
 
-The desktop is a read-only engineering viewer, not the final Debbie interface.
+The desktop is a read-only engineering viewer, not the visually finalized
+Debbie interface. Its material/mass integration is functional presentation,
+not the dedicated UI/UX refinement milestone.
 There is no editing, drag-and-drop placement, Temp Zone, locking, export,
 persistence, legacy import, cutting sequence, guillotine planner, machine
 toolpath, `.exe` bundle, or installer. Generated layouts are non-guillotine,

@@ -8,18 +8,24 @@ from typing import Any
 from PySide6.QtCore import QAbstractTableModel, QModelIndex, Qt
 
 from debbie.domain import Orientation, Work
-from debbie.geometry import effective_placement_region, usable_stock_rectangle
-from debbie.importers.excel import CanonicalWorkbookRecords, ImportDiagnostic
-from debbie.importers.excel.identifiers import (
-    part_type_id,
-    stock_specification_id,
-    work_id,
+from debbie.application.presentation import (
+    MassSummaryViewModel,
+    build_stock_allocation_rows,
+    format_dimension_value,
+    format_fraction,
+    work_record_for,
 )
+from debbie.importers.excel import (
+    CanonicalWorkbookRecords,
+    CanonicalWorkbookV11Records,
+    ImportDiagnostic,
+)
+from debbie.importers.excel.identifiers import part_type_id
 from debbie.nesting import UnplacedDemand
 
 
 def _mm(value: float) -> str:
-    return f"{value:.2f}"
+    return format_dimension_value(value)
 
 
 def _short(value: object) -> str:
@@ -86,16 +92,18 @@ class PartsTableModel(ReadOnlyTableModel):
     )
     numeric_columns = frozenset({3, 4, 5, 6})
 
-    def set_work(self, work: Work | None, records: CanonicalWorkbookRecords | None) -> None:
+    def set_work(
+        self,
+        work: Work | None,
+        records: CanonicalWorkbookRecords | CanonicalWorkbookV11Records | None,
+    ) -> None:
         if work is None:
             self.set_rows(())
             return
         imported = {}
         drawings = {}
         if records is not None:
-            work_record = next(
-                (item for item in records.works if work_id(item.work_key) == work.id), None
-            )
+            work_record = work_record_for(work, records)
             if work_record is not None:
                 for item in records.parts:
                     if item.work_key == work_record.work_key:
@@ -126,72 +134,77 @@ class StocksTableModel(ReadOnlyTableModel):
     headers = (
         "Stock Name",
         "Stock Key / ID",
+        "Quantity",
         "Full Length (mm)",
         "Full Width (mm)",
-        "Quantity",
+        "Allocated Length (mm)",
+        "Allocated Width (mm)",
+        "Physical Allocation",
+        "Commercial Allocation",
         "Usable Length (mm)",
         "Usable Width (mm)",
         "Effective Length (mm)",
         "Effective Width (mm)",
     )
-    numeric_columns = frozenset(range(2, 9))
+    numeric_columns = frozenset(range(2, 13))
 
-    def set_work(self, work: Work | None, records: CanonicalWorkbookRecords | None) -> None:
+    def set_work(
+        self,
+        work: Work | None,
+        records: CanonicalWorkbookRecords | CanonicalWorkbookV11Records | None,
+    ) -> None:
         if work is None:
             self.set_rows(())
             return
-        imported = {}
-        if records is not None:
-            work_record = next(
-                (item for item in records.works if work_id(item.work_key) == work.id), None
+        self.set_rows(
+            (
+                row.stock_name,
+                row.stock_key,
+                row.quantity,
+                _mm(row.full_length_mm),
+                _mm(row.full_width_mm),
+                _mm(row.allocated_length_mm),
+                _mm(row.allocated_width_mm),
+                format_fraction(row.physical_allocation_fraction),
+                format_fraction(row.commercial_allocation_fraction),
+                _mm(row.usable_length_mm),
+                _mm(row.usable_width_mm),
+                _mm(row.effective_length_mm),
+                _mm(row.effective_width_mm),
             )
-            if work_record is not None:
-                imported = {
-                    stock_specification_id(work.id, item.stock_key): item.stock_key
-                    for item in records.stocks
-                    if item.work_key == work_record.work_key
-                }
-        quantities: dict[object, int] = {}
-        for instance in work.stock_instances:
-            quantities[instance.specification_id] = quantities.get(instance.specification_id, 0) + 1
-        rows = []
-        for stock in sorted(
-            work.stock_specifications, key=lambda item: (item.name.casefold(), str(item.id))
-        ):
-            usable = usable_stock_rectangle(stock, work.process_profile)
-            effective = effective_placement_region(stock, work.process_profile)
-            rows.append(
-                (
-                    stock.name,
-                    imported.get(stock.id, _short(stock.id)),
-                    _mm(stock.dimensions.length),
-                    _mm(stock.dimensions.width),
-                    quantities.get(stock.id, 0),
-                    _mm(usable.length),
-                    _mm(usable.width),
-                    _mm(effective.length),
-                    _mm(effective.width),
-                )
-            )
-        self.set_rows(rows)
+            for row in build_stock_allocation_rows(work, records)
+        )
 
 
 class DiagnosticsTableModel(ReadOnlyTableModel):
-    headers = ("Severity", "Code", "Worksheet", "Row", "Header", "Message")
+    headers = (
+        "Severity", "Code", "Worksheet", "Row", "Header", "Work", "Part", "Stock", "Message"
+    )
     numeric_columns = frozenset({3})
 
     def set_diagnostics(self, diagnostics: Sequence[ImportDiagnostic]) -> None:
         self.set_rows(
             (
-                item.severity.value,
+                item.severity.value.title(),
                 item.code.value,
                 item.worksheet or "",
                 item.row if item.row is not None else "",
                 item.header or "",
+                item.related_work_key or "",
+                item.related_part_key or "",
+                item.related_stock_key or "",
                 item.message,
             )
             for item in diagnostics
         )
+
+
+class SummaryTableModel(ReadOnlyTableModel):
+    headers = ("Measure", "Value")
+    numeric_columns = frozenset({1})
+
+    def set_summary(self, summary: MassSummaryViewModel) -> None:
+        self.set_rows((item.label, item.value) for item in summary.items)
 
 
 class UnplacedTableModel(ReadOnlyTableModel):

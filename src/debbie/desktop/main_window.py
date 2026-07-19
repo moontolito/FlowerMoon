@@ -16,6 +16,7 @@ from PySide6.QtWidgets import (
     QMainWindow,
     QMessageBox,
     QPushButton,
+    QScrollArea,
     QSplitter,
     QTabWidget,
     QTableView,
@@ -24,13 +25,28 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from debbie.application import DebbieSession, ImportService, NestingService, OperationToken
+from debbie.application import (
+    DebbieSession,
+    ImportService,
+    MassService,
+    NestingService,
+    OperationToken,
+    build_nesting_mass_summary,
+    build_work_information,
+    build_work_mass_summary,
+)
+from debbie.application.presentation import work_key_for
 from debbie.domain import Work
 from debbie.nesting import NestingResult, ResultStatus
-from debbie.importers.excel.identifiers import work_id
 
 from .graphics import LayoutView
-from .models import DiagnosticsTableModel, PartsTableModel, StocksTableModel, UnplacedTableModel
+from .models import (
+    DiagnosticsTableModel,
+    PartsTableModel,
+    StocksTableModel,
+    SummaryTableModel,
+    UnplacedTableModel,
+)
 from .workers import ServiceWorker
 
 WARNING_TEXT = (
@@ -46,11 +62,13 @@ class DebbieMainWindow(QMainWindow):
         *,
         import_service: ImportService | None = None,
         nesting_service: NestingService | None = None,
+        mass_service: MassService | None = None,
     ) -> None:
         super().__init__()
         self.session = DebbieSession()
         self.import_service = import_service or ImportService()
         self.nesting_service = nesting_service or NestingService()
+        self.mass_service = mass_service or MassService()
         self.thread_pool = QThreadPool(self)
         self.thread_pool.setMaxThreadCount(2)
         self._workers: set[ServiceWorker] = set()
@@ -86,6 +104,30 @@ class DebbieMainWindow(QMainWindow):
         project_form.addRow("Source", self.source_label)
         self.work_selector.currentIndexChanged.connect(self._work_changed)
 
+        material_box = QGroupBox("Work material")
+        material_form = QFormLayout(material_box)
+        self.work_info_labels = {}
+        for key, label in (
+            ("work_name", "Work name"),
+            ("work_key", "Work key"),
+            ("schema_version", "Schema version"),
+            ("material_category", "Material category"),
+            ("material_grade", "Material grade"),
+            ("thickness", "Thickness"),
+            ("density", "Density"),
+            ("density_source", "Density source"),
+            ("batch_multiplier", "Batch multiplier"),
+            ("material_description", "Description"),
+        ):
+            value = QLabel("—")
+            value.setWordWrap(True)
+            value.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+            self.work_info_labels[key] = value
+            material_form.addRow(label, value)
+        self.material_status = QLabel("No Work selected")
+        self.material_status.setWordWrap(True)
+        material_form.addRow("Status", self.material_status)
+
         settings_box = QGroupBox("Process settings (mm)")
         settings_form = QFormLayout(settings_box)
         self.setting_labels = {}
@@ -103,11 +145,28 @@ class DebbieMainWindow(QMainWindow):
             self.setting_labels[key] = value
             settings_form.addRow(label, value)
 
+        planning_box = QGroupBox("Planning Material Summary")
+        planning_layout = QVBoxLayout(planning_box)
+        self.planning_status = QLabel("Mass calculations have not been run.")
+        self.planning_status.setWordWrap(True)
+        self.planning_status.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        self.planning_mass_model = SummaryTableModel()
+        self.planning_mass_table = self._table(self.planning_mass_model)
+        self.planning_mass_table.setMinimumHeight(230)
+        planning_layout.addWidget(self.planning_status)
+        planning_layout.addWidget(self.planning_mass_table)
+
         left = QWidget()
         left_layout = QVBoxLayout(left)
         left_layout.addWidget(project_box)
+        left_layout.addWidget(material_box)
         left_layout.addWidget(settings_box)
+        left_layout.addWidget(planning_box)
         left_layout.addStretch(1)
+        left_scroll = QScrollArea()
+        left_scroll.setWidgetResizable(True)
+        left_scroll.setWidget(left)
+        left_scroll.setMinimumWidth(360)
 
         self.tabs = QTabWidget()
         self.parts_model = PartsTableModel()
@@ -142,13 +201,24 @@ class DebbieMainWindow(QMainWindow):
         layout_grid.addWidget(self.warning_label, 3, 0, 1, 2)
         layout_grid.setRowStretch(2, 1)
         self.tabs.addTab(layout_tab, "Layout")
+
+        result_mass_tab = QWidget()
+        result_mass_layout = QVBoxLayout(result_mass_tab)
+        self.result_mass_status = QLabel("Run nesting to calculate consumed material totals.")
+        self.result_mass_status.setWordWrap(True)
+        self.result_mass_status.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        self.result_mass_model = SummaryTableModel()
+        self.result_mass_table = self._table(self.result_mass_model)
+        result_mass_layout.addWidget(self.result_mass_status)
+        result_mass_layout.addWidget(self.result_mass_table)
+        self.tabs.addTab(result_mass_tab, "Result Mass")
         self.tabs.addTab(self.unplaced_table, "Unplaced")
         self.tabs.addTab(self.diagnostics_table, "Diagnostics")
 
         splitter = QSplitter()
-        splitter.addWidget(left)
+        splitter.addWidget(left_scroll)
         splitter.addWidget(self.tabs)
-        splitter.setSizes([300, 980])
+        splitter.setSizes([400, 880])
         self.setCentralWidget(splitter)
         self.statusBar().showMessage(self.session.status_message)
 
@@ -209,6 +279,11 @@ class DebbieMainWindow(QMainWindow):
 
     def _nesting_succeeded(self, token: OperationToken, result: NestingResult) -> None:
         if self.session.finish_nesting(token, result):
+            work = self.session.selected_work
+            if work is not None:
+                self.session.set_nesting_mass(
+                    work.id, self.mass_service.for_result(work, result)
+                )
             self._refresh_result()
         self._refresh_busy()
 
@@ -257,13 +332,8 @@ class DebbieMainWindow(QMainWindow):
         self.work_selector.blockSignals(True)
         self.work_selector.clear()
         records = self._records()
-        key_by_id = (
-            {work_id(item.work_key): item.work_key for item in records.works}
-            if records
-            else {}
-        )
         for work in self.session.works:
-            key = key_by_id.get(work.id, str(work.id)[:8])
+            key = work_key_for(work, records)
             self.work_selector.addItem(f"{work.name} — {key}", work.id)
         selected = next(
             (
@@ -283,6 +353,13 @@ class DebbieMainWindow(QMainWindow):
         work = self.session.selected_work
         self.parts_model.set_work(work, self._records())
         self.stocks_model.set_work(work, self._records())
+        if work is not None and (
+            self.session.planning_mass is None
+            or self.session.planning_mass_work_id != work.id
+        ):
+            self.session.set_planning_mass(work.id, self.mass_service.plan(work))
+        self._refresh_work_information(work)
+        self._refresh_planning_mass()
         self._refresh_settings(work)
         self._refresh_result()
         self._refresh_busy()
@@ -304,6 +381,24 @@ class DebbieMainWindow(QMainWindow):
         for key, label in self.setting_labels.items():
             label.setText(values[key])
 
+    def _refresh_work_information(self, work: Work | None) -> None:
+        view = build_work_information(work, self.session.import_result)
+        for key, label in self.work_info_labels.items():
+            label.setText(getattr(view, key))
+        self.material_status.setText(view.classification_message)
+
+    def _refresh_planning_mass(self) -> None:
+        view = build_work_mass_summary(self.session.planning_mass)
+        diagnostic_text = " ".join(
+            f"{item.severity} {item.code}: {item.message}" for item in view.diagnostics
+        )
+        status = view.status.value if view.status is not None else "UNAVAILABLE"
+        self.planning_status.setText(
+            f"Status: {status}. {view.message}"
+            + (f" {diagnostic_text}" if diagnostic_text else "")
+        )
+        self.planning_mass_model.set_summary(view)
+
     def _refresh_result(self) -> None:
         result = self.session.visible_result
         work = self.session.selected_work
@@ -314,7 +409,14 @@ class DebbieMainWindow(QMainWindow):
             self.result_summary.setText("—")
             self.unplaced_model.set_unplaced(work, ())
         else:
-            self.result_status.setText(f"Result status: {result.status.value}")
+            status_message = {
+                ResultStatus.COMPLETE: "All expanded demand was placed.",
+                ResultStatus.PARTIAL: "Some expanded demand remains unplaced.",
+                ResultStatus.FAILED_VALIDATION: "Nesting validation failed.",
+            }[result.status]
+            self.result_status.setText(
+                f"Result status: {result.status.value}. {status_message}"
+            )
             unused = result.objective.unused_usable_area
             full_area = result.objective.nominal_full_stock_area_consumed
             validation_text = ""
@@ -343,10 +445,25 @@ class DebbieMainWindow(QMainWindow):
                     str(layout.id),
                 )
             self.unplaced_model.set_unplaced(work, result.unplaced_demand)
+        self._refresh_result_mass()
         selected = self.session.selected_layout_index
         self.layout_selector.setCurrentIndex(selected if selected is not None else -1)
         self.layout_selector.blockSignals(False)
         self._render_selected_layout()
+
+    def _refresh_result_mass(self) -> None:
+        view = build_nesting_mass_summary(self.session.nesting_mass)
+        diagnostic_text = " ".join(
+            f"{item.severity} {item.code}: {item.message}"
+            + (f" ({item.related})" if item.related else "")
+            for item in view.diagnostics
+        )
+        status = view.status.value if view.status is not None else "UNAVAILABLE"
+        self.result_mass_status.setText(
+            f"Status: {status}. {view.message}"
+            + (f" {diagnostic_text}" if diagnostic_text else "")
+        )
+        self.result_mass_model.set_summary(view)
 
     def _render_selected_layout(self) -> None:
         result = self.session.visible_result

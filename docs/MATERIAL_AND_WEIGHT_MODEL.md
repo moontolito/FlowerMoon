@@ -181,11 +181,22 @@ If the half-sheet geometry is commercially charged as one full sheet, its commer
 
 The `0.5` physical fraction describes nestable geometry. The `1.0` commercial fraction describes the chosen commercial allocation. They are intentionally not interchangeable.
 
-## Future UI implications (documentation only)
+## Read-only Desktop presentation checkpoint
 
-A later UI should provide controlled material-category and grade selectors with an explicit custom-grade workflow, show density plus provenance, and require Work thickness. Stock editing should show full and allocated dimensions together, derive the physical fraction live, and keep commercial fraction separately labelled.
+The current read-only Desktop shows material category and grade, effective
+density plus provenance, Work thickness, and full/allocated stock dimensions
+with physical and commercial fractions. Schema 1.0 shows an explicit
+unclassified/unavailable state and never invents zero engineering values.
+Controlled selectors, custom-grade editing, and live stock editing remain
+future editor work.
 
-Planning and result views should separate physical from commercial measures, explain every formula through labels/tooltips, show whether values are pre- or post-nesting, and keep `PARTIAL` status plus placed/unplaced demand visible. It must not present a rectangular part estimate as exact part mass or use `scrap` as a catch-all label. These are UI requirements only; this gate adds no widgets or behavior.
+Planning and result views now separate available-inventory measures from
+consumed-result measures, keep `PARTIAL` status plus placed/unplaced demand
+visible, and withhold completed-product values for partial results. Display
+rounding remains presentation-only. The Desktop does not present a rectangular
+part estimate as exact part mass or use `scrap` as a catch-all label. A later
+dedicated UI/UX milestone may refine explanation and visual hierarchy without
+changing these contracts.
 
 ## Product Owner review questions and recommendations
 
@@ -204,13 +215,14 @@ Planning and result views should separate physical from commercial measures, exp
 | 11 | How are `PARTIAL` result masses presented per product? | Show batch-level consumed and placed/unplaced masses with a prominent incomplete-demand status; withhold the normal completed-product gross-mass presentation. | Accepted presentation boundary; detailed UI deferred |
 | 12 | Is Zinc-Plated Steel a category or coating over Steel? | Treat this as an unresolved coating model; do not silently collapse it into zinc or uncoated steel. | Pending |
 
-Desktop UI, exports, persistence, remnant handling, and behavior governed by remaining proposed details stay blocked until separate review and authorization. Canonical schema 1.1 import follows `EXCEL_SCHEMA_V1_1.md` and rejects partial allocation with non-zero trim or boundary clearance.
+Desktop editing, dedicated visual refinement, exports, persistence, remnant handling, and behavior governed by remaining proposed details stay blocked until separate review and authorization. Canonical schema 1.1 import follows `EXCEL_SCHEMA_V1_1.md` and rejects partial allocation with non-zero trim or boundary clearance.
 
 ## Implementation checkpoint
 
 The first pure-Python domain and calculation foundation now implements the
 accepted portions of `MATERIAL-001`, `THICKNESS-001`, `ALLOCATION-001`, and
-`WEIGHT-001`; canonical schema 1.1 import is implemented without Desktop integration.
+`WEIGHT-001`; canonical schema 1.1 import and functional read-only Desktop
+presentation are implemented.
 
 - `MaterialIdentity`, stable category/grade keys, `Density`, `DensitySource`,
   and `Thickness` are immutable Work-level values.
@@ -244,6 +256,6 @@ accepted portions of `MATERIAL-001`, `THICKNESS-001`, `ALLOCATION-001`, and
 The origin-anchor proposal and the rule applying Work trim/boundary clearance
 to the allocated rectangle remain unresolved product/manufacturing decisions.
 This implementation adds no allocation offset or remnant shape and does not
-change trim, geometry-validator, or solver-strategy behavior. Desktop
-presentation, a material library, remnants, costing, export, and
+change trim, geometry-validator, or solver-strategy behavior. Dedicated
+Desktop visual refinement, a material library, remnants, costing, export, and
 persistence remain unimplemented.

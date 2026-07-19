@@ -116,6 +116,20 @@ run through Qt workers; stale results are rejected by operation/work identity.
 The `QGraphicsView` layout viewer keeps millimetre scene coordinates separate
 from viewport transforms and provides fit-to-view and bounded wheel zoom.
 
+The functional material/mass Desktop checkpoint now also presents schema
+provenance, classified material/thickness/density, full-versus-allocated stock
+geometry, Work planning totals, and consumed-result totals through pure
+presentation models over the authoritative mass services. Schema 1.0 displays
+an explicit unavailable state. COMPLETE results expose allowed per-product
+values; PARTIAL and FAILED_VALIDATION states withhold them and clear stale
+values. The workflow remains read-only and scrollable at the supported MVP
+window sizes.
+
+Consistent with `IMPORT-001`, an invalid import attempt never replaces or
+partially mutates the active valid project. Its diagnostics describe the failed
+attempt while the prior Work, planning summary, and accepted result remain
+active; the next successful import replaces them atomically.
+
 This checkpoint does not complete the UI/editor phase. Manual placement,
 drag-and-drop, Temp Zone, locks, repeated-layout editing, undo/redo, export,
 persistence, reporting, accessibility review, production datasets, release
@@ -130,7 +144,7 @@ The intended sequence before the graphical editor phase is:
 1. **Material/allocation domain milestone:** after detailed decision acceptance, add homogeneous Work material identity, density provenance, Work thickness, full/allocated stock geometry, and shared validation without changing the approved first-solver strategy.
 2. **Canonical Excel 1.1 importer milestone — implemented:** separate strict version-dispatched parsing constructs classified Works from `EXCEL_SCHEMA_V1_1.md`. Schema 1.0 behavior is preserved; no guessed fields, silent upgrade, or legacy fallback exists.
 3. **Mass-calculation milestone:** add one authoritative application/metrics service for rectangular estimates, physical allocation, commercial allocation, consumed-stock result totals, partial-result reconciliation, and display-boundary rounding.
-4. **Basic desktop integration milestone:** expose the accepted Work material, thickness, allocation, provenance, and mass values through the existing thin desktop/application boundaries without making widget state authoritative.
+4. **Basic desktop integration milestone — implemented:** expose the accepted Work material, thickness, allocation, provenance, and mass values through the existing thin desktop/application boundaries without making widget state authoritative.
 5. **Dedicated UI/UX refinement milestone:** review professional information hierarchy, a polished toolbar, visual grouping, consistent spacing, clean table styling, engineering summary cards, an icon system, status presentation, layout-viewer styling, empty/loading/error states, high-DPI behavior, accessibility and contrast, keyboard navigation, validation presentation, operator comprehension, and a Romanian/English text strategy if later approved.
 
 **Domain and mass implementation checkpoint:** milestones 1 and 3 now have a
@@ -141,9 +155,10 @@ unchanged; classified Works require explicit allocation metadata. Deterministic
 planning and result calculators separate available inventory from consumed
 stock, distinguish COMPLETE/PARTIAL/FAILED_VALIDATION availability, and expose
 structured diagnostics without changing the solver strategy. The schema 1.1
-importer is now implemented. The trim-on-allocation decision, Desktop
-material/mass integration, material library, and remnant inventory remain
-pending, so the pre-editor sequence is not complete.
+importer and functional read-only Desktop material/mass presentation are now
+implemented. The trim-on-allocation decision, dedicated UI/UX refinement,
+material library, and remnant inventory remain pending, so the pre-editor
+sequence is not complete.
 
 Milestone 5 follows the material/domain, schema 1.1 importer, mass calculator, and basic desktop integration milestones so that its interaction design is tested against real contracts. It precedes the graphical layout editor, release packaging, and commercial-readiness work. None of these milestones is implemented or authorized by this plan update.
 
