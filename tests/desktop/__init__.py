@@ -1,0 +1,1 @@
+"""Desktop MVP tests."""

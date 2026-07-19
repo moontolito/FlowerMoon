@@ -105,6 +105,20 @@ Phase 8 remains in progress pending review of this implementation, representativ
 - **Main risks:** Recreating global state in widgets; background-thread misuse; premature styling consumes migration effort.
 - **Do not implement yet:** Full graphical editor, commercial branding, licensing, or updater.
 
+**Implementation checkpoint:** a first launchable, read-only PySide6 desktop
+shell now integrates the canonical importer and the existing deterministic
+solver through thin application services and explicit session state. It shows
+works, process settings, parts, stocks, structured import diagnostics, result
+metadata, physical layouts, and structured unplaced demand. Nesting and import
+run through Qt workers; stale results are rejected by operation/work identity.
+The `QGraphicsView` layout viewer keeps millimetre scene coordinates separate
+from viewport transforms and provides fit-to-view and bounded wheel zoom.
+
+This checkpoint does not complete the UI/editor phase. Manual placement,
+drag-and-drop, Temp Zone, locks, repeated-layout editing, undo/redo, export,
+persistence, reporting, accessibility review, production datasets, release
+packaging, and installer work remain pending in their approved later gates.
+
 ## Phase 10 — Graphical layout editor
 
 - **Objective:** Add safe selection, movement, transfer, rotation, Temp/unplaced handling, locking, and undo/redo.

@@ -63,9 +63,25 @@ boundary-impossible coordinates are discarded before incremental collision
 checks, and every selected commit still passes the complete shared validator.
 No pixel grid or random search is used.
 
+The first Debbie Desktop MVP is a read-only PySide6 workflow over the existing
+importer and nesting engine. It imports a canonical workbook, lets an engineer
+select a work and review its process settings, parts, and stocks, runs nesting
+outside the UI thread, and displays layouts, structured diagnostics, and
+unplaced demand. Launch it with either:
+
+```powershell
+.\.venv313\Scripts\python.exe -m debbie.desktop
+.\.venv313\Scripts\debbie-desktop.exe
+```
+
+The application opens without a workbook and requires neither Excel, a browser,
+nor internet access. The basic workflow is **Import Excel → select work → Run
+Nesting → select and inspect a layout**. Input must use the canonical `.xlsx`
+`Debbie Nesting Workbook` schema 1.0; legacy workbook formats are unsupported.
+
 The Python package requires Python 3.13 or 3.14. Canonical workbook import uses
-`openpyxl>=3.1.5,<4` as its only direct runtime dependency. Python 3.13 is the
-primary development and validation version; Python 3.14 is a secondary
+`openpyxl>=3.1.5,<4`, and the desktop uses `PySide6>=6.10,<6.12`. Python 3.13 is
+the primary development and validation version; Python 3.14 is a secondary
 compatibility target. Python 3.12 and earlier are not supported.
 
 To prepare the primary development environment in Windows PowerShell:
@@ -93,9 +109,11 @@ commercial performance guarantee. Dense mixed-dimension layouts can still
 produce substantial candidate growth and require representative production
 datasets before performance targets are accepted.
 
-There is no graphical interface, PySide6 integration, Excel export, legacy
-import, persistence, manual layout editing, cutting sequence, guillotine
-planner, or machine toolpath. Generated layouts are not machine-ready and are
-not guaranteed global optima. The current greedy edge-candidate search is
-intended as an understandable deterministic first engine, not an exhaustive
-optimizer.
+The desktop is a read-only engineering viewer, not the final Debbie interface.
+There is no editing, drag-and-drop placement, Temp Zone, locking, export,
+persistence, legacy import, cutting sequence, guillotine planner, machine
+toolpath, `.exe` bundle, or installer. Generated layouts are non-guillotine,
+not machine-ready, and not guaranteed global optima. Large solver jobs can
+still take significant time even though desktop execution occurs on a worker.
+The current deterministic edge-candidate search is an understandable first
+engine, not an exhaustive optimizer or a commercially ready release.
