@@ -30,7 +30,7 @@ The first nesting-engine decision gate is also passed for `NEST-001`, `NEST-002`
 
 The canonical Excel import content gate is passed for `IMPORT-001`, approved on 2026-07-18 by Product Owner Cuvuliuc Nicolae. After this decision update is reviewed and committed, implementation may begin only for the strict `.xlsx` `Debbie Nesting Workbook` schema 1.0 described in `EXCEL_SCHEMA_V1.md`. Specific legacy adapters, linear cutting, Excel result export, persistence, and UI remain gated by their own pending decisions or later review.
 
-The Product Owner accepted the high-level product direction for `MATERIAL-001`, `THICKNESS-001`, `ALLOCATION-001`, and `WEIGHT-001` on 2026-07-19. These records establish the homogeneous Work boundary, explicit density/thickness snapshots, geometric partial allocation, and separate physical/commercial mass views. They do **not** authorize implementation: detailed questions remain identified in `MATERIAL_AND_WEIGHT_MODEL.md`, and `EXCEL_SCHEMA_V1_1_DRAFT.md` is a proposed version rather than an accepted canonical format.
+The Product Owner accepted the high-level product direction for `MATERIAL-001`, `THICKNESS-001`, `ALLOCATION-001`, and `WEIGHT-001` on 2026-07-19. These records establish the homogeneous Work boundary, explicit density/thickness snapshots, geometric partial allocation, and separate physical/commercial mass views. Domain/mass implementation and the later canonical schema 1.1 importer were subsequently authorized as bounded milestones. `EXCEL_SCHEMA_V1_1.md` is now the executable import contract; remaining proposed details continue to block only their stated later phases.
 
 ## Decisions required before domain-model implementation
 
@@ -183,7 +183,7 @@ The Product Owner accepted the high-level product direction for `MATERIAL-001`, 
   3. Model arbitrary remnant polygons immediately. **Implication:** broader capability but premature solver, inventory, and UI complexity.
 - **Recommended default for Debbie vNext:** Option 1 with explicit stock records and quantity grouping only for identical allocations. Initially anchor the allocation at the source origin and defer remnant lifecycle.
 - **Product Owner decision:** **Approved — Option 1 at the product-contract level:** partial stock requires explicit rectangular allocated geometry tied to full-sheet provenance; physical fraction is derived; commercial fraction is explicit and separate; and the first implementation enforces `0 < physical_fraction <= commercial_fraction <= 1`. Commercial allocation may exceed physical allocation but may not be smaller. Fraction-only nesting is forbidden. Allocation origin/offset, trim application, and remainder/remnant lifecycle remain detailed review items documented in `MATERIAL_AND_WEIGHT_MODEL.md`. **Approver:** Cuvuliuc Nicolae. **Role:** Product Owner. **Approval date:** 2026-07-19.
-- **Decision status:** **Accepted direction — 2026-07-19; allocation origin, trim boundary, and remnant details pending.** The proposed schema 1.1 remains a draft and no allocation behavior is implemented.
+- **Decision status:** **Accepted direction — 2026-07-19; allocation origin, trim boundary, and remnant details pending.** This decision record did not itself authorize implementation; the later bounded domain and canonical schema 1.1 milestones implement explicit origin-anchored rectangular allocation while continuing to reject the unresolved trim/boundary combination. Remnant behavior remains unimplemented.
 - **Affected future modules:** `domain`, `geometry`, `application`, `nesting`, `io`, `ui`, `metrics`, `reporting`, `persistence`.
 - **Required tests after implementation approval:** Full/allocated containment; fraction derivation; physical/commercial separation; inventory quantity; trim/clearance boundary; consumed-instance reporting; no automatic remnant creation.
 
@@ -204,7 +204,7 @@ The Product Owner accepted the high-level product direction for `MATERIAL-001`, 
 - **Affected future modules:** `application`, `metrics`, `ui`, `reporting`, `export`, `persistence`.
 - **Required tests after implementation approval:** Unit conversion; known examples; quantity and batch reconciliation; consumed-versus-available stock; complete/partial status; physical/commercial differences; rounding only at display boundary; multi-Work aggregation.
 
-The consolidated formulas, worked example, invalid states, deferred capabilities, and twelve Product Owner review questions with their recorded accepted/proposed/deferred statuses are maintained in `MATERIAL_AND_WEIGHT_MODEL.md`. The proposed canonical workbook extension is maintained separately in `EXCEL_SCHEMA_V1_1_DRAFT.md`; schema 1.0 remains the only accepted and implemented canonical schema.
+The consolidated formulas, worked example, invalid states, deferred capabilities, and twelve Product Owner review questions with their recorded accepted/proposed/deferred statuses are maintained in `MATERIAL_AND_WEIGHT_MODEL.md`. The implemented canonical workbook extension is maintained in `EXCEL_SCHEMA_V1_1.md`; the draft remains only as a historical pointer. Schemas 1.0 and 1.1 are separate supported contracts with explicit dispatch.
 
 ### TEMP-001 — Temp Zone and outstanding demand
 

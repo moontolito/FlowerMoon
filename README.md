@@ -19,14 +19,18 @@ result_mass = calculate_nesting_result_mass(work, nesting_result)
 
 Schema 1.0 imports deliberately remain unclassified: they receive no invented
 material, density, thickness, or allocation values, and mass calculation
-returns a structured `MATERIAL_DATA_REQUIRED` status. The schema 1.1 importer,
-Desktop material/mass integration, material library, remnant inventory, and
-trim-on-allocation rule are not implemented.
+returns a structured `MATERIAL_DATA_REQUIRED` status. Canonical schema 1.1 is
+implemented through an explicit `canonical_excel_v1_1` path; it requires Work
+material, density, thickness, and full/allocated stock geometry and constructs
+classified Works. Desktop material/mass integration, a material library,
+remnant inventory, export/template generation, and the trim-on-allocation rule
+are not implemented.
 Until that rule is accepted, nesting rejects partial allocations combined with
 non-zero trim or boundary clearance instead of silently choosing a boundary.
 
 Canonical `.xlsx` import is implemented for the strict `Debbie Nesting
-Workbook` schema 1.0 specified in `docs/EXCEL_SCHEMA_V1.md`. It operates
+Workbook` schemas 1.0 and 1.1 specified in `docs/EXCEL_SCHEMA_V1.md` and
+`docs/EXCEL_SCHEMA_V1_1.md`. It operates
 offline, validates the complete workbook atomically, and returns structured
 diagnostics with no partially usable works when any error exists:
 
@@ -40,8 +44,9 @@ else:
     errors = result.errors
 ```
 
-The adapter accepts `.xlsx` only and identifies itself as
-`canonical_excel_v1`. Legacy workbook evidence is catalogued separately in
+The adapters accept `.xlsx` only and identify themselves as
+`canonical_excel_v1` or `canonical_excel_v1_1` after metadata-first dispatch.
+Legacy workbook evidence is catalogued separately in
 `docs/LEGACY_IMPORT_INVENTORY.md`; no legacy compatibility adapter is
 implemented. Workbook content is treated as untrusted and passes bounded
 archive/XML checks before strict schema validation. Formulas are never
@@ -97,8 +102,9 @@ unplaced demand. Launch it with either:
 
 The application opens without a workbook and requires neither Excel, a browser,
 nor internet access. The basic workflow is **Import Excel → select work → Run
-Nesting → select and inspect a layout**. Input must use the canonical `.xlsx`
-`Debbie Nesting Workbook` schema 1.0; legacy workbook formats are unsupported.
+Nesting → select and inspect a layout**. Input may use canonical `.xlsx`
+`Debbie Nesting Workbook` schema 1.0 or 1.1; material-specific Desktop fields
+and mass summaries are not present. Legacy workbook formats are unsupported.
 
 The Python package requires Python 3.13 or 3.14. Canonical workbook import uses
 `openpyxl>=3.1.5,<4`, and the desktop uses `PySide6>=6.10,<6.12`. Python 3.13 is

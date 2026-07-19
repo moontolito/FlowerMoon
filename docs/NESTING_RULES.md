@@ -100,7 +100,7 @@ The following requirements were approved on 2026-07-18 by **Product Owner: Cuvul
 - Pre-nesting planning values are distinct from post-nesting results. Post-nesting material totals use consumed stock instances only, preserve result status, and show placed and unplaced demand separately for partial results.
 - Mass is not an approved solver objective. The authoritative measure names and PARTIAL presentation boundary are defined in `MATERIAL_AND_WEIGHT_MODEL.md`; detailed UI styling remains deferred.
 
-These four sections record the Product Owner direction approved on 2026-07-19. They do not change the current schema 1.0 importer, domain objects, solver, or desktop behavior. The proposed workbook extension is `EXCEL_SCHEMA_V1_1_DRAFT.md` and must not be accepted as canonical input until separately authorized and implemented.
+These four sections record the Product Owner direction approved on 2026-07-19. The domain/mass foundation and separately authorized schema 1.1 importer now implement the accepted bounded contracts without changing Desktop material/mass presentation. The executable workbook extension is `EXCEL_SCHEMA_V1_1.md`; the draft remains a historical pointer.
 
 ### Shared validation contract
 

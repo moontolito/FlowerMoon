@@ -4,10 +4,14 @@ from dataclasses import dataclass
 from uuid import UUID
 
 ADAPTER_ID = "canonical_excel_v1"
+ADAPTER_ID_V11 = "canonical_excel_v1_1"
+DISPATCH_ADAPTER_ID = "canonical_excel_dispatch"
 FORMAT_NAME = "Debbie Nesting Workbook"
 SCHEMA_VERSION = "1.0"
+SCHEMA_VERSION_V11 = "1.1"
 SCHEMA_MAJOR = "1"
 UNIT_SYSTEM = "mm"
+DENSITY_UNIT_SYSTEM = "g/cm3"
 REQUIRED_SHEETS = ("Debbie", "Works", "Parts", "Stocks")
 
 METADATA_HEADERS = ("Key", "Value")
@@ -42,6 +46,40 @@ STOCK_HEADERS = (
     "Stock Name",
     "Length (mm)",
     "Width (mm)",
+    "Quantity",
+)
+
+REQUIRED_METADATA_V11 = (*REQUIRED_METADATA, "Density Units")
+KNOWN_METADATA_V11 = (*REQUIRED_METADATA_V11, "Application Version", "Description")
+WORK_HEADERS_V11 = (
+    "Work Key",
+    "Work Name",
+    "Material Category Key",
+    "Material Category Name",
+    "Material Grade Key",
+    "Material Grade Name",
+    "Thickness (mm)",
+    "Density (g/cm3)",
+    "Density Source",
+    "Batch Multiplier",
+    "Kerf (mm)",
+    "Part Clearance (mm)",
+    "Boundary Clearance (mm)",
+    "Trim Left (mm)",
+    "Trim Right (mm)",
+    "Trim Top (mm)",
+    "Trim Bottom (mm)",
+)
+OPTIONAL_WORK_HEADERS_V11 = ("Material Description",)
+STOCK_HEADERS_V11 = (
+    "Work Key",
+    "Stock Key",
+    "Stock Name",
+    "Full Length (mm)",
+    "Full Width (mm)",
+    "Allocated Length (mm)",
+    "Allocated Width (mm)",
+    "Commercial Allocation Fraction",
     "Quantity",
 )
 

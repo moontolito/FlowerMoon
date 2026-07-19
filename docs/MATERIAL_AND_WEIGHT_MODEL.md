@@ -2,7 +2,7 @@
 
 ## Purpose and status
 
-This document defines the approved product direction and the proposed detailed contract for material identity, thickness, partial-sheet allocation, and mass reporting in Debbie vNext. It is a documentation gate only: none of these additions is implemented in the domain, importer, solver, desktop UI, export, or persistence layers.
+This document defines the approved product direction and detailed contract for material identity, thickness, partial-sheet allocation, and mass reporting in Debbie vNext. The domain, deterministic mass layer, and canonical schema 1.1 importer are implemented; Desktop material/mass UI, export, persistence, material-library, and remnant behavior remain outside this checkpoint.
 
 The Product Owner accepted the high-level direction for `MATERIAL-001`, `THICKNESS-001`, `ALLOCATION-001`, and `WEIGHT-001` on 2026-07-19. Rules explicitly labelled **Proposed** remain review items and must not be treated as implemented or binding input behavior. Remnant inventory, material-library ownership, costing, purchasing, ERP integration, and optimization by mass or commercial allocation remain deferred.
 
@@ -200,17 +200,17 @@ Planning and result views should separate physical from commercial measures, exp
 | 7 | Is leftover material provenance only or a future remnant candidate? | Preserve source/remainder provenance as a future candidate, but do not automatically create or promise usable remnant inventory. | Proposed/deferred |
 | 8 | What official terminology replaces ambiguous `scrap`? | Use `Physical Unused Allocation Mass`, `Commercial Allocation Difference`, and `Commercial Material Allowance`; reserve `scrap` for a future disposition decision. | Accepted terminology |
 | 9 | Is rectangular part mass called net weight or estimated rectangular mass? | Use `Rectangular Part Mass Estimate`; do not claim exact net/finished mass without CAD geometry. | Accepted terminology |
-| 10 | Must schema 1.1 state allocated dimensions even for full sheets? | Yes. Require explicit values equal to full dimensions; do not use blank-driven defaults in a canonical schema. | Proposed |
+| 10 | Must schema 1.1 state allocated dimensions even for full sheets? | Yes. Require explicit values equal to full dimensions; do not use blank-driven defaults in a canonical schema. | Accepted by schema 1.1 implementation authorization |
 | 11 | How are `PARTIAL` result masses presented per product? | Show batch-level consumed and placed/unplaced masses with a prominent incomplete-demand status; withhold the normal completed-product gross-mass presentation. | Accepted presentation boundary; detailed UI deferred |
 | 12 | Is Zinc-Plated Steel a category or coating over Steel? | Treat this as an unresolved coating model; do not silently collapse it into zinc or uncoated steel. | Pending |
 
-Implementation of schema 1.1, UI, exports, persistence, remnant handling, and any behavior governed by the remaining proposed details stays blocked until separate review and authorization.
+Desktop UI, exports, persistence, remnant handling, and behavior governed by remaining proposed details stay blocked until separate review and authorization. Canonical schema 1.1 import follows `EXCEL_SCHEMA_V1_1.md` and rejects partial allocation with non-zero trim or boundary clearance.
 
 ## Implementation checkpoint
 
 The first pure-Python domain and calculation foundation now implements the
 accepted portions of `MATERIAL-001`, `THICKNESS-001`, `ALLOCATION-001`, and
-`WEIGHT-001` without implementing schema 1.1 import or Desktop integration.
+`WEIGHT-001`; canonical schema 1.1 import is implemented without Desktop integration.
 
 - `MaterialIdentity`, stable category/grade keys, `Density`, `DensitySource`,
   and `Thickness` are immutable Work-level values.
@@ -244,6 +244,6 @@ accepted portions of `MATERIAL-001`, `THICKNESS-001`, `ALLOCATION-001`, and
 The origin-anchor proposal and the rule applying Work trim/boundary clearance
 to the allocated rectangle remain unresolved product/manufacturing decisions.
 This implementation adds no allocation offset or remnant shape and does not
-change trim, geometry-validator, or solver-strategy behavior. Schema 1.1 import,
-Desktop presentation, a material library, remnants, costing, export, and
+change trim, geometry-validator, or solver-strategy behavior. Desktop
+presentation, a material library, remnants, costing, export, and
 persistence remain unimplemented.

@@ -96,7 +96,7 @@ The phase is not complete. Editor behavior, metrics/reporting, import/export, pe
 
 Phase 8 remains in progress pending review of this implementation, representative production-scale fixtures, and any separately approved template/preview work. No legacy adapter, Excel export, persistence, or UI work is complete.
 
-**Future schema note:** `EXCEL_SCHEMA_V1_1_DRAFT.md` proposes material, thickness, density, and full-versus-allocated stock fields. It does not change the accepted or implemented schema 1.0 contract, and no 1.1 importer, fallback, or silent upgrade is authorized.
+**Schema 1.1 implementation checkpoint:** `EXCEL_SCHEMA_V1_1.md` is the executable material-classified import contract. Metadata-first dispatch selects only `canonical_excel_v1` or `canonical_excel_v1_1`; schema 1.0 remains unchanged and unclassified, while schema 1.1 requires explicit material, thickness, density provenance, and allocation geometry. Missing/unsupported versions and mixed headers fail without fallback.
 
 ## Phase 9 — Minimal desktop UI
 
@@ -128,7 +128,7 @@ The Product Owner accepted the high-level direction for `MATERIAL-001`, `THICKNE
 The intended sequence before the graphical editor phase is:
 
 1. **Material/allocation domain milestone:** after detailed decision acceptance, add homogeneous Work material identity, density provenance, Work thickness, full/allocated stock geometry, and shared validation without changing the approved first-solver strategy.
-2. **Canonical Excel 1.1 importer milestone:** implement a separate strict version-dispatched adapter only after `EXCEL_SCHEMA_V1_1_DRAFT.md` is accepted. Preserve schema 1.0 behavior; do not guess fields, silently upgrade, or fall back to legacy formats.
+2. **Canonical Excel 1.1 importer milestone — implemented:** separate strict version-dispatched parsing constructs classified Works from `EXCEL_SCHEMA_V1_1.md`. Schema 1.0 behavior is preserved; no guessed fields, silent upgrade, or legacy fallback exists.
 3. **Mass-calculation milestone:** add one authoritative application/metrics service for rectangular estimates, physical allocation, commercial allocation, consumed-stock result totals, partial-result reconciliation, and display-boundary rounding.
 4. **Basic desktop integration milestone:** expose the accepted Work material, thickness, allocation, provenance, and mass values through the existing thin desktop/application boundaries without making widget state authoritative.
 5. **Dedicated UI/UX refinement milestone:** review professional information hierarchy, a polished toolbar, visual grouping, consistent spacing, clean table styling, engineering summary cards, an icon system, status presentation, layout-viewer styling, empty/loading/error states, high-DPI behavior, accessibility and contrast, keyboard navigation, validation presentation, operator comprehension, and a Romanian/English text strategy if later approved.
@@ -141,9 +141,9 @@ unchanged; classified Works require explicit allocation metadata. Deterministic
 planning and result calculators separate available inventory from consumed
 stock, distinguish COMPLETE/PARTIAL/FAILED_VALIDATION availability, and expose
 structured diagnostics without changing the solver strategy. The schema 1.1
-importer, trim-on-allocation decision, Desktop integration, material library,
-and remnant inventory remain pending; milestone 2 is not implemented, so the
-pre-editor sequence is not complete.
+importer is now implemented. The trim-on-allocation decision, Desktop
+material/mass integration, material library, and remnant inventory remain
+pending, so the pre-editor sequence is not complete.
 
 Milestone 5 follows the material/domain, schema 1.1 importer, mass calculator, and basic desktop integration milestones so that its interaction design is tested against real contracts. It precedes the graphical layout editor, release packaging, and commercial-readiness work. None of these milestones is implemented or authorized by this plan update.
 

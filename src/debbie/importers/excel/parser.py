@@ -24,6 +24,7 @@ from .constants import (
 from .diagnostics import DiagnosticCollector, ImportDiagnostic, ImportDiagnosticCode
 from .models import (
     CanonicalWorkbookRecords,
+    CanonicalWorkbookV11Records,
     PartImportRecord,
     SourceLocation,
     StockImportRecord,
@@ -38,7 +39,7 @@ _NUMERIC_TEXT = re.compile(r"^[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)$", re.ASCII)
 
 @dataclass(frozen=True, slots=True)
 class ParseOutcome:
-    records: CanonicalWorkbookRecords | None
+    records: CanonicalWorkbookRecords | CanonicalWorkbookV11Records | None
     diagnostics: tuple[ImportDiagnostic, ...]
     format_name: str | None
     schema_version: str | None
