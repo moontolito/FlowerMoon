@@ -76,6 +76,32 @@ The following requirements were approved on 2026-07-18 by **Product Owner: Cuvul
 - Project reports may aggregate work results but never merge the underlying jobs. Identical geometry in different works remains distinct.
 - Stable IDs are required for work, part type, demand item, part instance, stock specification, stock instance, layout, and layout instance.
 
+### Homogeneous material and thickness (`MATERIAL-001`, `THICKNESS-001`)
+
+- Each `Work` has one explicit material category, material grade, positive finite effective-density snapshot in `g/cm3`, density provenance, positive finite thickness in millimetres, and compatible process context.
+- Parts and stocks inherit material identity, density, and thickness from their owning Work. The first contract has no per-part or per-stock override.
+- A different material category, grade, thickness, or incompatible process requires a distinct Work. Existing Work isolation forbids shared stock or cross-Work nesting.
+- A future material library may initialize a density, but it must not silently update an existing Work snapshot.
+- Exact category vocabulary, custom-grade policy, coating treatment, and library ownership remain proposed details and are not approved behavior yet.
+
+### Physical and commercial stock allocation (`ALLOCATION-001`)
+
+- Partial stock requires explicit allocated rectangular geometry tied to full-sheet provenance. A fraction alone is not sufficient nestable geometry.
+- Physical fraction is derived from allocated area divided by full area; commercial fraction is explicit and semantically separate.
+- The first implementation requires `0 < physical_fraction <= commercial_fraction <= 1`: commercial allocation may exceed physical allocation but may not be smaller.
+- Commercial allocation never enlarges the rectangle available to the solver.
+- Allocation origin/offset, application of trim to allocated geometry, and remnant lifecycle remain proposed detailed rules in `MATERIAL_AND_WEIGHT_MODEL.md`. They must be resolved before allocation implementation.
+
+### Mass calculation boundary (`WEIGHT-001`)
+
+- Authoritative rectangular mass calculations use explicit Work thickness and density with millimetre-to-kilogram conversion; display rounding never feeds authoritative values.
+- Rectangular part mass is labelled as an estimate rather than exact CAD/net-part mass.
+- Gross Physical Allocation Mass, Gross Commercial Allocation Mass, equivalent sheets, and their differences remain separate measures; they are not collapsed into one generic `scrap` value.
+- Pre-nesting planning values are distinct from post-nesting results. Post-nesting material totals use consumed stock instances only, preserve result status, and show placed and unplaced demand separately for partial results.
+- Mass is not an approved solver objective. The authoritative measure names and PARTIAL presentation boundary are defined in `MATERIAL_AND_WEIGHT_MODEL.md`; detailed UI styling remains deferred.
+
+These four sections record the Product Owner direction approved on 2026-07-19. They do not change the current schema 1.0 importer, domain objects, solver, or desktop behavior. The proposed workbook extension is `EXCEL_SCHEMA_V1_1_DRAFT.md` and must not be accepted as canonical input until separately authorized and implemented.
+
 ### Shared validation contract
 
 - One future geometry validator must enforce the approved unit, epsilon, clearance, boundary, trim, and orientation rules for automatic placement, manual editing, rotation, transfer, import, restoration, persistence, and export validation.
@@ -284,6 +310,7 @@ These names document future acceptance coverage; no solver tests or solver imple
 - Exact deterministic rounding rule for non-integral part quantity multiplied by work batch multiplier.
 - Which Excel schemas, export contracts, project format, and hidden linear-cutting capability belong to the first Python release.
 - Whether current production requires clamp/keep-out zones beyond four-sided trim.
+- The detailed material vocabulary, custom-grade/coating policy, density-library ownership, partial-allocation origin, trim boundary, remnant lifecycle, and multi-Work summary policy listed in `MATERIAL_AND_WEIGHT_MODEL.md`.
 
 ## Questions for Product Owner
 
@@ -296,6 +323,8 @@ These names document future acceptance coverage; no solver tests or solver imple
 7. Which legacy Excel formats and which hidden Linear Cuts capability must be supported in the first stable Python release?
 8. Do current MVP machines require clamp or keep-out zones beyond trim and `boundary_clearance`?
 
+The twelve material/allocation/mass review questions and engineering recommendations are maintained in `MATERIAL_AND_WEIGHT_MODEL.md`; each retains its explicit accepted, proposed, or deferred status and no proposal is silently promoted here.
+
 ## Deferred capabilities
 
 - Common-line cutting and all half-kerf/toolpath compensation.
@@ -303,5 +332,6 @@ These names document future acceptance coverage; no solver tests or solver imple
 - Arbitrary-angle rotation and mirroring support; mirroring remains forbidden in the MVP.
 - Grain direction and coating/visible-face constraints until introduced as explicit part constraints.
 - Per-stock trim overrides and non-rectangular clamp/keep-out regions.
+- Automatic remnant creation, arbitrary allocation offsets/shapes, shared material inventory, and cross-Work material optimization.
 - Production-lot entities.
 - Shared project inventory, stock sharing between works, cross-work optimization, and cross-work layout merging.

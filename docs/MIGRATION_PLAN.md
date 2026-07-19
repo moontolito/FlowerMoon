@@ -96,6 +96,8 @@ The phase is not complete. Editor behavior, metrics/reporting, import/export, pe
 
 Phase 8 remains in progress pending review of this implementation, representative production-scale fixtures, and any separately approved template/preview work. No legacy adapter, Excel export, persistence, or UI work is complete.
 
+**Future schema note:** `EXCEL_SCHEMA_V1_1_DRAFT.md` proposes material, thickness, density, and full-versus-allocated stock fields. It does not change the accepted or implemented schema 1.0 contract, and no 1.1 importer, fallback, or silent upgrade is authorized.
+
 ## Phase 9 — Minimal desktop UI
 
 - **Objective:** Deliver a thin PySide6 workflow over tested application services.
@@ -118,6 +120,22 @@ This checkpoint does not complete the UI/editor phase. Manual placement,
 drag-and-drop, Temp Zone, locks, repeated-layout editing, undo/redo, export,
 persistence, reporting, accessibility review, production datasets, release
 packaging, and installer work remain pending in their approved later gates.
+
+## Pre-editor material, allocation, and mass milestones
+
+The Product Owner accepted the high-level direction for `MATERIAL-001`, `THICKNESS-001`, `ALLOCATION-001`, and `WEIGHT-001` on 2026-07-19. This is a documentation checkpoint only. Remaining proposed/deferred questions in `MATERIAL_AND_WEIGHT_MODEL.md` and the draft schema 1.1 contract must be reviewed before implementation is authorized.
+
+The intended sequence before the graphical editor phase is:
+
+1. **Material/allocation domain milestone:** after detailed decision acceptance, add homogeneous Work material identity, density provenance, Work thickness, full/allocated stock geometry, and shared validation without changing the approved first-solver strategy.
+2. **Canonical Excel 1.1 importer milestone:** implement a separate strict version-dispatched adapter only after `EXCEL_SCHEMA_V1_1_DRAFT.md` is accepted. Preserve schema 1.0 behavior; do not guess fields, silently upgrade, or fall back to legacy formats.
+3. **Mass-calculation milestone:** add one authoritative application/metrics service for rectangular estimates, physical allocation, commercial allocation, consumed-stock result totals, partial-result reconciliation, and display-boundary rounding.
+4. **Basic desktop integration milestone:** expose the accepted Work material, thickness, allocation, provenance, and mass values through the existing thin desktop/application boundaries without making widget state authoritative.
+5. **Dedicated UI/UX refinement milestone:** review professional information hierarchy, a polished toolbar, visual grouping, consistent spacing, clean table styling, engineering summary cards, an icon system, status presentation, layout-viewer styling, empty/loading/error states, high-DPI behavior, accessibility and contrast, keyboard navigation, validation presentation, operator comprehension, and a Romanian/English text strategy if later approved.
+
+Milestone 5 follows the material/domain, schema 1.1 importer, mass calculator, and basic desktop integration milestones so that its interaction design is tested against real contracts. It precedes the graphical layout editor, release packaging, and commercial-readiness work. None of these milestones is implemented or authorized by this plan update.
+
+Cross-cutting acceptance criteria include homogeneous Work enforcement; exact unit conversion and the reviewed worked example; physical/commercial separation; consumed stock rather than total inventory after nesting; structured `PARTIAL` status with placed/unplaced quantities; schema 1.0 compatibility; no automatic remnant inventory; and preservation of Work-level detail in multi-Work summaries.
 
 ## Phase 10 — Graphical layout editor
 

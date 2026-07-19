@@ -30,6 +30,8 @@ The first nesting-engine decision gate is also passed for `NEST-001`, `NEST-002`
 
 The canonical Excel import content gate is passed for `IMPORT-001`, approved on 2026-07-18 by Product Owner Cuvuliuc Nicolae. After this decision update is reviewed and committed, implementation may begin only for the strict `.xlsx` `Debbie Nesting Workbook` schema 1.0 described in `EXCEL_SCHEMA_V1.md`. Specific legacy adapters, linear cutting, Excel result export, persistence, and UI remain gated by their own pending decisions or later review.
 
+The Product Owner accepted the high-level product direction for `MATERIAL-001`, `THICKNESS-001`, `ALLOCATION-001`, and `WEIGHT-001` on 2026-07-19. These records establish the homogeneous Work boundary, explicit density/thickness snapshots, geometric partial allocation, and separate physical/commercial mass views. They do **not** authorize implementation: detailed questions remain identified in `MATERIAL_AND_WEIGHT_MODEL.md`, and `EXCEL_SCHEMA_V1_1_DRAFT.md` is a proposed version rather than an accepted canonical format.
+
 ## Decisions required before domain-model implementation
 
 ### GEO-001 — Authoritative units and coordinate layers
@@ -133,6 +135,76 @@ The canonical Excel import content gate is passed for `IMPORT-001`, approved on 
 - **Decision status:** **Accepted — 2026-07-18.** Independent work ownership, stock isolation, and stable identity requirements are binding; shared inventory and cross-work optimization are deferred.
 - **Affected future modules:** `domain`, `application`, `nesting`, `metrics`, `reporting`, `persistence`.
 - **Required tests after the decision:** Work isolation; inventory isolation; combined-report aggregation; same geometry in different works remains distinct.
+
+### MATERIAL-001 — Work material identity, grade, and density
+
+- **Decision ID:** `MATERIAL-001`
+- **Topic:** Material compatibility and mass properties.
+- **Problem being decided:** Define the material identity owned by a Work, how grade and density are represented, and whether a future reference library may mutate production data.
+- **Current confirmed legacy behavior:** The protected HTML and accepted schema 1.0 do not provide a canonical material category, grade, density, or density provenance contract.
+- **Legacy inconsistencies or risks:** Inferring material from labels makes compatibility, weight, costing, and reporting non-reproducible. A mutable global density lookup could silently change historical results.
+- **Available options:**
+  1. One explicit material category, grade, effective-density snapshot, and provenance policy per Work. **Implication:** deterministic compatibility and reproducible weight calculations.
+  2. Material fields on every part and stock. **Implication:** permits mixed Works but creates conflict resolution and unsafe nesting combinations.
+  3. Infer material from names or an always-live library. **Implication:** minimal input but hidden, unstable business behavior.
+- **Recommended default for Debbie vNext:** Option 1. Use stable category/grade keys plus display names; let a future versioned library initialize rather than silently own Work snapshots.
+- **Product Owner decision:** **Approved — Option 1 at the product-contract level:** one Work has one explicit material category, grade, effective positive density in `g/cm3`, density provenance, and compatible parts/stocks. A future default library must not silently update an existing Work. Exact category vocabulary, custom-grade policy, zinc-plated-steel treatment, library ownership, and override UX remain proposed questions in `MATERIAL_AND_WEIGHT_MODEL.md`. **Approver:** Cuvuliuc Nicolae. **Role:** Product Owner. **Approval date:** 2026-07-19.
+- **Decision status:** **Accepted direction — 2026-07-19; detailed vocabulary pending.** No material model or library is implemented by this decision record.
+- **Affected future modules:** `domain`, `application`, `io`, `ui`, `metrics`, `reporting`, `persistence`.
+- **Required tests after implementation approval:** Work compatibility; stable category/grade identity; positive finite density; provenance preservation; explicit override; no silent library update; cross-Work isolation.
+
+### THICKNESS-001 — Homogeneous Work thickness
+
+- **Decision ID:** `THICKNESS-001`
+- **Topic:** Material thickness ownership.
+- **Problem being decided:** Establish whether thickness belongs to Work, part, stock, or an inferred material record.
+- **Current confirmed legacy behavior:** Thickness is not a canonical field in the accepted schema 1.0/domain contract.
+- **Legacy inconsistencies or risks:** Per-row or inferred thickness can admit physically incompatible parts and stock and makes mass reconciliation ambiguous.
+- **Available options:**
+  1. One explicit positive thickness in millimetres per Work, inherited by all owned parts and stocks. **Implication:** simple compatibility and deterministic reporting.
+  2. Per-part/per-stock thickness with compatibility checks. **Implication:** flexible but turns a Work into several material jobs.
+  3. Infer thickness from labels or grade defaults. **Implication:** unsafe and non-canonical.
+- **Recommended default for Debbie vNext:** Option 1; create separate Works for different thicknesses.
+- **Product Owner decision:** **Approved — Option 1:** thickness is an explicit positive finite Work-level millimetre value. Parts and stocks inherit it and may not override it in the first contract. A different thickness requires a distinct Work. **Approver:** Cuvuliuc Nicolae. **Role:** Product Owner. **Approval date:** 2026-07-19.
+- **Decision status:** **Accepted — 2026-07-19.** This does not authorize a domain, importer, UI, or persistence change.
+- **Affected future modules:** `domain`, `application`, `io`, `ui`, `metrics`, `reporting`, `persistence`.
+- **Required tests after implementation approval:** Missing/zero/negative/non-finite rejection; inheritance; no overrides; Work separation; schema and mass reconciliation.
+
+### ALLOCATION-001 — Physical partial-sheet geometry and commercial allocation
+
+- **Decision ID:** `ALLOCATION-001`
+- **Topic:** Partial rectangular stock and commercial sheet attribution.
+- **Problem being decided:** Represent the nestable portion of a source sheet without conflating physical geometry, inventory quantity, and purchasing/accounting allocation.
+- **Current confirmed legacy behavior:** Stock is represented by one rectangular length/width and quantity; there is no canonical full-versus-allocated geometry or commercial-fraction contract.
+- **Legacy inconsistencies or risks:** A fraction alone does not define a nestable rectangle. Treating a commercially charged sheet as fully available can place parts on material not allocated to the job; treating physical allocation as commercial cost loses accounting meaning.
+- **Available options:**
+  1. Store full and allocated rectangular dimensions, derive physical fraction, and store commercial fraction separately. **Implication:** geometry and commercial reporting remain explicit and auditable.
+  2. Store only one fraction. **Implication:** insufficient geometry and ambiguous semantics.
+  3. Model arbitrary remnant polygons immediately. **Implication:** broader capability but premature solver, inventory, and UI complexity.
+- **Recommended default for Debbie vNext:** Option 1 with explicit stock records and quantity grouping only for identical allocations. Initially anchor the allocation at the source origin and defer remnant lifecycle.
+- **Product Owner decision:** **Approved — Option 1 at the product-contract level:** partial stock requires explicit rectangular allocated geometry tied to full-sheet provenance; physical fraction is derived; commercial fraction is explicit and separate; and the first implementation enforces `0 < physical_fraction <= commercial_fraction <= 1`. Commercial allocation may exceed physical allocation but may not be smaller. Fraction-only nesting is forbidden. Allocation origin/offset, trim application, and remainder/remnant lifecycle remain detailed review items documented in `MATERIAL_AND_WEIGHT_MODEL.md`. **Approver:** Cuvuliuc Nicolae. **Role:** Product Owner. **Approval date:** 2026-07-19.
+- **Decision status:** **Accepted direction — 2026-07-19; allocation origin, trim boundary, and remnant details pending.** The proposed schema 1.1 remains a draft and no allocation behavior is implemented.
+- **Affected future modules:** `domain`, `geometry`, `application`, `nesting`, `io`, `ui`, `metrics`, `reporting`, `persistence`.
+- **Required tests after implementation approval:** Full/allocated containment; fraction derivation; physical/commercial separation; inventory quantity; trim/clearance boundary; consumed-instance reporting; no automatic remnant creation.
+
+### WEIGHT-001 — Physical and commercial mass reporting
+
+- **Decision ID:** `WEIGHT-001`
+- **Topic:** Material-mass calculation and reporting terminology.
+- **Problem being decided:** Define dimensionally correct, reproducible mass calculations before and after nesting without calling every material difference scrap or claiming exact part mass.
+- **Current confirmed legacy behavior:** No authoritative density/thickness-driven physical and commercial mass contract exists.
+- **Legacy inconsistencies or risks:** Unit conversion errors, double multiplication by sheet count or batch, use of all inventory instead of consumed stock, and ambiguous `scrap` labels can materially misstate production and cost.
+- **Available options:**
+  1. Calculate separate rectangular part estimates, physical allocation mass, commercial allocation mass, equivalent sheets, and named differences from explicit snapshots. **Implication:** transparent and reconcilable.
+  2. Report a single generic material mass. **Implication:** hides physical/commercial differences and partial status.
+  3. Defer all mass calculation until CAD/toolpath support. **Implication:** avoids estimates but blocks useful rectangular planning.
+- **Recommended default for Debbie vNext:** Option 1 with the formula and dimensional proof in `MATERIAL_AND_WEIGHT_MODEL.md`; retain clear estimate labels and result status.
+- **Product Owner decision:** **Approved — Option 1 at the product-contract level:** use explicit Work thickness/density; calculate physical and commercial measures separately; distinguish pre-nesting inventory/planning from post-nesting consumed stock; show per-product values by dividing the applicable expanded total by Work batch multiplier; and keep placed and unplaced quantities visible for partial results. Authoritative terms are `Rectangular Part Mass Estimate`, `Gross Physical Allocation Mass`, `Gross Commercial Allocation Mass`, `Physical Unused Allocation Mass`, `Commercial Allocation Difference`, and `Commercial Material Allowance`. A partial result shows batch-level consumed and placed/unplaced masses and withholds the normal completed-product gross-mass presentation. **Approver:** Cuvuliuc Nicolae. **Role:** Product Owner. **Approval date:** 2026-07-19.
+- **Decision status:** **Accepted direction and terminology — 2026-07-19; detailed UI styling deferred.** Mass is not a solver objective and no calculator/report/UI implementation is authorized here.
+- **Affected future modules:** `application`, `metrics`, `ui`, `reporting`, `export`, `persistence`.
+- **Required tests after implementation approval:** Unit conversion; known examples; quantity and batch reconciliation; consumed-versus-available stock; complete/partial status; physical/commercial differences; rounding only at display boundary; multi-Work aggregation.
+
+The consolidated formulas, worked example, invalid states, deferred capabilities, and twelve Product Owner review questions with their recorded accepted/proposed/deferred statuses are maintained in `MATERIAL_AND_WEIGHT_MODEL.md`. The proposed canonical workbook extension is maintained separately in `EXCEL_SCHEMA_V1_1_DRAFT.md`; schema 1.0 remains the only accepted and implemented canonical schema.
 
 ### TEMP-001 — Temp Zone and outstanding demand
 
