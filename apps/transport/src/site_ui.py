@@ -3,7 +3,6 @@ import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 from copy import deepcopy
 import json
-import webbrowser
 from urllib.parse import quote
 from site_visuals import configure_site, MetricCard
 from site_overview import rows as summary_rows, provenance
@@ -29,7 +28,7 @@ class SiteWindow(tk.Toplevel):
         self.summary=ttk.Label(context,style='AppMuted.TLabel',wraplength=1000);self.summary.pack(anchor='w',pady=(3,10))
         metrics=ttk.Frame(context,style='App.TFrame');metrics.pack(fill='x',pady=(0,12))
         self.metrics={}
-        for i,(key,title) in enumerate([('route','ROUTE & ELEVATION'),('temperature','TEMPERATURE · MAX / MIN'),('daily','DAILY MEANS · MAX / MIN')]):
+        for i,(key,title) in enumerate([('route','DESTINATION ELEVATION'),('temperature','TEMPERATURE · MAX / MIN'),('daily','DAILY MEANS · MAX / MIN')]):
             metrics.columnconfigure(i,weight=1,uniform='metric')
             card=MetricCard(metrics,app.c,title);card.grid(row=0,column=i,sticky='nsew',padx=(0,10 if i<2 else 0));self.metrics[key]=card
         book=ttk.Notebook(self,style='Site.TNotebook');self.book=book;book.pack(fill='both',expand=True,padx=20)
@@ -86,7 +85,6 @@ class SiteWindow(tk.Toplevel):
         self.error=ttk.Label(foot,foreground=app.c['danger'],wraplength=870);self.error.pack(anchor='w')
         bar=ttk.Frame(foot,style='Panel.TFrame');bar.pack(fill='x')
         ttk.Button(bar,text='Sources & location details',command=self.sources).pack(side='left')
-        ttk.Button(bar,text='Open selected source',command=self.open_source).pack(side='left',padx=6)
         ttk.Button(bar,text='Refresh data',command=lambda:app.refresh_site_sources(force=True)).pack(side='left',padx=6)
         ttk.Button(bar,text='Export JSON',command=self.export).pack(side='left')
         self.save_button=ttk.Button(bar,text='Save changes',style='Brand.TButton',command=self.save)
@@ -115,10 +113,9 @@ class SiteWindow(tk.Toplevel):
             if key not in self.original or var.get()==self.original[key]:var.set(text);self.original[key]=text
             self.badges[key].configure(text=provenance(site,key)[0])
         def pair(a,b):return ' / '.join('—' if get(site,k)['value'] is None else f"{get(site,k)['value']:+g}" for k in (a,b))+' °C'
-        alt=get(site,'transport.maxAltitudeM')['value'];dist=get(site,'transport.distanceKm')['value']
-        altitude_label='Destination elevation' if 'destination elevation' in get(site,'transport.maxAltitudeM')['source'] else 'Maximum sampled route elevation'
+        alt=get(site,'environment.siteAltitudeM')['value']
         self.summary.configure(text='Destination coordinates (WGS84): '+(site['destinationCoordinates'] or 'Not selected')+' · Elevation, climate and structural zones refer to this delivery point.')
-        self.metrics['route'].set(f'{dist:,.1f} km' if dist is not None else '— km',f'{altitude_label}: {alt:g} m' if alt is not None else 'Elevation unavailable')
+        self.metrics['route'].set(f'{alt:g} m' if alt is not None else '— m',provenance(site,'environment.siteAltitudeM')[0])
         def card_provenance(keys):
             fields=[get(site,k) for k in keys]
             if any(f.get('reviewRequired') for f in fields):return 'Manual value · review required'
@@ -178,11 +175,6 @@ class SiteWindow(tk.Toplevel):
             for k in changes:self.original[k]=self.vars[k].get();self.reviews[k].set(False)
             self.refresh();self.error.configure(text='Saved');return True
         except (ValueError,OSError) as e:self.error.configure(text=str(e));return False
-    def open_source(self):
-        selected=self.overview.selection()
-        url=self.overview_urls.get(selected[0],'') if selected else ''
-        if url:webbrowser.open(url)
-
     def sources(self):
         win=tk.Toplevel(self);win.title('Sources and verification');win.geometry('850x600')
         area=tk.Text(win,wrap='word',padx=16,pady=16);area.pack(fill='both',expand=True)

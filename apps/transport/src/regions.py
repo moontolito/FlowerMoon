@@ -41,6 +41,6 @@ def lookup(point,cache):
     matches=[f for f in payload['data'].get('features',[]) if contains(f.get('geometry',{}),point)]
     if len(matches)!=1:return dict(status='unavailable',name='',source=SOURCE,detail='No unique administrative polygon contains the destination.')
     feature=matches[0];meta=payload['metadata']
-    return dict(status='ready',name=feature['properties'].get('shapeName','Administrative region'),level='ADM1',geometry=feature['geometry'],
+    return dict(status='ready',name=feature['properties'].get('shapeName') or 'Administrative region',level='ADM1',geometry=feature['geometry'],
                 country=geo['name'],source=SOURCE,sourceUrl=endpoint,originalSource=meta.get('boundarySource',''),year=meta.get('boundaryYearRepresented',''),
                 license=meta.get('boundaryLicense',''),requestedCoordinates=dict(point),detail='First-level administrative boundary containing the delivery point. Boundary coverage and names vary by country.')

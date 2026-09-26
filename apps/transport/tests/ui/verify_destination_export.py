@@ -46,6 +46,7 @@ with tempfile.TemporaryDirectory() as folder:
     assert 'Destination' in win.overview.item('humidity.maximum','values')[3]
     assert '44.1800000, 28.6300000' in win.summary.cget('text')
     assert win.overview.item('environment.siteAltitudeM','values')[2]=='Copernicus DEM GLO-90 (2021)'
+    assert win.metrics['route'].value.cget('text')=='24 m'
     artifacts=Path(__file__).resolve().parents[4]/'.artifacts';artifacts.mkdir(exist_ok=True)
     if os.environ.get('CI') or '--capture' in sys.argv:
         from PIL import ImageGrab

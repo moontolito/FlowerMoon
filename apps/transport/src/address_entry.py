@@ -7,12 +7,12 @@ class AddressEntry(ttk.Frame):
     def __init__(self,parent,variable,on_select,online=True):
         super().__init__(parent,style='Panel.TFrame')
         self.variable=variable;self.on_select=on_select;self.online=online
-        self.token=0;self.timer=None;self.results=queue.Queue();self.rows=[];self.suppress=False;self.alive=True
+        self.token=0;self.timer=None;self.results=queue.Queue();self.rows=[];self.suppress=False;self.alive=True;self.worker_busy=False;self.pending_query=None
         self.entry=ttk.Entry(self,textvariable=variable);self.entry.pack(fill='x')
         self.listbox=tk.Listbox(self,height=4,exportselection=False,activestyle='dotbox',font=('Segoe UI',9))
         self.hint=ttk.Label(self,style='PanelMuted.TLabel',wraplength=260)
-        self.entry.bind('<Down>',self.focus_list);self.entry.bind('<Return>',self.enter);self.entry.bind('<Escape>',lambda e:self.hide())
-        self.listbox.bind('<Return>',self.choose);self.listbox.bind('<ButtonRelease-1>',self.choose);self.listbox.bind('<Escape>',lambda e:self.hide())
+        self.entry.bind('<Down>',self.focus_list);self.entry.bind('<Return>',self.enter);self.entry.bind('<Escape>',self.dismiss)
+        self.listbox.bind('<Return>',self.choose);self.listbox.bind('<ButtonRelease-1>',self.choose);self.listbox.bind('<Escape>',self.dismiss)
         self.trace=variable.trace_add('write',self.changed)
         self.bind('<Destroy>',self.dispose,add='+');self.poll_id=self.after(100,self.poll)
 
@@ -25,6 +25,8 @@ class AddressEntry(ttk.Frame):
 
     def lookup(self,query,token):
         self.timer=None
+        if self.worker_busy:self.pending_query=(query,token);return
+        self.worker_busy=True
         self.hint.configure(text='Searching addresses…');self.hint.pack(anchor='w',pady=3)
         def work():
             try:self.results.put((token,query,places.search(query),None))
@@ -34,6 +36,7 @@ class AddressEntry(ttk.Frame):
     def poll(self):
         while not self.results.empty():
             token,query,rows,error=self.results.get()
+            self.worker_busy=False
             if token!=self.token or query!=self.variable.get().strip():continue
             self.rows=rows;self.listbox.delete(0,'end')
             for row in rows:self.listbox.insert('end',row['label'])
@@ -41,7 +44,15 @@ class AddressEntry(ttk.Frame):
                 self.listbox.configure(height=min(4,len(rows)));self.listbox.pack(fill='x',before=self.hint,pady=(4,0))
                 self.hint.configure(text='Photon / OpenStreetMap · ↓ then Enter to select')
             else:self.hint.configure(text='Address search unavailable. Use the map or try again.' if error else 'No matching address. Try a city and country.')
+        if self.pending_query and not self.worker_busy:
+            query,token=self.pending_query;self.pending_query=None
+            if token==self.token and query==self.variable.get().strip():self.lookup(query,token)
         if self.alive:self.poll_id=self.after(100,self.poll)
+
+    def dismiss(self,event=None):
+        self.token+=1;self.pending_query=None
+        if self.timer:self.after_cancel(self.timer);self.timer=None
+        self.hide();self.entry.focus_set();return 'break'
 
     def hide(self):
         self.listbox.pack_forget();self.hint.pack_forget();self.rows=[]

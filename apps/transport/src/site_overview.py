@@ -16,7 +16,7 @@ def provenance(site,key):
         data=site.get('humidityAnalysis' if key.startswith('humidity.') else 'climate',{})
         extra+='\nPeriod: '+str(data.get('periodStart',f.get('periodStart','—')))+' to '+str(data.get('periodEnd',f.get('periodEnd','—')))+' (UTC).'
         if data.get('gridLatitude') is not None:extra+=f"\nReturned grid point: {data['gridLatitude']}, {data.get('gridLongitude')} · grid elevation {data.get('gridElevationM','—')} m."
-        extra+='\nReanalysis for the grid associated with the destination, not an on-site sensor.'
+        extra+='\nAir temperature / relative humidity at 2 m above ground. Reanalysis for the grid associated with the destination, not an on-site sensor.'
     elif 'Copernicus' in raw:
         source='Copernicus DEM GLO-90 (2021)';url='https://registry.opendata.aws/copernicus-dem/'
         extra+='\nNominal 90 m surface model; EGM2008 elevation datum.'
@@ -39,6 +39,7 @@ def rows(site):
     def section(key,title):add('section_'+key,title,section=True)
     def field(key,label,reference='Destination'):
         f=get(site,key);value=f['value']
+        if f.get('manualOverride'):reference='Destination · manual entry'
         if f.get('reviewRequired'):reference='Previous destination · manual value'
         if value is None and not f.get('manualOverride'):value=f.get('candidateValue')
         if value is None and f.get('candidateValues') and not f.get('manualOverride'):
@@ -56,7 +57,8 @@ def rows(site):
         providers=[provenance(site,k) for k in keys]
         source=' / '.join(dict.fromkeys(p[0] for p in providers));url=next((p[1] for p in providers if p[1]),'')
         detail=f'Delivery destination: {site.get("destinationAddress","")}\nCoordinates: {point}\n'+'\n'.join(dict.fromkeys(p[2] for p in providers))
-        reference='Previous destination · manual value' if any(f.get('reviewRequired') for f in fields) else 'Destination · weather grid'
+        reference='Destination · manual entry' if all(f.get('manualOverride') for f in fields) else 'Destination · manual / weather grid' if any(f.get('manualOverride') for f in fields) else 'Destination · weather grid'
+        if any(f.get('reviewRequired') for f in fields):reference='Previous destination · manual value'
         add(key,label,text,source,reference,detail,url)
 
     section('location','01  DELIVERY LOCATION')
