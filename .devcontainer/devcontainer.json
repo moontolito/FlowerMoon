@@ -1,0 +1,31 @@
+{
+  "name": "FlowerMoon Transport Testing",
+  "build": {"dockerfile": "Dockerfile", "context": ".."},
+  "features": {
+    "ghcr.io/devcontainers/features/desktop-lite:1": {
+      "webPort": "6080",
+      "vncPort": "5901",
+      "noVncVersion": "1.6.0"
+    }
+  },
+  "remoteUser": "vscode",
+  "containerEnv": {
+    "DISPLAY": ":1",
+    "VNC_RESOLUTION": "1600x1000x24",
+    "PYTHONUTF8": "1",
+    "PYTHONDONTWRITEBYTECODE": "1"
+  },
+  "forwardPorts": [6080],
+  "portsAttributes": {
+    "6080": {"label": "FlowerMoon desktop", "onAutoForward": "openBrowser"}
+  },
+  "postCreateCommand": "bash .devcontainer/setup.sh",
+  "postStartCommand": "bash .devcontainer/start.sh",
+  "waitFor": "postCreateCommand",
+  "customizations": {
+    "vscode": {
+      "extensions": ["ms-python.python"],
+      "settings": {"python.defaultInterpreterPath": "/opt/flowermoon-venv/bin/python"}
+    }
+  }
+}

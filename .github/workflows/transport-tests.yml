@@ -1,0 +1,42 @@
+name: Transport tests
+on:
+  push:
+    paths: ['apps/transport/**', '.devcontainer/**', 'scripts/**', '.github/workflows/transport-tests.yml']
+  pull_request:
+    paths: ['apps/transport/**', '.devcontainer/**', 'scripts/**', '.github/workflows/transport-tests.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  linux-tests:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: apps/transport
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install the same system Python and Tk packages as Codespaces
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-tk python3-venv xvfb
+          /usr/bin/python3 -m venv .venv
+          .venv/bin/python -m pip install -r requirements.txt
+      - name: Unit tests
+        run: .venv/bin/python -B -m unittest discover -p 'test_*.py'
+      - name: Desktop interaction checks
+        run: |
+          for check in verify_ui.py verify_planner.py verify_site_ui.py verify_site_visuals.py verify_automatic_site.py verify_climate_ui.py verify_humidity_ui.py verify_global_ui.py verify_source_ui.py verify_missing_pillow.py; do
+            xvfb-run -a -s '-screen 0 1600x1000x24' .venv/bin/python -B "$check" || exit 1
+          done
+  container-smoke:
+    runs-on: ubuntu-24.04
+    needs: linux-tests
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Build and start the actual Codespaces desktop container
+        run: npx --yes @devcontainers/cli up --workspace-folder .
+      - name: Verify browser desktop and automatic app startup
+        run: npx --yes @devcontainers/cli exec --workspace-folder . python scripts/check_desktop.py

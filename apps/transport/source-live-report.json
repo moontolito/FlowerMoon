@@ -1,0 +1,602 @@
+[
+  {
+    "location": "Constanta",
+    "coordinates": {
+      "lat": 44.18,
+      "lon": 28.63
+    },
+    "temperature": {
+      "maximum": 33.5,
+      "minimum": -13.3,
+      "maxDailyMean": 29.6,
+      "minDailyMean": -12.4,
+      "maximumDate": "2007-07-25",
+      "minimumDate": "2006-01-23",
+      "maxDailyMeanDate": "2024-07-18",
+      "minDailyMeanDate": "2006-01-23",
+      "periodStart": "1996-01-01",
+      "periodEnd": "2025-12-31",
+      "days": 10958,
+      "model": "era5",
+      "gridLatitude": 44.25,
+      "gridLongitude": 28.75,
+      "gridElevationM": 37.0,
+      "method": "Extreme ale temperaturilor zilnice și ale mediilor zilnice din reanaliză, nu valori normative de proiectare.",
+      "source": "Open-Meteo Historical / Copernicus ERA5",
+      "sourceUrl": "https://open-meteo.com/en/docs/historical-weather-api",
+      "spatialNote": "Reanaliză globală pe grilă; nu măsurătoare meteo la amplasament.",
+      "timeStandard": "GMT",
+      "methodId": "historical-daily-extrema-v1",
+      "methodStatus": "descriptive_statistics",
+      "unit": "°C",
+      "coverage": "global",
+      "validFraction": 1.0,
+      "methodSource": "FlowerMoon: max/min ale seriilor zilnice complete; fără conversie la valori normative.",
+      "datasetMetadata": {},
+      "requestedCoordinates": {
+        "lat": 44.18,
+        "lon": 28.63
+      },
+      "rawSha256": "c09e9bf769d785b849d0d8e99075635a69fe3944b8eeddafe243cc8760f03428",
+      "requestParameters": {
+        "latitude": 44.18,
+        "longitude": 28.63,
+        "start_date": "1996-01-01",
+        "end_date": "2025-12-31",
+        "daily": "temperature_2m_max,temperature_2m_min,temperature_2m_mean",
+        "models": "era5",
+        "timezone": "UTC",
+        "cell_selection": "nearest",
+        "temperature_unit": "celsius"
+      },
+      "endpoint": "https://archive-api.open-meteo.com/v1/archive",
+      "actualProvider": "open-meteo-era5",
+      "methodVersion": "open-meteo-era5-v3",
+      "providerFallback": false,
+      "retrievedAt": "2026-09-26T07:43:16+00:00"
+    },
+    "humidity": {
+      "maximum": 100,
+      "mean": 76.37543347326154,
+      "minimum": 30,
+      "maximumDate": "1997-03-26T07:00",
+      "minimumDate": "2018-09-27T13:00",
+      "validHours": 262992,
+      "expectedHours": 262992,
+      "validFraction": 1.0,
+      "periodStart": "1996-01-01",
+      "periodEnd": "2025-12-31",
+      "source": "Open-Meteo Historical / Copernicus ERA5",
+      "sourceUrl": "https://open-meteo.com/en/docs/historical-weather-api",
+      "unit": "%",
+      "model": "era5",
+      "coverage": "global",
+      "methodId": "rh-hourly-max-mean-min-v2",
+      "methodVersion": "open-meteo-era5-v3",
+      "methodStatus": "descriptive_statistics",
+      "timeStandard": "UTC",
+      "gridLatitude": 44.25,
+      "gridLongitude": 28.75,
+      "gridElevationM": 37.0,
+      "detail": "Maximul, media aritmetică și minimul valorilor orare RH la 2 m, ERA5 / UTC; nu citiri directe la amplasament. De verificat pentru proiect.",
+      "requestedCoordinates": {
+        "lat": 44.18,
+        "lon": 28.63
+      },
+      "requestParameters": {
+        "longitude": 28.63,
+        "latitude": 44.18,
+        "start_date": "1996-01-01",
+        "end_date": "2025-12-31",
+        "hourly": "relative_humidity_2m",
+        "models": "era5",
+        "timezone": "UTC",
+        "cell_selection": "nearest"
+      },
+      "endpoint": "https://archive-api.open-meteo.com/v1/archive",
+      "actualProvider": "open-meteo-era5",
+      "retrievedAt": "2026-09-26T07:43:22+00:00",
+      "rawSha256": "2443d77772fee3d5c710b0ff7f5e0b6eae2ed616c012ef8909c46370acbce784"
+    },
+    "elevation": {
+      "values": [
+        39.23769760131836
+      ],
+      "source": "Copernicus DEM GLO-90 · DSM 2021",
+      "sourceUrl": "https://registry.opendata.aws/copernicus-dem/",
+      "tiles": [
+        {
+          "source": "Copernicus DEM GLO-90 · DSM 2021",
+          "url": "https://copernicus-dem-90m.s3.amazonaws.com/Copernicus_DSM_COG_30_N44_00_E028_00_DEM/Copernicus_DSM_COG_30_N44_00_E028_00_DEM.tif",
+          "retrievedAt": "2026-09-26T07:46:40+00:00",
+          "sha256": "f016e7db348b567529eb47a601bbfba6f5bdd72aeed1bf81b0ec6dd75f46e22d"
+        }
+      ],
+      "errors": [],
+      "unit": "m",
+      "verticalDatum": "EGM2008",
+      "method": "Nearest DSM sample; nominal 90 m, includes vegetation/buildings. Verify survey elevation.",
+      "complete": true
+    }
+  },
+  {
+    "location": "Tokyo",
+    "coordinates": {
+      "lat": 35.6762,
+      "lon": 139.6503
+    },
+    "temperature": {
+      "maximum": 15.7,
+      "minimum": 1.6,
+      "maxDailyMean": 9.8,
+      "minDailyMean": 6.9,
+      "maximumDate": "2024-03-01",
+      "minimumDate": "2024-02-28",
+      "maxDailyMeanDate": "2024-03-01",
+      "minDailyMeanDate": "2024-02-28",
+      "periodStart": "2024-02-28",
+      "periodEnd": "2024-03-01",
+      "days": 3,
+      "model": "era5",
+      "gridLatitude": 35.75,
+      "gridLongitude": 139.75,
+      "gridElevationM": 37.0,
+      "method": "Extreme ale temperaturilor zilnice și ale mediilor zilnice din reanaliză, nu valori normative de proiectare.",
+      "source": "Open-Meteo Historical / Copernicus ERA5",
+      "sourceUrl": "https://open-meteo.com/en/docs/historical-weather-api",
+      "spatialNote": "Reanaliză globală pe grilă; nu măsurătoare meteo la amplasament.",
+      "timeStandard": "GMT",
+      "methodId": "historical-daily-extrema-v1",
+      "methodStatus": "descriptive_statistics",
+      "unit": "°C",
+      "coverage": "global",
+      "validFraction": 1.0,
+      "methodSource": "FlowerMoon: max/min ale seriilor zilnice complete; fără conversie la valori normative.",
+      "datasetMetadata": {},
+      "requestedCoordinates": {
+        "lat": 35.6762,
+        "lon": 139.6503
+      },
+      "rawSha256": "1bf901b2f1325af1658c9b486f66a945c5868ebc268885f4d32a71b6854115a3",
+      "requestParameters": {
+        "latitude": 35.6762,
+        "longitude": 139.6503,
+        "start_date": "2024-02-28",
+        "end_date": "2024-03-01",
+        "daily": "temperature_2m_max,temperature_2m_min,temperature_2m_mean",
+        "models": "era5",
+        "timezone": "UTC",
+        "cell_selection": "nearest",
+        "temperature_unit": "celsius"
+      },
+      "endpoint": "https://archive-api.open-meteo.com/v1/archive",
+      "actualProvider": "open-meteo-era5",
+      "methodVersion": "open-meteo-era5-v3",
+      "providerFallback": false,
+      "retrievedAt": "2026-09-26T07:43:23+00:00"
+    },
+    "humidity": {
+      "maximum": 95,
+      "mean": 62.43055555555556,
+      "minimum": 29,
+      "maximumDate": "2024-02-29T17:00",
+      "minimumDate": "2024-02-28T05:00",
+      "validHours": 72,
+      "expectedHours": 72,
+      "validFraction": 1.0,
+      "periodStart": "2024-02-28",
+      "periodEnd": "2024-03-01",
+      "source": "Open-Meteo Historical / Copernicus ERA5",
+      "sourceUrl": "https://open-meteo.com/en/docs/historical-weather-api",
+      "unit": "%",
+      "model": "era5",
+      "coverage": "global",
+      "methodId": "rh-hourly-max-mean-min-v2",
+      "methodVersion": "open-meteo-era5-v3",
+      "methodStatus": "descriptive_statistics",
+      "timeStandard": "UTC",
+      "gridLatitude": 35.75,
+      "gridLongitude": 139.75,
+      "gridElevationM": 37.0,
+      "detail": "Maximul, media aritmetică și minimul valorilor orare RH la 2 m, ERA5 / UTC; nu citiri directe la amplasament. De verificat pentru proiect.",
+      "requestedCoordinates": {
+        "lat": 35.6762,
+        "lon": 139.6503
+      },
+      "requestParameters": {
+        "longitude": 139.6503,
+        "latitude": 35.6762,
+        "start_date": "2024-02-28",
+        "end_date": "2024-03-01",
+        "hourly": "relative_humidity_2m",
+        "models": "era5",
+        "timezone": "UTC",
+        "cell_selection": "nearest"
+      },
+      "endpoint": "https://archive-api.open-meteo.com/v1/archive",
+      "actualProvider": "open-meteo-era5",
+      "retrievedAt": "2026-09-26T07:43:23+00:00",
+      "rawSha256": "5e670e0fcb5fb3d2b4009b41cd44a996a01e2c2593a359201c31bb47d9e267ec"
+    },
+    "elevation": {
+      "values": [
+        37.702545166015625
+      ],
+      "source": "Copernicus DEM GLO-90 · DSM 2021",
+      "sourceUrl": "https://registry.opendata.aws/copernicus-dem/",
+      "tiles": [
+        {
+          "source": "Copernicus DEM GLO-90 · DSM 2021",
+          "url": "https://copernicus-dem-90m.s3.amazonaws.com/Copernicus_DSM_COG_30_N35_00_E139_00_DEM/Copernicus_DSM_COG_30_N35_00_E139_00_DEM.tif",
+          "retrievedAt": "2026-09-26T07:46:40+00:00",
+          "sha256": "9bc9107eb2ae331b30c4acfef0d88fe65b1fa0282ddc54ad49fd4a97bc21dbcc"
+        }
+      ],
+      "errors": [],
+      "unit": "m",
+      "verticalDatum": "EGM2008",
+      "method": "Nearest DSM sample; nominal 90 m, includes vegetation/buildings. Verify survey elevation.",
+      "complete": true
+    }
+  },
+  {
+    "location": "New York",
+    "coordinates": {
+      "lat": 40.7128,
+      "lon": -74.006
+    },
+    "temperature": {
+      "maximum": 14.2,
+      "minimum": -2.1,
+      "maxDailyMean": 12.1,
+      "minDailyMean": 2.0,
+      "maximumDate": "2024-02-29",
+      "minimumDate": "2024-03-01",
+      "maxDailyMeanDate": "2024-02-28",
+      "minDailyMeanDate": "2024-03-01",
+      "periodStart": "2024-02-28",
+      "periodEnd": "2024-03-01",
+      "days": 3,
+      "model": "era5",
+      "gridLatitude": 40.75,
+      "gridLongitude": -74.0,
+      "gridElevationM": 32.0,
+      "method": "Extreme ale temperaturilor zilnice și ale mediilor zilnice din reanaliză, nu valori normative de proiectare.",
+      "source": "Open-Meteo Historical / Copernicus ERA5",
+      "sourceUrl": "https://open-meteo.com/en/docs/historical-weather-api",
+      "spatialNote": "Reanaliză globală pe grilă; nu măsurătoare meteo la amplasament.",
+      "timeStandard": "GMT",
+      "methodId": "historical-daily-extrema-v1",
+      "methodStatus": "descriptive_statistics",
+      "unit": "°C",
+      "coverage": "global",
+      "validFraction": 1.0,
+      "methodSource": "FlowerMoon: max/min ale seriilor zilnice complete; fără conversie la valori normative.",
+      "datasetMetadata": {},
+      "requestedCoordinates": {
+        "lat": 40.7128,
+        "lon": -74.006
+      },
+      "rawSha256": "62eab3667d16e21999b980df1db60d2cbe0d4ce2557c4cf7781a59ade4834624",
+      "requestParameters": {
+        "latitude": 40.7128,
+        "longitude": -74.006,
+        "start_date": "2024-02-28",
+        "end_date": "2024-03-01",
+        "daily": "temperature_2m_max,temperature_2m_min,temperature_2m_mean",
+        "models": "era5",
+        "timezone": "UTC",
+        "cell_selection": "nearest",
+        "temperature_unit": "celsius"
+      },
+      "endpoint": "https://archive-api.open-meteo.com/v1/archive",
+      "actualProvider": "open-meteo-era5",
+      "methodVersion": "open-meteo-era5-v3",
+      "providerFallback": false,
+      "retrievedAt": "2026-09-26T07:43:23+00:00"
+    },
+    "humidity": {
+      "maximum": 93,
+      "mean": 64.15277777777777,
+      "minimum": 34,
+      "maximumDate": "2024-02-28T11:00",
+      "minimumDate": "2024-02-29T21:00",
+      "validHours": 72,
+      "expectedHours": 72,
+      "validFraction": 1.0,
+      "periodStart": "2024-02-28",
+      "periodEnd": "2024-03-01",
+      "source": "Open-Meteo Historical / Copernicus ERA5",
+      "sourceUrl": "https://open-meteo.com/en/docs/historical-weather-api",
+      "unit": "%",
+      "model": "era5",
+      "coverage": "global",
+      "methodId": "rh-hourly-max-mean-min-v2",
+      "methodVersion": "open-meteo-era5-v3",
+      "methodStatus": "descriptive_statistics",
+      "timeStandard": "UTC",
+      "gridLatitude": 40.75,
+      "gridLongitude": -74.0,
+      "gridElevationM": 32.0,
+      "detail": "Maximul, media aritmetică și minimul valorilor orare RH la 2 m, ERA5 / UTC; nu citiri directe la amplasament. De verificat pentru proiect.",
+      "requestedCoordinates": {
+        "lat": 40.7128,
+        "lon": -74.006
+      },
+      "requestParameters": {
+        "longitude": -74.006,
+        "latitude": 40.7128,
+        "start_date": "2024-02-28",
+        "end_date": "2024-03-01",
+        "hourly": "relative_humidity_2m",
+        "models": "era5",
+        "timezone": "UTC",
+        "cell_selection": "nearest"
+      },
+      "endpoint": "https://archive-api.open-meteo.com/v1/archive",
+      "actualProvider": "open-meteo-era5",
+      "retrievedAt": "2026-09-26T07:43:23+00:00",
+      "rawSha256": "c4a74e899c39c30981e50ad513092875a4cf4d4ba84f237815e54236dd0cb057"
+    },
+    "elevation": {
+      "values": [
+        20.209125518798828
+      ],
+      "source": "Copernicus DEM GLO-90 · DSM 2021",
+      "sourceUrl": "https://registry.opendata.aws/copernicus-dem/",
+      "tiles": [
+        {
+          "source": "Copernicus DEM GLO-90 · DSM 2021",
+          "url": "https://copernicus-dem-90m.s3.amazonaws.com/Copernicus_DSM_COG_30_N40_00_W075_00_DEM/Copernicus_DSM_COG_30_N40_00_W075_00_DEM.tif",
+          "retrievedAt": "2026-09-26T07:46:23+00:00",
+          "sha256": "c82be2a88dbb795240743ed3c50566ad42c5d3e9028a965cad3cc7a6e4de6902"
+        }
+      ],
+      "errors": [],
+      "unit": "m",
+      "verticalDatum": "EGM2008",
+      "method": "Nearest DSM sample; nominal 90 m, includes vegetation/buildings. Verify survey elevation.",
+      "complete": true
+    }
+  },
+  {
+    "location": "Cape Town",
+    "coordinates": {
+      "lat": -33.9249,
+      "lon": 18.4241
+    },
+    "temperature": {
+      "maximum": 27.6,
+      "minimum": 16.4,
+      "maxDailyMean": 22.4,
+      "minDailyMean": 18.4,
+      "maximumDate": "2024-02-28",
+      "minimumDate": "2024-03-01",
+      "maxDailyMeanDate": "2024-02-28",
+      "minDailyMeanDate": "2024-03-01",
+      "periodStart": "2024-02-28",
+      "periodEnd": "2024-03-01",
+      "days": 3,
+      "model": "era5",
+      "gridLatitude": -34.0,
+      "gridLongitude": 18.5,
+      "gridElevationM": 17.0,
+      "method": "Extreme ale temperaturilor zilnice și ale mediilor zilnice din reanaliză, nu valori normative de proiectare.",
+      "source": "Open-Meteo Historical / Copernicus ERA5",
+      "sourceUrl": "https://open-meteo.com/en/docs/historical-weather-api",
+      "spatialNote": "Reanaliză globală pe grilă; nu măsurătoare meteo la amplasament.",
+      "timeStandard": "GMT",
+      "methodId": "historical-daily-extrema-v1",
+      "methodStatus": "descriptive_statistics",
+      "unit": "°C",
+      "coverage": "global",
+      "validFraction": 1.0,
+      "methodSource": "FlowerMoon: max/min ale seriilor zilnice complete; fără conversie la valori normative.",
+      "datasetMetadata": {},
+      "requestedCoordinates": {
+        "lat": -33.9249,
+        "lon": 18.4241
+      },
+      "rawSha256": "d65bc0a8927736dd0447f2a7e3fd7dcfae1d3b73c87305d82aa41a2f2ea927c2",
+      "requestParameters": {
+        "latitude": -33.9249,
+        "longitude": 18.4241,
+        "start_date": "2024-02-28",
+        "end_date": "2024-03-01",
+        "daily": "temperature_2m_max,temperature_2m_min,temperature_2m_mean",
+        "models": "era5",
+        "timezone": "UTC",
+        "cell_selection": "nearest",
+        "temperature_unit": "celsius"
+      },
+      "endpoint": "https://archive-api.open-meteo.com/v1/archive",
+      "actualProvider": "open-meteo-era5",
+      "methodVersion": "open-meteo-era5-v3",
+      "providerFallback": false,
+      "retrievedAt": "2026-09-26T07:43:24+00:00"
+    },
+    "humidity": {
+      "maximum": 92,
+      "mean": 71.54166666666667,
+      "minimum": 38,
+      "maximumDate": "2024-03-01T20:00",
+      "minimumDate": "2024-02-28T12:00",
+      "validHours": 72,
+      "expectedHours": 72,
+      "validFraction": 1.0,
+      "periodStart": "2024-02-28",
+      "periodEnd": "2024-03-01",
+      "source": "Open-Meteo Historical / Copernicus ERA5",
+      "sourceUrl": "https://open-meteo.com/en/docs/historical-weather-api",
+      "unit": "%",
+      "model": "era5",
+      "coverage": "global",
+      "methodId": "rh-hourly-max-mean-min-v2",
+      "methodVersion": "open-meteo-era5-v3",
+      "methodStatus": "descriptive_statistics",
+      "timeStandard": "UTC",
+      "gridLatitude": -34.0,
+      "gridLongitude": 18.5,
+      "gridElevationM": 17.0,
+      "detail": "Maximul, media aritmetică și minimul valorilor orare RH la 2 m, ERA5 / UTC; nu citiri directe la amplasament. De verificat pentru proiect.",
+      "requestedCoordinates": {
+        "lat": -33.9249,
+        "lon": 18.4241
+      },
+      "requestParameters": {
+        "longitude": 18.4241,
+        "latitude": -33.9249,
+        "start_date": "2024-02-28",
+        "end_date": "2024-03-01",
+        "hourly": "relative_humidity_2m",
+        "models": "era5",
+        "timezone": "UTC",
+        "cell_selection": "nearest"
+      },
+      "endpoint": "https://archive-api.open-meteo.com/v1/archive",
+      "actualProvider": "open-meteo-era5",
+      "retrievedAt": "2026-09-26T07:43:24+00:00",
+      "rawSha256": "084b77ba024b2654c0995a5ce4f786ec321343366dbb0d4703d97b93e4ff8cfc"
+    },
+    "elevation": {
+      "values": [
+        9.643903732299805
+      ],
+      "source": "Copernicus DEM GLO-90 · DSM 2021",
+      "sourceUrl": "https://registry.opendata.aws/copernicus-dem/",
+      "tiles": [
+        {
+          "source": "Copernicus DEM GLO-90 · DSM 2021",
+          "url": "https://copernicus-dem-90m.s3.amazonaws.com/Copernicus_DSM_COG_30_S34_00_E018_00_DEM/Copernicus_DSM_COG_30_S34_00_E018_00_DEM.tif",
+          "retrievedAt": "2026-09-26T07:46:24+00:00",
+          "sha256": "01f96aff32e6acca28cbd3e9f33ad46e1b6a89a459a7d829506ebd68fb2b3770"
+        }
+      ],
+      "errors": [],
+      "unit": "m",
+      "verticalDatum": "EGM2008",
+      "method": "Nearest DSM sample; nominal 90 m, includes vegetation/buildings. Verify survey elevation.",
+      "complete": true
+    }
+  },
+  {
+    "location": "Sydney",
+    "coordinates": {
+      "lat": -33.8688,
+      "lon": 151.2093
+    },
+    "temperature": {
+      "maximum": 29.7,
+      "minimum": 21.9,
+      "maxDailyMean": 25.3,
+      "minDailyMean": 24.2,
+      "maximumDate": "2024-02-29",
+      "minimumDate": "2024-02-29",
+      "maxDailyMeanDate": "2024-02-29",
+      "minDailyMeanDate": "2024-02-28",
+      "periodStart": "2024-02-28",
+      "periodEnd": "2024-03-01",
+      "days": 3,
+      "model": "era5",
+      "gridLatitude": -33.75,
+      "gridLongitude": 151.25,
+      "gridElevationM": 86.0,
+      "method": "Extreme ale temperaturilor zilnice și ale mediilor zilnice din reanaliză, nu valori normative de proiectare.",
+      "source": "Open-Meteo Historical / Copernicus ERA5",
+      "sourceUrl": "https://open-meteo.com/en/docs/historical-weather-api",
+      "spatialNote": "Reanaliză globală pe grilă; nu măsurătoare meteo la amplasament.",
+      "timeStandard": "GMT",
+      "methodId": "historical-daily-extrema-v1",
+      "methodStatus": "descriptive_statistics",
+      "unit": "°C",
+      "coverage": "global",
+      "validFraction": 1.0,
+      "methodSource": "FlowerMoon: max/min ale seriilor zilnice complete; fără conversie la valori normative.",
+      "datasetMetadata": {},
+      "requestedCoordinates": {
+        "lat": -33.8688,
+        "lon": 151.2093
+      },
+      "rawSha256": "21be18eb3e88e1b2fa40bcb5c58f85925c9fb965c19801925756b3879cdea964",
+      "requestParameters": {
+        "latitude": -33.8688,
+        "longitude": 151.2093,
+        "start_date": "2024-02-28",
+        "end_date": "2024-03-01",
+        "daily": "temperature_2m_max,temperature_2m_min,temperature_2m_mean",
+        "models": "era5",
+        "timezone": "UTC",
+        "cell_selection": "nearest",
+        "temperature_unit": "celsius"
+      },
+      "endpoint": "https://archive-api.open-meteo.com/v1/archive",
+      "actualProvider": "open-meteo-era5",
+      "methodVersion": "open-meteo-era5-v3",
+      "providerFallback": false,
+      "retrievedAt": "2026-09-26T07:43:24+00:00"
+    },
+    "humidity": {
+      "maximum": 93,
+      "mean": 83.81944444444444,
+      "minimum": 63,
+      "maximumDate": "2024-02-28T20:00",
+      "minimumDate": "2024-02-29T04:00",
+      "validHours": 72,
+      "expectedHours": 72,
+      "validFraction": 1.0,
+      "periodStart": "2024-02-28",
+      "periodEnd": "2024-03-01",
+      "source": "Open-Meteo Historical / Copernicus ERA5",
+      "sourceUrl": "https://open-meteo.com/en/docs/historical-weather-api",
+      "unit": "%",
+      "model": "era5",
+      "coverage": "global",
+      "methodId": "rh-hourly-max-mean-min-v2",
+      "methodVersion": "open-meteo-era5-v3",
+      "methodStatus": "descriptive_statistics",
+      "timeStandard": "UTC",
+      "gridLatitude": -33.75,
+      "gridLongitude": 151.25,
+      "gridElevationM": 86.0,
+      "detail": "Maximul, media aritmetică și minimul valorilor orare RH la 2 m, ERA5 / UTC; nu citiri directe la amplasament. De verificat pentru proiect.",
+      "requestedCoordinates": {
+        "lat": -33.8688,
+        "lon": 151.2093
+      },
+      "requestParameters": {
+        "longitude": 151.2093,
+        "latitude": -33.8688,
+        "start_date": "2024-02-28",
+        "end_date": "2024-03-01",
+        "hourly": "relative_humidity_2m",
+        "models": "era5",
+        "timezone": "UTC",
+        "cell_selection": "nearest"
+      },
+      "endpoint": "https://archive-api.open-meteo.com/v1/archive",
+      "actualProvider": "open-meteo-era5",
+      "retrievedAt": "2026-09-26T07:43:24+00:00",
+      "rawSha256": "4b8eb1e881b29c1bf2dfce772cf4b8691d8009f6f9a1d3488a136eb337b52643"
+    },
+    "elevation": {
+      "values": [
+        80.94100189208984
+      ],
+      "source": "Copernicus DEM GLO-90 · DSM 2021",
+      "sourceUrl": "https://registry.opendata.aws/copernicus-dem/",
+      "tiles": [
+        {
+          "source": "Copernicus DEM GLO-90 · DSM 2021",
+          "url": "https://copernicus-dem-90m.s3.amazonaws.com/Copernicus_DSM_COG_30_S34_00_E151_00_DEM/Copernicus_DSM_COG_30_S34_00_E151_00_DEM.tif",
+          "retrievedAt": "2026-09-26T07:46:25+00:00",
+          "sha256": "f32a8401ce60a8cdb7ab37ebeed5427073c33db23cd6772a5431058214f13e20"
+        }
+      ],
+      "errors": [],
+      "unit": "m",
+      "verticalDatum": "EGM2008",
+      "method": "Nearest DSM sample; nominal 90 m, includes vegetation/buildings. Verify survey elevation.",
+      "complete": true
+    }
+  }
+]

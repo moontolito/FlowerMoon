@@ -1,0 +1,18 @@
+[
+  {
+    "file": "countries_10m.geojson",
+    "url": "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_10m_admin_0_countries.geojson",
+    "sha256": "239eec57ac17f100a11e2536cffc56752c318b50ae765b0918ff7aab4ce8f255",
+    "retrievedAt": "2026-09-26T07:00:32.528157+00:00",
+    "licence": "Natural Earth public domain",
+    "coverage": "global generalized cartography"
+  },
+  {
+    "file": "coastline.geojson",
+    "url": "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_50m_coastline.geojson",
+    "sha256": "271f1c4c1908312bac6b29d158ea1356544beafc129f260005300913aa5ea283",
+    "retrievedAt": "2026-09-26T06:51:05.342354+00:00",
+    "licence": "Natural Earth public domain",
+    "coverage": "global generalized cartography"
+  }
+]

@@ -1,0 +1,2 @@
+# Copernicus GLO-90 GeoTIFF reader. Use the same Python as Porneste.cmd.
+Pillow==12.3.0
