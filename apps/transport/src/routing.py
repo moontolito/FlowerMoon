@@ -21,18 +21,16 @@ def request(url,payload=None):
         try:
             with urlopen(req,timeout=45) as response:return json.load(response)
         except HTTPError as e:
-            if e.code==429:raise ValueError('Serviciul public a limitat cererile. Încercați mai târziu sau configurați un server propriu.') from None
-            raise ValueError(f'Serviciul a răspuns HTTP {e.code}. Nicio rută nu a fost salvată.') from None
-        except (URLError,TimeoutError,OSError):raise ValueError('Conexiune indisponibilă. Verificați internetul și permisiunile de rețea.') from None
+            if e.code==429:raise ValueError('Public service rate limit reached. Try later or configure your own server.') from None
+            raise ValueError(f'Service returned HTTP {e.code}. No route was saved.') from None
+        except (URLError,TimeoutError,OSError):raise ValueError('Connection unavailable. Check internet access and network permissions.') from None
 
 def route(server,payload):
     parsed=urlparse(server)
-    if parsed.scheme not in ('http','https') or not parsed.netloc or parsed.username or parsed.password:raise ValueError('Adresa serverului Valhalla nu este validă.')
-    if parsed.scheme=='http' and parsed.hostname not in ('localhost','127.0.0.1'):raise ValueError('Folosiți HTTPS pentru servere externe.')
+    if parsed.scheme not in ('http','https') or not parsed.netloc or parsed.username or parsed.password:raise ValueError('Invalid Valhalla server address.')
+    if parsed.scheme=='http' and parsed.hostname not in ('localhost','127.0.0.1'):raise ValueError('Use HTTPS for external servers.')
     return parse_response(request(server.rstrip('/')+'/route',payload))
 
 def geocode(query):
-    if len(query.strip())<3:raise ValueError('Introduceți localitatea sau adresa (minimum trei caractere).')
-    endpoint=os.environ.get('FLOWERMOON_GEOCODER_URL','https://nominatim.openstreetmap.org').rstrip('/')
-    rows=request(endpoint+'/search?'+urlencode({'q':query,'format':'jsonv2','addressdetails':1,'limit':5}))
-    return [{'label':r['display_name'],'lat':float(r['lat']),'lon':float(r['lon'])} for r in rows]
+    from places import search
+    return search(query)

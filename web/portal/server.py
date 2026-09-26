@@ -12,14 +12,14 @@ log=logging.getLogger('flowermoon')
 
 class Desktop:
     def __init__(self):
-        self.process=None;self.task=None;self.state='starting';self.message='Pregătim aplicația…';self.lock=asyncio.Lock()
+        self.process=None;self.task=None;self.state='starting';self.message='Preparing the application…';self.lock=asyncio.Lock()
         self.output=None
 
     async def start(self):
         async with self.lock:
             if self.task and not self.task.done():return
             if self.process and self.process.returncode is None:return
-            self.state='starting';self.message='Pregătim aplicația…'
+            self.state='starting';self.message='Preparing the application…'
             self.task=asyncio.create_task(self.launch())
 
     async def launch(self):
@@ -41,7 +41,7 @@ class Desktop:
             for attempt in range(90):
                 if self.process.returncode is not None:raise RuntimeError('App exited during startup')
                 if self.ready():
-                    self.state='ready';self.message='Gata de utilizare';return
+                    self.state='ready';self.message='Ready to use';return
                 await asyncio.sleep(1)
             raise RuntimeError('UI did not become ready')
         except asyncio.CancelledError:raise
@@ -49,7 +49,7 @@ class Desktop:
             log.exception('Transport startup failed')
             if self.process and self.process.returncode is None:
                 await self.stop_process()
-            self.state='error';self.message='Aplicația nu a putut porni. Apasă „Încearcă din nou”.'
+            self.state='error';self.message='Application could not start. Select Try again.'
 
     def ready(self):
         if not self.process or self.process.returncode is not None:return False
@@ -61,8 +61,8 @@ class Desktop:
     def status(self):
         if self.state=='ready' and not self.ready():
             if self.process and self.process.returncode is not None:
-                self.state='stopped';self.message='Aplicația a fost închisă. O poți deschide din nou.'
-            else:return dict(state='starting',message='Aplicația răspunde. Așteaptă câteva momente…')
+                self.state='stopped';self.message='Application closed. You can open it again.'
+            else:return dict(state='starting',message='Waiting for the application…')
         return dict(state=self.state,message=self.message)
 
     async def close(self):
@@ -87,6 +87,16 @@ async def index(request):return web.FileResponse(HERE/'static'/'index.html')
 async def workspace(request):return web.FileResponse(HERE/'static'/'workspace.html')
 async def logo(request):return web.FileResponse(APP/'assets'/'FlowerMoonLogo.png')
 async def nesting(request):return web.FileResponse(ROOT/'apps'/'nesting'/'index.html')
+
+async def exports(request):
+    folder=APP/'data'/'exports'
+    files=sorted((p for p in folder.glob('*.xlsx') if not p.is_symlink() and p.is_file()),key=lambda p:p.stat().st_mtime,reverse=True)[:20]
+    return web.json_response([{'name':p.name,'url':'/exports/'+p.name} for p in files],headers={'Cache-Control':'no-store'})
+
+async def download(request):
+    folder=(APP/'data'/'exports').resolve();name=request.match_info['name'];path=folder/name
+    if path.is_symlink() or path.resolve().parent!=folder or path.suffix!='.xlsx' or not path.is_file():raise web.HTTPNotFound()
+    return web.FileResponse(path,headers={'Content-Disposition':'attachment; filename="'+path.name.replace('"','')+'"','Cache-Control':'no-store'})
 
 async def status(request):
     data=request.app['desktop'].status()
@@ -132,6 +142,7 @@ def create_app(novnc_path=None,desktop=None):
     app.router.add_get('/',index);app.router.add_get('/app',workspace)
     app.router.add_get('/logo.png',logo);app.router.add_get('/nesting',nesting)
     app.router.add_get('/api/status',status);app.router.add_post('/api/start',start)
+    app.router.add_get('/api/exports',exports);app.router.add_get('/exports/{name}',download)
     app.router.add_get('/websockify',websocket)
     app.router.add_static('/static',HERE/'static',show_index=False)
     novnc_path=novnc_path or next(Path('/usr/local/novnc').glob('noVNC-*'),None)

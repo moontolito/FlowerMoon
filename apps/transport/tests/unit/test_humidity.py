@@ -21,10 +21,10 @@ class HumidityTests(unittest.TestCase):
         f=fixture();f['hourly']['relative_humidity_2m'][24:48]=[-999]*24
         r=humidity.summarize(f,START,END)
         self.assertEqual((r['maximum'],r['mean'],r['minimum']),(90,65,40))
-        self.assertAlmostEqual(r['validFraction'],2/3);self.assertIn('incompletă',r['detail'])
+        self.assertAlmostEqual(r['validFraction'],2/3);self.assertIn('Incomplete',r['detail'])
         site=sc.create();humidity.apply(site,r)
         self.assertEqual(site['humidity']['mean']['status'],'VERIFY')
-        self.assertIn('incompletă',next(x for x in rows(site) if x['key']=='humidity.mean')['note'])
+        self.assertIn('Incomplete',next(x for x in rows(site) if x['key']=='humidity.mean')['detail'])
     def test_units_empty_invalid_dates(self):
         for mode in ('unit','empty','dates','invalid'):
             f=fixture()
@@ -51,12 +51,12 @@ class HumidityTests(unittest.TestCase):
     def test_candidate_values_and_logical_groups(self):
         site=sc.create();sc.apply_zoning(site,zoning.lookup(dict(lat=44.4268,lon=26.1025),1200))
         items=rows(site);snow=next(r for r in items if r['key']=='snow.sk')
-        self.assertEqual(snow['value'],'2 kN/m²');self.assertIn('1000',snow['note'])
+        self.assertEqual(snow['value'],'2 kN/m²');self.assertIn('1000',snow['detail'])
         # Saved pre-update values hidden by the old altitude rule are also visible.
         site['snow']['sk']['value']=None
         self.assertEqual(next(r for r in rows(site) if r['key']=='snow.sk')['value'],'2 kN/m²')
         groups=[r['key'] for r in items if r['section']]
-        self.assertEqual(groups,['section_location','section_transport','section_climate','section_exposure','section_structural','section_additional'])
+        self.assertEqual(groups,['section_location','section_climate','section_structural','section_exposure','section_additional','section_transport'])
         self.assertFalse(any(r['key'].startswith('humidity.value') for r in items))
 
 if __name__=='__main__':unittest.main()

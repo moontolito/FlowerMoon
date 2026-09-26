@@ -28,6 +28,26 @@ jobs:
       - name: Desktop interaction checks
         run: |
           xvfb-run -a -s '-screen 0 1600x1000x24' .venv/bin/python -B tests/run_checks.py --ui
+      - name: Save destination interface evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: flowermoon-interface-verification
+          path: .artifacts/site-environment-english.png
+          if-no-files-found: error
+          retention-days: 7
+  source-connectivity:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Record live public-source availability
+        run: python3 scripts/check_sources.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: flowermoon-source-connectivity
+          path: .artifacts/source-connectivity.json
+          if-no-files-found: error
+          retention-days: 7
   container-smoke:
     runs-on: ubuntu-24.04
     needs: linux-tests

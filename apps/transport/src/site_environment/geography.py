@@ -60,7 +60,7 @@ def countries():
 def _country(lat,lon):
     result=dict(code=None,name=None,status='unavailable',source=COUNTRY_SOURCE,sourceUrl=SOURCE_URL,
                 method='point-in-polygon-v1',methodStatus='geographic_estimate',nearBoundary=False,
-                detail='Granițe generalizate; nu stabilesc jurisdicția legală. Insulele mici și zonele disputate necesită verificare.',dataset=dataset_manifest().get('countries_10m.geojson',{}))
+                detail='Generalized boundaries do not establish legal jurisdiction. Small islands and disputed areas require verification.',dataset=dataset_manifest().get('countries_10m.geojson',{}))
     try:
         hits=[]
         for prop,polygon,(west,south,east,north) in countries():
@@ -79,9 +79,9 @@ def _country(lat,lon):
                     other_code=other.get('ISO_A2_EH') or other.get('ISO_A2')
                     if other_code!=code and west-dx<=lon<=east+dx and south-dy<=lat<=north+dy:
                         if min(segment_distance((lat,lon),a,b) for r in rings for a,b in zip(r,r[1:]))<=BOUNDARY_MARGIN_M:adjacent.append(other_code or 'UNCONFIRMED')
-            result.update(code=code,name=prop.get('ADMIN'),status='estimated',nearBoundary=bool(adjacent),boundaryDistanceM=distance,nearOtherCountries=sorted(set(adjacent)))
-        elif hits:result.update(status='ambiguous',detail='Poligoane suprapuse; jurisdicția necesită confirmare.')
-        else:result['detail']='Ocean, insulă absentă din hartă sau zonă neacoperită; țara nu este presupusă.'
+            result.update(code=code,iso3=prop.get('ISO_A3_EH') or prop.get('ISO_A3') or prop.get('ADM0_A3'),name=prop.get('ADMIN'),status='estimated',nearBoundary=bool(adjacent),boundaryDistanceM=distance,nearOtherCountries=sorted(set(adjacent)))
+        elif hits:result.update(status='ambiguous',detail='Overlapping polygons; jurisdiction requires confirmation.')
+        else:result['detail']='Ocean, unmapped island or area outside coverage; country is not assumed.'
     except (OSError,ValueError,KeyError):result['detail']='Datasetul geografic local nu este disponibil.'
     return result
 
@@ -103,8 +103,8 @@ def _coast(lat,lon):
         distance=min(segment_distance((lat,lon),a,b) for line in coastlines() for a,b in zip(line,line[1:]))
         return dict(value=round(distance/1000,3),unit='km',source=SOURCE,sourceUrl=SOURCE_URL,status='estimated',
                     method='spherical-nearest-coast-segment-v1',methodStatus='geographic_estimate',
-                    detail='Distanță pe sferă la segmentele coastei generalizate, R=6371000 m. Nu măsoară salinitatea și nu determină categoria ISO; precizia este limitată de scara 1:50m.',dataset=dataset_manifest().get('coastline.geojson',{}))
-    except (OSError,ValueError,KeyError):return dict(value=None,unit='km',status='unavailable',source=SOURCE,detail='Coasta globală nu este disponibilă.')
+                    detail='Spherical distance to generalized coastline segments, R=6371000 m. Does not measure salinity or determine an ISO category; accuracy is limited by the 1:50m source scale.',dataset=dataset_manifest().get('coastline.geojson',{}))
+    except (OSError,ValueError,KeyError):return dict(value=None,unit='km',status='unavailable',source=SOURCE,detail='Global coastline data is unavailable.')
 
 def coast(point):
     return dict(_coast(*validate(point)))

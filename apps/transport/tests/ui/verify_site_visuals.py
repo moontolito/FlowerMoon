@@ -11,7 +11,7 @@ with TemporaryDirectory() as folder:
     sc.apply_manual(app.site,{'temperature.maxDesign':'35.85','temperature.minDesign':'-12.97'})
     win.refresh();app.update()
     assert win.metrics['temperature'].value.cget('text')=='+35.85 / -12.97 °C'
-    assert 'manual' in win.metrics['temperature'].note.cget('text')
+    assert 'Manual' in win.metrics['temperature'].note.cget('text')
     win.overview.selection_set('design');win.refresh();app.update()
     assert win.overview.selection()==('design',)
     for mode in ('light','dark'):

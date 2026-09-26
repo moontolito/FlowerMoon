@@ -38,7 +38,7 @@ class Map(tk.Canvas):
         self.c=colors; self.cache=Path(cache); self.cache.mkdir(parents=True,exist_ok=True)
         self.on_pick=on_pick; self.online=online; self.zoom=6; self.lat=46.3; self.lon=25
         self.tiles={}; self.pending=set(); self.results=queue.Queue(); self.pool=ThreadPoolExecutor(max_workers=2)
-        self.markers=[]; self.geometry=[]; self.error=''; self.alive=True; self.redraw_id=None
+        self.markers=[]; self.geometry=[];self.region=None; self.error=''; self.alive=True; self.redraw_id=None
         self.bind('<Configure>',lambda e:self.schedule())
         self.bind('<ButtonPress-1>',self.press); self.bind('<B1-Motion>',self.drag); self.bind('<ButtonRelease-1>',self.release)
         self.bind('<MouseWheel>',lambda e:self.change_zoom(1 if e.delta>0 else -1))
@@ -98,7 +98,10 @@ class Map(tk.Canvas):
                 path.write_bytes(data)
             self.results.put((key,data,None))
         except Exception:
-            self.results.put((key,None,'Harta online nu este disponibilă. Coordonatele și rutele salvate rămân accesibile.'))
+            self.results.put((key,None,'Online map unavailable. Coordinates and saved routes remain accessible.'))
+
+    def set_region(self,region):
+        self.region=region;self.schedule()
 
     def poll(self):
         if not self.alive:return
@@ -107,7 +110,7 @@ class Map(tk.Canvas):
             key,data,error=self.results.get();self.pending.discard(key)
             if data:
                 try:self.tiles[key]=tk.PhotoImage(master=self,data=base64.b64encode(data))
-                except tk.TclError:self.error='Imagine cartografică invalidă.';self.tiles[key]=None
+                except tk.TclError:self.error='Invalid map image.';self.tiles[key]=None
             else:self.error=error;self.tiles[key]=None
             changed=True
         if len(self.tiles)>150:
@@ -129,6 +132,14 @@ class Map(tk.Canvas):
                     self.create_rectangle(x,y,x+256,y+256,outline=self.c['border'])
                     if self.online and key not in self.tiles and key not in self.pending:
                         self.pending.add(key);self.pool.submit(self.fetch,key)
+        if self.region and self.region.get('status')=='ready':
+            shape=self.region['geometry'];polygons=[shape['coordinates']] if shape['type']=='Polygon' else shape['coordinates']
+            for polygon in polygons:
+                for ring in polygon:
+                    points=[];previous=cx
+                    for lon,lat,*_ in ring:
+                        x,y=project(lat,lon,self.zoom);x=near_x(x,previous,self.zoom);previous=x;points.extend((x-ox,y-oy))
+                    if len(points)>=4:self.create_line(*points,fill=self.c['primary'],width=3,dash=(7,3),tags='delivery-region')
         if self.geometry:
             for a,b in zip(self.geometry,self.geometry[1:]):
                 ax,ay=project(a[1],a[0],self.zoom);bx,by=project(b[1],b[0],self.zoom)
@@ -140,8 +151,12 @@ class Map(tk.Canvas):
             self.create_text(x+11,y-14,text=p.get('label',str(i+1)),anchor='w',fill=self.c['text'],font=('Segoe UI',10,'bold'))
         if self.error or not self.online:
             self.create_rectangle(0,0,w,42,fill=self.c['surface'],outline='')
-            self.create_text(12,20,text=self.error or 'Mod verificare offline · fără descărcare hartă',anchor='w',width=max(100,w-24),fill=self.c['secondary'])
+            self.create_text(12,20,text=self.error or 'Offline test mode · no map downloads',anchor='w',width=max(100,w-24),fill=self.c['secondary'])
         if any(abs(p['lat'])>85.0511 for p in self.markers):
-            self.create_text(12,52,text='Regiune polară: harta Mercator nu reprezintă latitudinile peste ±85°. Coordonatele rămân valide.',anchor='w',width=max(100,w-24),fill=self.c['warning'])
+            self.create_text(12,52,text='Polar region: Mercator cannot display latitudes above ±85°. Coordinates remain valid.',anchor='w',width=max(100,w-24),fill=self.c['warning'])
+        if self.region:
+            text=('Delivery region: '+self.region['name']+' · geoBoundaries gbOpen / ADM1') if self.region.get('status')=='ready' else 'Delivery region boundary unavailable'
+            self.create_rectangle(0,h-53,w,h-25,fill=self.c['surface'],outline='')
+            self.create_text(10,h-39,text=text,anchor='w',fill=self.c['primary'],font=('Segoe UI',9,'bold'),width=max(100,w-20))
         self.create_rectangle(0,h-25,w,h,fill=self.c['surface'],outline='')
         self.create_text(10,h-12,text='© OpenStreetMap contributors · openstreetmap.org/copyright',anchor='w',fill=self.c['secondary'],font=('Segoe UI',9))

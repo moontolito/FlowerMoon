@@ -49,6 +49,6 @@ class TransportTests(unittest.TestCase):
                 self.assertEqual(float(cell('L13').find(tag('v')).text),7528.5)
                 self.assertEqual(float(cell('C13').find(tag('v')).text),677)
             export_workbook(target,[self.row],dict(self.rates,loaded=0))
-            with ZipFile(target) as z:self.assertIn('Tarif lipsă',z.read('xl/worksheets/sheet1.xml').decode())
+            with ZipFile(target) as z:self.assertIn('Rate missing',z.read('xl/worksheets/sheet1.xml').decode())
 
 if __name__=='__main__':unittest.main()

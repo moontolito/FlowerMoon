@@ -13,5 +13,5 @@ def configuration():
     endpoint = os.environ.get('FLOWERMOON_CLIMATE_URL', '').strip() or default
     parts = urlsplit(endpoint)
     if parts.scheme != 'https' or not parts.netloc or parts.query or parts.fragment or parts.username:
-        raise ValueError('Endpoint meteo invalid: folosiți HTTPS, fără chei sau parametri în URL.')
+        raise ValueError('Invalid weather endpoint: use HTTPS without keys or query parameters in the URL.')
     return endpoint, key

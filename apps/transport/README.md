@@ -20,7 +20,7 @@ Open `Porneste.cmd`. Install dependencies with the same interpreter used by the 
 4. Confirm temperature/RH periods, sources and verification notes.
 5. Modify a value manually, refresh, and confirm the manual value is preserved.
 6. Change destination; ensure previous automatic values are not reused.
-7. Add a delivery and export the calculation workbook.
+7. Select **Export Excel** directly in Transport; check the Transport, Routes and Site & Environment sheets. In Codespaces, use **Download Excel** in the browser toolbar.
 8. Test both themes and a smaller window. Report destination, steps, expected result and actual result, avoiding private customer information.
 
 ## Data and limits
@@ -29,6 +29,7 @@ Open `Porneste.cmd`. Install dependencies with the same interpreter used by the 
 - Altitude: Copernicus DEM GLO-90, nominal 90 m DSM.
 - Routes: OSM / the configured Valhalla server. Public endpoints can throttle or fail; no car-route substitution is used.
 - Country/coast: Natural Earth GIS. Structural maps currently cover Romania only.
+- Address suggestions: Photon / OpenStreetMap. Delivery region: geoBoundaries gbOpen ADM1, where available. See [destination and source details](../../docs/DESTINATION_WORKFLOW.md).
 - CAMS, EFEHR, TOW and the corrosion index are not implemented/validated. No automatic ISO corrosion category is claimed.
 
 The [source alignment document](docs/SOURCE_ALIGNMENT.md) records actual providers and their limits. For commercial Open-Meteo usage, configure the appropriate access through a Codespaces secret named `FLOWERMOON_CLIMATE_API_KEY`; never commit credentials. `FLOWERMOON_CLIMATE_URL` can override the historical endpoint. No credentials are shipped in this repository.

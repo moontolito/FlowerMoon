@@ -16,26 +16,26 @@ def period(today=None):
 def summarize(data,start,end):
     daily=data.get('daily',{});days=daily.get('time',[])
     expected=[(start+timedelta(days=i)).isoformat() for i in range((end-start).days+1)]
-    if days!=expected:raise ValueError('Seria climatică nu acoperă integral perioada solicitată.')
+    if days!=expected:raise ValueError('Climate series does not cover the entire requested period.')
     for key in VARIABLES:
         values=daily.get(key,[])
-        if data.get('daily_units',{}).get(key)!='°C':raise ValueError('Unitate climatică neașteptată.')
+        if data.get('daily_units',{}).get(key)!='°C':raise ValueError('Unexpected climate unit.')
         if len(values)!=len(days) or any(isinstance(v,bool) or not isinstance(v,(int,float)) or not math.isfinite(v) or not -100<=v<=70 for v in values):
-            raise ValueError('Seria climatică are valori lipsă sau invalide; extremele nu pot fi confirmate.')
+            raise ValueError('Climate series contains missing or invalid values; extremes cannot be confirmed.')
     highs,lows,means=(daily[k] for k in VARIABLES)
-    if any(not lo<=avg<=hi for hi,lo,avg in zip(highs,lows,means)):raise ValueError('Temperaturi climatice inconsistente.')
+    if any(not lo<=avg<=hi for hi,lo,avg in zip(highs,lows,means)):raise ValueError('Inconsistent climate temperatures.')
     high=max(highs);low=min(lows);daily_high=max(means);daily_low=min(means)
     return dict(maximum=high,minimum=low,maxDailyMean=daily_high,minDailyMean=daily_low,
                 maximumDate=days[highs.index(high)],minimumDate=days[lows.index(low)],
                 maxDailyMeanDate=days[means.index(daily_high)],minDailyMeanDate=days[means.index(daily_low)],
                 periodStart=start.isoformat(),periodEnd=end.isoformat(),days=len(days),model=MODEL,
                 gridLatitude=data.get('latitude'),gridLongitude=data.get('longitude'),gridElevationM=data.get('elevation'),
-                method='Extreme ale temperaturilor zilnice și ale mediilor zilnice din reanaliză, nu valori normative de proiectare.',
+                method='Historical daily temperature and daily-mean extremes from reanalysis, not structural design temperatures.',
                 source=SOURCE,
                 sourceUrl=DOCS,
-                spatialNote='Reanaliză globală pe grilă; nu măsurătoare meteo la amplasament.',timeStandard=data.get('_timeStandard',data.get('timezone','')),
+                spatialNote='Global gridded reanalysis; not a weather measurement taken at the site.',timeStandard=data.get('_timeStandard',data.get('timezone','')),
                 methodId='historical-daily-extrema-v1',methodStatus='descriptive_statistics',unit='°C',coverage='global',validFraction=1.0,
-                methodSource='FlowerMoon: max/min ale seriilor zilnice complete; fără conversie la valori normative.',
+                methodSource='FlowerMoon: maximum/minimum of complete daily series; no conversion into code design values.',
                 datasetMetadata=data.get('_datasetMetadata',{}))
 
 def lookup(destination,cache_dir,force=False,today=None):
@@ -57,7 +57,7 @@ def lookup(destination,cache_dir,force=False,today=None):
         with urlopen(req,timeout=120) as response:data=json.load(response)
         result=summarize(data,start,end)
     except Exception:
-        raise ValueError('Open-Meteo Historical: date indisponibile sau incomplete. Verificati conexiunea si accesul API; nu se foloseste alta sursa automat.') from None
+        raise ValueError('Open-Meteo Historical: data unavailable or incomplete. Check the connection and API access; no other provider is substituted automatically.') from None
     from datetime import datetime,timezone
     retrieved=datetime.now(timezone.utc).isoformat(timespec='seconds');result['retrievedAt']=retrieved
     provenance=dict(requestedCoordinates=dict(destination),rawSha256=hashlib.sha256(json.dumps(data,sort_keys=True).encode()).hexdigest(),
@@ -78,5 +78,5 @@ def apply(site,result):
     for key,value in pairs.items():
         design=key.endswith('Design')
         automatic(site,'temperature.'+key,value,source,'CALCULATED',
-                  detail='Maximul/minimul istoric din reanaliză, fără limite implicite de proiect sau rotunjire conservatoare. Nu este măsurătoare directă la amplasament.' if design else 'Maximul/minimul mediilor zilnice din perioada istorică; nu media anuală și nu prognoză.',
+                  detail='Historical reanalysis maximum/minimum without project defaults or conservative rounding. Not a direct site measurement.' if design else 'Maximum/minimum of daily means over the historical period; neither annual mean nor forecast.',
                   periodStart=result['periodStart'],periodEnd=result['periodEnd'],model=result['model'])

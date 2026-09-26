@@ -31,7 +31,7 @@ class GlobalSiteTests(unittest.TestCase):
             item=standards.lookup(dict(lat=44.4268,lon=26.1025))['seismic.ag']
             self.assertEqual(item['value'],.3)
             self.assertEqual(item['applicability'],'jurisdiction_to_verify')
-            self.assertIn('De verificat',item['detail'])
+            self.assertIn('confirm jurisdiction',item['detail'])
 
     def test_new_regional_provider_dispatch_does_not_use_romania(self):
         provider=registry.Provider('test-jp','structural','regional',('wind.qb',),'test', 'Fixture only',countries=('JP',),adapter='fixture_provider:lookup')
@@ -69,7 +69,10 @@ class GlobalSiteTests(unittest.TestCase):
         self.assertLess(abs(xs[0]-xs[1]),100)
 
     def test_global_geocoding_and_configurable_endpoint(self):
-        with patch.dict('os.environ',{'FLOWERMOON_GEOCODER_URL':'https://example.test'}),patch('routing.request',return_value=[dict(display_name='Tokyo',lat='35.68',lon='139.69')]) as req:
+        import places
+        places.search.cache_clear()
+        data={'features':[{'properties':{'name':'Tokyo'},'geometry':{'coordinates':[139.69,35.68]}}]}
+        with patch.dict('os.environ',{'FLOWERMOON_PHOTON_URL':'https://example.test'}),patch('places.request',return_value=data) as req:
             result=routing.geocode('Tokyo')
             self.assertEqual(result[0]['lon'],139.69)
             url=req.call_args[0][0];self.assertEqual(urlparse(url).netloc,'example.test')

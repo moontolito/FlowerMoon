@@ -20,7 +20,7 @@ class PortalTests(AioHTTPTestCase):
         return server.create_app(desktop=self.desktop)
 
     async def test_entry_points_and_static_resources(self):
-        for path,expected in [('/',b'Deschide aplica'),('/app',b'workspace.js'),('/logo.png',b'PNG'),('/nesting',b'<html'),('/static/style.css',b'--primary')]:
+        for path,expected in [('/',b'Open application'),('/app',b'workspace.js'),('/logo.png',b'PNG'),('/nesting',b'<html'),('/static/style.css',b'--primary')]:
             response=await self.client.get(path)
             self.assertEqual(response.status,200,path)
             self.assertIn(expected,(await response.read()),path)
@@ -54,6 +54,19 @@ class PortalTests(AioHTTPTestCase):
         origin=str(self.server.make_url('/')).rstrip('/')
         response=await self.client.get('/websockify',headers={'Origin':origin})
         self.assertEqual(response.status,503)
+
+    async def test_export_download_is_limited_to_excel_folder(self):
+        with tempfile.TemporaryDirectory() as folder,patch.object(server,'APP',Path(folder)):
+            exports=Path(folder)/'data'/'exports';exports.mkdir(parents=True)
+            (exports/'test.xlsx').write_bytes(b'PK workbook fixture')
+            (exports/'secret.json').write_text('private')
+            response=await self.client.get('/api/exports')
+            self.assertEqual([item['name'] for item in await response.json()],['test.xlsx'])
+            response=await self.client.get('/exports/test.xlsx')
+            self.assertEqual(response.status,200);self.assertIn('attachment',response.headers['Content-Disposition'])
+            self.assertEqual(await response.read(),b'PK workbook fixture')
+            for path in ['/exports/secret.json','/exports/%2e%2e%2fsecret.xlsx']:
+                response=await self.client.get(path);self.assertEqual(response.status,404)
 
 class DesktopTests(unittest.IsolatedAsyncioTestCase):
     async def test_concurrent_start_creates_one_worker(self):

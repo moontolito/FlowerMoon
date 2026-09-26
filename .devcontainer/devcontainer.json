@@ -17,7 +17,7 @@
   },
   "forwardPorts": [8000],
   "portsAttributes": {
-    "8000": {"label": "FlowerMoon · Deschide aplicația", "onAutoForward": "openBrowser"},
+    "8000": {"label": "FlowerMoon · Open application", "onAutoForward": "openBrowser"},
     "6080": {"onAutoForward": "ignore"},
     "5901": {"onAutoForward": "ignore"}
   },

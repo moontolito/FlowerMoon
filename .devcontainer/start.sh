@@ -8,7 +8,7 @@ if ! curl --silent --fail http://127.0.0.1:8000/api/status > /dev/null; then
 fi
 for attempt in {1..30}; do
   if curl --silent --fail http://127.0.0.1:8000/api/status > /dev/null; then
-    printf 'FlowerMoon este pregatit. Deschide portul 8000 in browser.\n'
+    printf 'FlowerMoon is ready. Open port 8000 in your browser.\n'
     if [[ -n "${CODESPACE_NAME:-}" ]]; then
       printf 'https://%s-8000.%s\n' "$CODESPACE_NAME" "${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN:-app.github.dev}"
     fi
@@ -16,5 +16,5 @@ for attempt in {1..30}; do
   fi
   sleep 1
 done
-printf 'FlowerMoon nu a pornit. Detalii: .runtime/portal.log\n' >&2
+printf 'FlowerMoon did not start. Details: .runtime/portal.log\n' >&2
 exit 1

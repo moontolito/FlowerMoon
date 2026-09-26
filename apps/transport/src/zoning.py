@@ -76,16 +76,16 @@ def lookup(destination,altitude=None):
             item['candidateValues']=[dict(value=value,operator=operator) for value,operator in sorted({(z['value'],z['operator']) for z in hits+near})]
             if len(choices)==1:
                 item['value'],item['operator']=next(iter(choices))
-                item['detail']='Extras automat din poligonul UTCB; hartă informativă.'
-                if near:item['detail']+=' Aproape de limita zonei (≤250 m): verificați încadrarea.'
-            elif len(choices)>1:item['detail']='Poligoane suprapuse cu valori diferite; verificați zona pe hartă.'
-            else:item['detail']='Punctul nu se află într-un poligon publicat; fără valoare inventată.'
+                item['detail']='Value from the UTCB polygon containing the destination; informational map.'
+                if near:item['detail']+=' Close to the zone boundary (≤250 m): verify the applicable zone.'
+            elif len(choices)>1:item['detail']='Overlapping polygons with different values; verify the applicable zone.'
+            else:item['detail']='The point is outside the published polygons; no value is assumed.'
             if key.startswith(('snow.','wind.')):
-                if altitude is None:item['detail']+=' Aplicabilitatea sub 1000 m încă nu este verificată.'
+                if altitude is None:item['detail']+=' Applicability below 1000 m has not yet been checked.'
                 elif altitude>=1000:
                     item['candidateValue']=item['value'];item['applicability']='unverified_at_altitude'
-                    item['detail']+=' De verificat: altitudinea amplasamentului ≥1000 m. Valoarea afișată este cea din hartă; aplicabilitatea la această altitudine necesită calcul specific.'
+                    item['detail']+=' Destination altitude ≥1000 m. The displayed map value requires a site-specific applicability check.'
             item['nearBoundary']=bool(near)
-        except (OSError,ValueError,ET.ParseError) as error:item['detail']='Sursa de zonare indisponibilă: '+str(error)
+        except (OSError,ValueError,ET.ParseError) as error:item['detail']='Zoning source unavailable: '+str(error)
         result[key]=item
     return result

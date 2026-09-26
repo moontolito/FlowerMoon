@@ -24,7 +24,7 @@ with TemporaryDirectory() as d:
     with patch('humidity.lookup',side_effect=ValueError('offline fixture')),patch('climate.lookup',return_value=result):
         app.refresh_climate();pump(app,lambda:not app.climate_inflight)
         assert window.overview.item('design','values')[1]=='+15 / -9 °C'
-        assert window.overview.item('daily','values')[2]=='Calculat'
+        assert window.overview.item('daily','values')[2]=='Open-Meteo Historical / ERA5'
         assert json.loads(app.state.path.read_text(encoding='utf-8'))['siteConditions']['climate']['maximum']==15
     sc.apply_manual(app.site,{'temperature.maxDesign':50})
     started=threading.Event();release=threading.Event()
@@ -38,7 +38,7 @@ with TemporaryDirectory() as d:
     assert sc.get(app.site,'temperature.maxDesign')['reviewRequired']
     with patch('humidity.lookup',side_effect=ValueError('offline fixture')),patch('climate.lookup',side_effect=ValueError('test outage')):
         app.refresh_climate();pump(app,lambda:not app.climate_inflight)
-    assert 'indisponibil' in window.progress.cget('text')
+    assert 'unavailable' in window.progress.cget('text')
     assert sc.get(app.site,'temperature.maxDailyAverage')['value'] is None
     app.offline=True;app.theme();app.open_site();app.update();app.close();assert not errors,errors
 print('PASS: climate UI, auto-save, provenance, stale response, manual preservation, failure fallback, dark theme')

@@ -28,7 +28,7 @@ class ZoningTests(unittest.TestCase):
             data=zoning.lookup({'lat':44.4268,'lon':26.1025},height)
             self.assertEqual(data['snow.sk']['value'],2);self.assertEqual(data['wind.qb']['value'],.5)
             self.assertEqual(data['snow.sk']['applicability'],'unverified_at_altitude')
-            self.assertIn('De verificat',data['wind.qb']['detail'])
+            self.assertIn('applicability check',data['wind.qb']['detail'])
             self.assertEqual(data['seismic.ag']['value'],.3)
         self.assertEqual(zoning.lookup({'lat':44.4268,'lon':26.1025},999)['snow.sk']['value'],2)
     def test_holes_overlap_lower_bound_and_boundary(self):

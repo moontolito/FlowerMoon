@@ -7,6 +7,7 @@ sys.path.insert(0,str(ROOT/'src'))
 from planner_ui import Planner
 
 def main():
+    os.environ['FLOWERMOON_HOSTED']='1'
     app=Planner()
     status=ROOT/'data'/'hosted-status.json';status.parent.mkdir(exist_ok=True)
     app.geometry('1440x900+0+0')

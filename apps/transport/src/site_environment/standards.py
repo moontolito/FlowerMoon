@@ -16,9 +16,9 @@ def lookup(destination,altitude=None):
             item.update(jurisdiction=geo['code'],provider=provider.id,methodStatus=provider.method_status,coverage=provider.coverage,availability='available' if item['value'] is not None else 'unavailable')
             if geo['nearBoundary']:
                 item['status']='VERIFY';item['applicability']='jurisdiction_to_verify'
-                item['detail']=item.get('detail','')+' De verificat: aproape de frontiera generalizată; confirmați jurisdicția și încadrarea.'
+                item['detail']=item.get('detail','')+' Near a generalized national border; confirm jurisdiction and the applicable zone.'
         return result
-    detail='Nu există adaptor normativ pentru '+(geo['name'] or 'jurisdicția necunoscută')+'. Nicio valoare din România nu este reutilizată.'
-    if geo['nearBoundary']:detail='Aproape de limita poligonului geografic generalizat; jurisdicția trebuie verificată înainte de aplicarea unei hărți normative.'
+    detail='No structural standards adapter for '+(geo['name'] or 'unknown jurisdiction')+'. Romanian values are not reused outside their coverage.'
+    if geo['nearBoundary']:detail='Near a generalized geographic boundary; confirm jurisdiction before applying a structural map.'
     return {key:dict(value=None,source='Regional standards registry',status='VERIFY',unit=unit,operator='=',detail=detail,candidates=[],
                      jurisdiction=geo['code'],standard=None,provider=None,methodStatus='not_applicable',coverage='regional',availability='outside_coverage') for key,unit in VARIABLES.items()}

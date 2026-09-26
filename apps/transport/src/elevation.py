@@ -26,17 +26,17 @@ def pixel(image,point):
     scale=image.tag_v2.get(33550);tie=image.tag_v2.get(33922);keys=image.tag_v2.get(34735,())
     codes={keys[i]:keys[i+3] for i in range(4,len(keys),4) if keys[i+1]==0}
     if not scale or not tie or codes.get(2048)!=4326 or codes.get(1025)!=2:
-        raise ValueError('Copernicus: georeferențiere neașteptată.')
+        raise ValueError('Copernicus: unexpected georeferencing.')
     lon=(point['lon']+180)%360-180
     # GeoTIFF RasterPixelIsPoint: tie point is the first sample centre.
     x=int(math.floor((lon-tie[3])/scale[0]+tie[0]+.5))
     y=int(math.floor((tie[4]-point['lat'])/scale[1]+tie[1]+.5))
-    if not -1<=x<=image.width or not -1<=y<=image.height:raise ValueError('Coordonată în afara dalei DEM.')
+    if not -1<=x<=image.width or not -1<=y<=image.height:raise ValueError('Coordinate outside the DEM tile.')
     x=min(image.width-1,max(0,x));y=min(image.height-1,max(0,y))
     value=float(image.getpixel((x,y)))
     nodata=image.tag_v2.get(42113)
     if (nodata is not None and value==float(str(nodata).strip('\x00'))) or not math.isfinite(value) or not -500<=value<=9000:
-        raise ValueError('Copernicus: valoare lipsă sau invalidă.')
+        raise ValueError('Copernicus: missing or invalid value.')
     return value
 
 def _tile(name,cache_dir):
@@ -51,7 +51,7 @@ def _tile(name,cache_dir):
                 except OSError:
                     if attempt==2:raise
                     time.sleep(1)
-            if len(raw)>20*1024*1024:raise ValueError('Copernicus: dală prea mare.')
+            if len(raw)>20*1024*1024:raise ValueError('Copernicus: tile exceeds the size limit.')
             path.parent.mkdir(parents=True,exist_ok=True)
             temporary=path.with_suffix('.'+uuid.uuid4().hex+'.tmp');temporary.write_bytes(raw)
             with Image.open(temporary) as image:image.load()
@@ -63,7 +63,7 @@ def _tile(name,cache_dir):
 def samples(points,cache_dir=None):
     if Image is None:
         return dict(values=[None]*len(points),source=SOURCE,sourceUrl=DOCS,tiles=[],
-                    errors=['Biblioteca Pillow lipsește din Python-ul folosit la pornire. Instalați dependențele din requirements.txt.'],
+                    errors=['Pillow is missing from the Python interpreter. Install the dependencies in requirements.txt.'],
                     unit='m',verticalDatum='EGM2008',complete=False)
     groups={};values=[None]*len(points);sources=[];errors=[]
     for i,point in enumerate(points):groups.setdefault(tile_name(point),[]).append((i,point))
@@ -77,7 +77,7 @@ def samples(points,cache_dir=None):
             return sampled,meta,None
         except Exception:
             # 404 is not proof of ocean; keep missing tiles explicitly unavailable.
-            return [],None,f'Dală indisponibilă sau invalidă: {name}'
+            return [],None,f'Unavailable or invalid tile: {name}'
     with ThreadPoolExecutor(max_workers=4) as pool:
         for sampled,meta,error in pool.map(read,groups.items()):
             for i,value in sampled:values[i]=value

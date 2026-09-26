@@ -1,45 +1,46 @@
 # FlowerMoon
 
-Aplicații FlowerMoon într-un singur spațiu: planificare transport, date despre amplasament și optimizare Nesting.
+Transport planning, destination environmental data and nesting tools in one private workspace.
 
-- **Transport:** alegi destinația, verifici traseul și vehiculul, consulți temperatura, umiditatea, altitudinea și condițiile de mediu disponibile. Poți modifica valorile și exporta calculul în Excel.
-- **Nesting:** instrumentul existent pentru aranjarea pieselor, accesibil din aceeași pagină de intrare.
+- **Transport:** find departure and delivery addresses with suggestions, select a vehicle, check routes and highlight the delivery region. Site & Environment identifies the destination coordinates and the actual sources for elevation, temperature, humidity and available structural zoning.
+- **Excel:** export directly from Transport. The workbook includes route costs, vehicle details and destination conditions with source references.
+- **Nesting:** open the existing part-arrangement tool from the same home page.
 
-## Deschide FlowerMoon în browser
+## Open in your browser
 
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/moontolito/FlowerMoon?quickstart=1)
 
-1. Apasă **Open in GitHub Codespaces** de mai sus și creează spațiul de testare.
-2. Așteaptă configurarea inițială. Pagina **FlowerMoon** se deschide automat; dacă browserul blochează deschiderea, apasă **Open in Browser** pentru **8000 — FlowerMoon** în panoul **Ports**.
-3. Apasă **Deschide aplicația**. Pornirea și conectarea sunt automate.
+1. Create a Codespace using the button above. You need access to this private repository.
+2. Wait for initial setup. The FlowerMoon page opens automatically. If your browser blocks this, select **Open in Browser** for **8000 — FlowerMoon** in **Ports**.
+3. Select **Open application**. Startup and connection are automatic.
 
-Nu trebuie să rulezi comenzi Python, să alegi un desktop sau să introduci o parolă VNC. Poți salva adresa paginii FlowerMoon în favorite; funcționează cât timp Codespace-ul respectiv este pornit. Pagina `/app` deschide direct Transport.
+No Python commands or extra desktop password are needed. Bookmark the generated FlowerMoon address; add `/app` to open Transport directly. The link works while its Codespace is running.
 
-**Ai deja un Codespace din versiunea veche?** Acesta păstrează configurația veche până la actualizare și reconstruire. Cea mai simplă variantă este un Codespace nou de pe `main`, din butonul de mai sus. Pentru a păstra datele din cel existent, vezi [actualizarea unei sesiuni existente](docs/CODESPACES.md#actualizarea-unui-codespace-existent).
+**Existing Codespace:** pull the latest `main` using Source Control, then stop and restart the Codespace to load the updated application. If it predates the browser portal, use **Codespaces: Rebuild Container** once after pulling. A new Codespace uses the current configuration immediately. Preserve any unsaved work before restarting the app or rebuilding.
 
-Repozitoriul și portul rămân private. Fiecare tester cu acces la repository își creează propriul Codespace; linkul unei sesiuni private nu este un site public. Codespaces folosește cota contului GitHub. Oprește sesiunea când termini testarea.
+After exporting in Transport, select **Download Excel** in the browser toolbar. Projects and exports stay in `apps/transport/data/`, inside your session, and are excluded from Git.
 
-## Fișiere organizate
+The repository and application port remain private. Each tester needs repository access and their own Codespace. Codespaces uses the GitHub account quota; stop the session after testing.
+
+## Project layout
 
 ```text
 apps/
   transport/
-    src/         codul aplicației și interfața
-    assets/      logo, șablon Excel, date geografice și hărți
-    tests/       teste unitare, verificări UI și exemple de date
-    docs/        surse, climă și reguli pentru amplasament
-    vendor/      tema Sun Valley și licența originală
-    run.py       pornirea locală
-    hosted.py    pornirea în browser
-  nesting/       instrumentul HTML existent
-web/portal/      pagina FlowerMoon și serviciul de conectare
-tests/browser/  teste pentru deschidere, reconectare și erori
-scripts/        pornire și verificare a containerului
-docs/           ghid Codespaces și decizii de interfață
-.devcontainer/  configurarea mediului de testare
-.github/        verificări automate GitHub Actions
+    src/         application and shared interface code
+    assets/      logo, Excel template, geography and zoning data
+    tests/       unit tests, UI checks and source fixtures
+    docs/        source and engineering notes
+    vendor/      Sun Valley theme with original licence
+    run.py       local desktop entry point
+    hosted.py    managed browser entry point
+  nesting/       existing HTML nesting tool
+web/portal/      home page, connection service and downloads
+tests/browser/  real browser connection and recovery tests
+scripts/        startup and verification utilities
+docs/           workflow and Codespaces documentation
+.devcontainer/  testing environment configuration
+.github/        automated checks
 ```
 
-Proiectele și exporturile rămân în `apps/transport/data/`, în sesiunea ta, și nu sunt încărcate în Git. Pentru descărcarea unui Excel, salvează-l în `apps/transport/data/exports`, apoi alege **Download** din Explorer-ul Codespaces.
-
-[Ghid Transport și limitele datelor](apps/transport/README.md) · [Ghid Codespaces](docs/CODESPACES.md) · [Verificări automate](https://github.com/moontolito/FlowerMoon/actions/workflows/transport-tests.yml)
+[Transport guide](apps/transport/README.md) · [Destination, sources and export](docs/DESTINATION_WORKFLOW.md) · [Codespaces guide](docs/CODESPACES.md) · [Automated checks](https://github.com/moontolito/FlowerMoon/actions/workflows/transport-tests.yml)

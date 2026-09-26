@@ -18,9 +18,9 @@ FIELDS = {
  'temperature.minDesign': ('Minimum historical temperature', '°C', None, None),
  'temperature.maxDailyAverage': ('Maximum daily average', '°C', None, None),
  'temperature.minDailyAverage': ('Minimum daily average', '°C', None, None),
- 'humidity.maximum': ('Umiditate relativă maximă (orară)', '%', None, None),
- 'humidity.mean': ('Umiditate relativă medie', '%', None, None),
- 'humidity.minimum': ('Umiditate relativă minimă (orară)', '%', None, None),
+ 'humidity.maximum': ('Maximum relative humidity (hourly)', '%', None, None),
+ 'humidity.mean': ('Mean relative humidity', '%', None, None),
+ 'humidity.minimum': ('Minimum relative humidity (hourly)', '%', None, None),
  'humidity.value1': ('Humidity · custom 1 (manual)', '%', None, None),
  'humidity.value2': ('Humidity · custom 2 (manual)', '%', None, None),
  'humidity.value3': ('Humidity · custom 3 (manual)', '%', None, None),
@@ -58,7 +58,7 @@ def migrate(raw=None):
     # Keep the legacy keys for saved-project compatibility, but no project limits.
     for key in ('maxDesign','minDesign','maxDailyAverage','minDailyAverage'):
         f=result['temperature'][key]
-        if not f['manualOverride'] and (f['status']=='DEFAULT' or 'Anvelopă preliminară' in f.get('detail','')):
+        if not f['manualOverride'] and (f['status']=='DEFAULT' or any(text in f.get('detail','') for text in ('Preliminary envelope','Anvelop\u0103 preliminar\u0103'))):
             result['temperature'][key]=field(unit='°C')
     if raw and raw.get('schemaVersion',1)<2:
         result.setdefault('legacyDefaults',{})
@@ -86,7 +86,7 @@ def migrate(raw=None):
             f=get(result,key)
             if not f.get('manualOverride') and f.get('value') is not None and ('NASA' in f.get('source','') or 'Valhalla' in f.get('source','') or '/height' in f.get('source','')):
                 history[key]=deepcopy(f)
-                group,name=key.split('.');result[group][name]=field(unit=f.get('unit',''),detail='Sursa anterioară este arhivată; se așteaptă sursa solicitată.')
+                group,name=key.split('.');result[group][name]=field(unit=f.get('unit',''),detail='Previous source archived; waiting for the requested provider.')
         for name in ('climate','humidityAnalysis'):
             analysis=result.get(name,{})
             if analysis and analysis.get('methodVersion')!='open-meteo-era5-v3':
@@ -118,11 +118,12 @@ def sync(site,departure,destination,origin_coords,dest_coords):
         invalidate(site,list(FIELDS)+['environment.suggestedCorrosivity','environment.siteAltitudeM','transport.suggestedProtection'])
         site['climate']={'status':'pending'}
         site['humidityAnalysis']={'status':'pending'}
+        site.pop('administrativeRegion',None)
         site.pop('locationContext',None);site.pop('coastalDistance',None);site.pop('weather',None);site.pop('elevationAnalysis',None)
         for group in ('seismic','snow','wind'):site[group]['standard']=None;site[group]['jurisdiction']=None
         for key,(_,_,default,_) in FIELDS.items():
             if key.startswith('temperature.') and not get(site,key)['manualOverride']:
-                automatic(site,key,None,'Date climatice în așteptare','VERIFY',detail='')
+                automatic(site,key,None,'Waiting for climate data','VERIFY',detail='')
         for f in site['exposureChecklist'].values():
             if f['manualOverride']:f['reviewRequired']=True
     elif route_changed:invalidate(site,ROUTE_KEYS)
@@ -158,8 +159,8 @@ def badge(f):return f['status']+(' · Review required' if f.get('reviewRequired'
 def recommendation(site):
     # No validated mapping from coast, shipping or climate to an ISO category.
     automatic(site,'environment.suggestedCorrosivity',None,
-              'Metodă de clasificare nevalidată. Distanța de coastă nu determină C3/C5.',
+              'Classification method not validated. Coastal distance does not determine C3/C5.',
               'VERIFY',availability='method_not_validated',methodStatus='not_validated')
     automatic(site,'transport.suggestedProtection',None,
-              'Protecția de transport necesită o specificație; transportul maritim nu atribuie automat C5.',
+              'Transport protection requires a specification; maritime transport does not automatically assign C5.',
               'VERIFY',availability='method_not_validated',methodStatus='not_validated')

@@ -25,7 +25,7 @@ with tempfile.TemporaryDirectory() as folder:
     with patch('humidity.lookup',return_value=result):
         app.refresh_humidity();pump(app,lambda:not app.humidity_inflight)
     assert win.overview.item('humidity.maximum','values')[1]=='90 %'
-    assert 'De verificat' in win.overview.item('humidity.maximum','values')[3]
+    assert win.overview.item('humidity.maximum','values')[2]=='Open-Meteo Historical / ERA5'
     assert json.loads(app.state.path.read_text(encoding='utf-8'))['siteConditions']['humidity']['mean']['value']==200/3
     win.vars['humidity.mean'].set('55');assert win.save()
     with patch('humidity.lookup',return_value=result):

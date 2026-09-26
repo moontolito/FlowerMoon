@@ -15,7 +15,8 @@ with tempfile.TemporaryDirectory() as folder, patch('site_sources.lookup',return
     win.vars['temperature.maxDesign'].set('40');win.vars['temperature.minDesign'].set('60');assert not win.save()
     win.vars['temperature.maxDesign'].set('');win.vars['temperature.minDesign'].set('')
     app.dest_name.set('Site B');app.dest_coords.set('45,25');app.update()
-    assert 'Review required' in win.badges['wind.qb'].cget('text')
+    assert win.badges['wind.qb'].cget('text')=='Manual entry'
+    assert 'Previous destination' in win.overview.item('wind.qb','values')[3]
     assert sc.get(app.site,'wind.qb')['value']==.4
     win.destroy();win=app.open_site();win.reviews['wind.qb'].set(True);assert win.save()
     assert not sc.get(app.site,'wind.qb')['reviewRequired']
