@@ -29,14 +29,14 @@ def lookup(server, destination, geometry=None):
     result['siteAltitude']=dem['values'][0]
     result['siteAltitudeSource']=elevation.SOURCE
     result['siteAltitudeDetail']='Surface elevation includes vegetation and buildings; EGM2008 vertical datum. Verify against a site survey.'
-    if dem['values'][0] is None:result['siteAltitudeDetail']='Copernicus GLO-90 nu a furnizat o valoare. '+'; '.join(dem.get('errors',[]))
+    if dem['values'][0] is None:result['siteAltitudeDetail']='Copernicus GLO-90 did not return a value. '+'; '.join(dem.get('errors',[]))
     heights=dem['values'][1:]
     if shape and len(heights)>=2 and all(v is not None for v in heights):
-        result['altitude']=(max(heights),elevation.SOURCE+f' · maxim din {len(shape)} puncte la circa {spacing:.0f} m; peaks between samples require verification')
+        result['altitude']=(max(heights),elevation.SOURCE+f' · maximum of {len(shape)} samples at approximately {spacing:.0f} m spacing; peaks between samples require verification')
     elif not shape:
         result['altitude']=(dem['values'][0],elevation.SOURCE+' · destination elevation, not the route maximum')
     else:
-        result['altitude']=(None,elevation.SOURCE+' · profil incomplet; maximul traseului nu poate fi stabilit')
+        result['altitude']=(None,elevation.SOURCE+' · incomplete profile; route maximum is unavailable')
     result['altitudeStatus']='VERIFY'
     result['coastalDistance']=geography.coast(destination)
     result['locationContext']=service.context(destination)

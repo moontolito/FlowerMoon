@@ -18,7 +18,7 @@ def dataset_manifest():
 def validate(point):
     lat,lon=point['lat'],point['lon']
     if any(isinstance(v,bool) or not isinstance(v,(int,float)) or not math.isfinite(v) for v in (lat,lon)) or not -90<=lat<=90 or not -180<=lon<=180:
-        raise ValueError('Coordonate geografice invalide.')
+        raise ValueError('Invalid geographic coordinates.')
     return lat,lon
 
 def inside(x,y,ring):
@@ -82,7 +82,7 @@ def _country(lat,lon):
             result.update(code=code,iso3=prop.get('ISO_A3_EH') or prop.get('ISO_A3') or prop.get('ADM0_A3'),name=prop.get('ADMIN'),status='estimated',nearBoundary=bool(adjacent),boundaryDistanceM=distance,nearOtherCountries=sorted(set(adjacent)))
         elif hits:result.update(status='ambiguous',detail='Overlapping polygons; jurisdiction requires confirmation.')
         else:result['detail']='Ocean, unmapped island or area outside coverage; country is not assumed.'
-    except (OSError,ValueError,KeyError):result['detail']='Datasetul geografic local nu este disponibil.'
+    except (OSError,ValueError,KeyError):result['detail']='The local geographic dataset is unavailable.'
     return result
 
 def country(point):
