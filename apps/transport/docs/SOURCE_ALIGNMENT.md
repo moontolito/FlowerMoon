@@ -62,6 +62,6 @@ CAMS și EFEHR sunt înscrise în registru cu `installed=False` și `configured=
 
 ## 6. Validation & Limitations
 
-Verificările automate includ: statistici orare și zile bisecte, unități, lipsuri și duplicate, cache, lipsa cheilor din rapoarte, migrare, coordonate din emisfere diferite, citirea centrelor GeoTIFF, profil incomplet, păstrarea modificărilor manuale și respingerea răspunsurilor pentru destinația anterioară. Verificările live sunt în `source-live-report.json`; perioadele de test sunt consemnate pentru fiecare locație. Verificarea unui punct nu certifică acoperirea fiecărei locații mondiale.
+Verificările automate includ: statistici orare și zile bisecte, unități, lipsuri și duplicate, cache, lipsa cheilor din rapoarte, migrare, coordonate din emisfere diferite, citirea centrelor GeoTIFF, profil incomplet, păstrarea modificărilor manuale și respingerea răspunsurilor pentru destinația anterioară. Verificările live sunt în `tests/fixtures/source-live-report.json`; perioadele de test sunt consemnate pentru fiecare locație. Verificarea unui punct nu certifică acoperirea fiecărei locații mondiale.
 
 Valorile naționale ag/Tc/sk/qb nu sunt interschimbabile cu PGA, vântul meteo sau grosimea zăpezii. ESHM20 nu înlocuiește reglementările naționale. România rămâne doar un adaptor regional, nu limita arhitecturii.

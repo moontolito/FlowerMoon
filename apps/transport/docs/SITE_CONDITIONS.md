@@ -40,7 +40,7 @@ window preserves its map-first hierarchy and single destination entry.
 - Added `site_sources.py`: Valhalla DEM, local coastline and Overpass adapters.
 - Added `site_ui.py`: automatic summary, optional editor, details, JSON export.
 - Added `zoning.py`, four KML snapshots and a regional coastline extract under
-  `zoning_sources/`, with provenance in `zoning_sources/SOURCES.md`.
+  `assets/zoning/`, with provenance in `assets/zoning/SOURCES.md`.
 - Added `test_zoning.py`, `verify_automatic_site.py`, and the optional live
   temporary-state check `verify_live_automatic_site.py`.
 - Added `test_site_conditions.py`, `verify_site_ui.py`; updated
@@ -113,7 +113,7 @@ The existing Romania geocoding restriction is retained; coordinates work abroad.
 - Coastline screening: https://overpass-api.de/api/interpreter
   and https://wiki.openstreetmap.org/wiki/Overpass_API/Overpass_QL
 - Regional fallback: https://www.naturalearthdata.com/downloads/10m-physical-vectors/10m-coastline/
-- Exact zoning map IDs, source URLs and dataset attribution: `zoning_sources/SOURCES.md`.
+- Exact zoning map IDs, source URLs and dataset attribution: `assets/zoning/SOURCES.md`.
 - Ferry evidence format: https://github.com/valhalla/valhalla/blob/master/src/tyr/route_serializer_osrm.cc
 - Zoning resource index: https://www.encipedia.org/articole/proiectare/resurse-utile/2
   The originally requested directory URL returned 404 during verification;
