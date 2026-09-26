@@ -36,7 +36,7 @@ def put(root,ref,value,keep_formula=False):
 def export_workbook(path,rows,rates):
     if not rows:raise ValueError('Nu există distanțe pentru export.')
     if len(rows)>100:raise ValueError('Maximum 100 livrări în această versiune.')
-    template=Path(__file__).resolve().parent/'assets'/'calculation_template.xlsx'
+    template=Path(__file__).resolve().parents[1]/'assets'/'calculation_template.xlsx'
     with ZipFile(template) as z:parts={n:z.read(n) for n in z.namelist()}
     calc=ET.fromstring(parts['xl/worksheets/sheet1.xml']);source=ET.fromstring(parts['xl/worksheets/sheet2.xml'])
     for n,k in enumerate(('loaded','empty','fixed','markup','vat'),3):put(calc,f'C{n}',rates[k]/100 if k in ('markup','vat') else rates[k])

@@ -9,6 +9,8 @@ artifacts.mkdir(exist_ok=True)
 
 for attempt in range(60):
     try:
+        with urlopen('http://127.0.0.1:8000/api/status',timeout=5) as response:
+            assert json.load(response)['state']=='ready','Portal has not confirmed app readiness'
         with urlopen('http://127.0.0.1:6080/',timeout=5) as response:
             assert response.status==200
             assert b'novnc' in response.read().lower()

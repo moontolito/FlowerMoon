@@ -1,8 +1,20 @@
 #!/usr/bin/env bash
 set -euo pipefail
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-mkdir -p "$repo_root/apps/transport/data"
-nohup python -u "$repo_root/scripts/run_transport.py" \
-  >> "$repo_root/apps/transport/data/codespaces.log" 2>&1 < /dev/null &
-printf 'FlowerMoon starting. Open the FlowerMoon desktop on port 6080.\n'
-
+mkdir -p "$repo_root/.runtime"
+if ! curl --silent --fail http://127.0.0.1:8000/api/status > /dev/null; then
+  nohup setsid /opt/flowermoon-venv/bin/python -u "$repo_root/scripts/launch_portal.py" \
+    >> "$repo_root/.runtime/portal.log" 2>&1 < /dev/null &
+fi
+for attempt in {1..30}; do
+  if curl --silent --fail http://127.0.0.1:8000/api/status > /dev/null; then
+    printf 'FlowerMoon este pregatit. Deschide portul 8000 in browser.\n'
+    if [[ -n "${CODESPACE_NAME:-}" ]]; then
+      printf 'https://%s-8000.%s\n' "$CODESPACE_NAME" "${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN:-app.github.dev}"
+    fi
+    exit 0
+  fi
+  sleep 1
+done
+printf 'FlowerMoon nu a pornit. Detalii: .runtime/portal.log\n' >&2
+exit 1

@@ -8,8 +8,8 @@ Read `DESIGN_RULES.md` before designing, changing, or auditing an interface in t
 
 - The current template targets Python with Tkinter/ttk. Use Sun Valley (`sv_ttk`) as the base theme.
 - Official source: https://github.com/rdbende/Sun-Valley-ttk-theme
-- Local theme source: `Sun-Valley-ttk-theme-main/`.
-- Supplied logo: `FlowerMoonLogo.png`. Do not redesign or replace it without an explicit request.
+- Local theme source: `vendor/sun-valley/`.
+- Supplied logo: `assets/FlowerMoonLogo.png`. Do not redesign or replace it without an explicit request.
 - Interpret web-oriented terminology and CSS examples in `DESIGN_RULES.md` as design concepts. Implement their equivalents using centralized Python tokens, ttk styles, and reusable Tkinter components; do not change frameworks merely to follow the examples.
 - Keep the shared design layer separate from application-specific behavior. Build components as the requested scope requires.
 

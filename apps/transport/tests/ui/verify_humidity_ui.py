@@ -49,7 +49,7 @@ with tempfile.TemporaryDirectory() as folder:
         if app.site_timer:app.after_cancel(app.site_timer);app.site_timer=None
         sc.get(app.site,'humidity.mean')['manualOverride']=False
         sc.automatic(app.site,'environment.siteAltitudeM',1200,'UI fixture altitude','VERIFY')
-        real=json.loads(Path('humidity-live-report.json').read_text(encoding='utf-8'))[0];humidity.apply(app.site,real)
+        real=json.loads((Path(__file__).resolve().parents[1]/'fixtures'/'source-live-report.json').read_text(encoding='utf-8'))[0]['humidity'];humidity.apply(app.site,real)
         sc.apply_zoning(app.site,zoning.lookup(dict(lat=44.18,lon=28.63),1200))
         service.apply_context(app.site,service.context(dict(lat=44.18,lon=28.63)))
         for mode,anchor in [('light','humidity.minimum'),('dark','wind.qb')]:

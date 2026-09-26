@@ -1,5 +1,5 @@
 {
-  "name": "FlowerMoon Transport Testing",
+  "name": "FlowerMoon",
   "build": {"dockerfile": "Dockerfile", "context": ".."},
   "features": {
     "ghcr.io/devcontainers/features/desktop-lite:1": {
@@ -15,12 +15,16 @@
     "PYTHONUTF8": "1",
     "PYTHONDONTWRITEBYTECODE": "1"
   },
-  "forwardPorts": [6080],
+  "forwardPorts": [8000],
   "portsAttributes": {
-    "6080": {"label": "FlowerMoon desktop", "onAutoForward": "openBrowser"}
+    "8000": {"label": "FlowerMoon · Deschide aplicația", "onAutoForward": "openBrowser"},
+    "6080": {"onAutoForward": "ignore"},
+    "5901": {"onAutoForward": "ignore"}
   },
+  "otherPortsAttributes": {"onAutoForward": "ignore"},
   "postCreateCommand": "bash .devcontainer/setup.sh",
   "postStartCommand": "bash .devcontainer/start.sh",
+  "postAttachCommand": "bash .devcontainer/start.sh",
   "waitFor": "postCreateCommand",
   "customizations": {
     "vscode": {

@@ -31,13 +31,15 @@ Open `Porneste.cmd`. Install dependencies with the same interpreter used by the 
 - Country/coast: Natural Earth GIS. Structural maps currently cover Romania only.
 - CAMS, EFEHR, TOW and the corrosion index are not implemented/validated. No automatic ISO corrosion category is claimed.
 
-The [source alignment document](SOURCE_ALIGNMENT.md) records actual providers and their limits. For commercial Open-Meteo usage, configure the appropriate access through a Codespaces secret named `FLOWERMOON_CLIMATE_API_KEY`; never commit credentials. `FLOWERMOON_CLIMATE_URL` can override the historical endpoint. No credentials are shipped in this repository.
+The [source alignment document](docs/SOURCE_ALIGNMENT.md) records actual providers and their limits. For commercial Open-Meteo usage, configure the appropriate access through a Codespaces secret named `FLOWERMOON_CLIMATE_API_KEY`; never commit credentials. `FLOWERMOON_CLIMATE_URL` can override the historical endpoint. No credentials are shipped in this repository.
 
 ## Developer checks
 
 ```bash
-python -m unittest discover -p 'test_*.py'
-python verify_source_ui.py
+python tests/run_checks.py
+python tests/run_checks.py --ui
 ```
 
 GUI checks require a desktop/X display. GitHub Actions runs them under Xvfb on Ubuntu. The Sun Valley theme is vendored with its original MIT license; FlowerMoon branding and application code have not been relicensed as open source.
+
+Source lives in `src/`, assets in `assets/`, technical notes in `docs/`, third-party theme in `vendor/`. Start locally with `python run.py` (or `python run.py --offline` for an offline session). `hosted.py` is the managed Codespaces entry point; testers use the browser portal. Existing project data remains in `data/`.

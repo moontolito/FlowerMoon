@@ -4,8 +4,8 @@ from copy import deepcopy
 from pathlib import Path
 import tkinter as tk
 from tkinter import ttk,messagebox,filedialog
-HERE=Path(__file__).resolve().parent
-sys.path.insert(0,str(HERE/'FlowerMoon Concept'));sys.path.insert(0,str(HERE/'Sun-Valley-ttk-theme-main'))
+HERE=Path(__file__).resolve().parents[1]
+sys.path.insert(0,str(HERE/'src'/'ui_shared'));sys.path.insert(0,str(HERE/'vendor'/'sun-valley'))
 import sv_ttk
 from design_system import LIGHT,DARK,FONT,configure
 from window_icon import create_icon
@@ -52,7 +52,7 @@ class App(tk.Tk):
     def __init__(self,path=None,offline=False):
         super().__init__();self.title('FlowerMoon • Transport simplu');self.geometry('1320x840+20+20');self.minsize(1120,700)
         self.icons=[create_icon(self,n) for n in (16,32,48)];self.iconphoto(True,*self.icons)
-        self.logo_original=tk.PhotoImage(file=str(HERE/'FlowerMoonLogo.png'));self.logo=self.logo_original.subsample(8,8)
+        self.logo_original=tk.PhotoImage(file=str(HERE/'assets'/'FlowerMoonLogo.png'));self.logo=self.logo_original.subsample(8,8)
         self.state=State(path or HERE/'data'/'planning.json');self.offline=offline;self.mode='light';self.step=1
         self.active=None;self.matches=[];self.route_results=[];self.route_context=None;self.busy=False;self.jobs=queue.Queue();self.site_jobs=queue.Queue();self.generation=0
         self.product_vars={k:tk.StringVar(value=str(v)) for k,v in self.state.data['product'].items()}

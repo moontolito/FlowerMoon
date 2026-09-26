@@ -13,7 +13,7 @@ from site_environment.geography import validate
 SOURCE='Copernicus DEM GLO-90 · DSM 2021'
 BASE='https://copernicus-dem-90m.s3.amazonaws.com/'
 DOCS='https://registry.opendata.aws/copernicus-dem/'
-CACHE=Path(__file__).resolve().parent/'data'/'copernicus-dem-cache'
+CACHE=Path(__file__).resolve().parents[1]/'data'/'copernicus-dem-cache'
 _lock=threading.Lock()
 
 def tile_name(point):

@@ -1,26 +1,45 @@
 # FlowerMoon
 
-Private workspace for FlowerMoon applications.
+Aplicații FlowerMoon într-un singur spațiu: planificare transport, date despre amplasament și optimizare Nesting.
 
-- **Transport:** [source and testing guide](apps/transport/README.md), including Site & Environment, historical climate, humidity and elevation.
-- **Nesting:** the existing `Nesting_Tool_alpha_v63.html` tool remains at the repository root.
+- **Transport:** alegi destinația, verifici traseul și vehiculul, consulți temperatura, umiditatea, altitudinea și condițiile de mediu disponibile. Poți modifica valorile și exporta calculul în Excel.
+- **Nesting:** instrumentul existent pentru aranjarea pieselor, accesibil din aceeași pagină de intrare.
 
-## Test Transport in your browser
+## Deschide FlowerMoon în browser
 
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/moontolito/FlowerMoon?quickstart=1)
 
-1. Open the button and create a Codespace. You need access to this private repository.
-2. Wait for the container setup. FlowerMoon starts automatically.
-3. In **Ports**, open **6080 — FlowerMoon desktop** in your browser.
-4. Click **Connect**. Desktop password: `vscode`.
+1. Apasă **Open in GitHub Codespaces** de mai sus și creează spațiul de testare.
+2. Așteaptă configurarea inițială. Pagina **FlowerMoon** se deschide automat; dacă browserul blochează deschiderea, apasă **Open in Browser** pentru **8000 — FlowerMoon** în panoul **Ports**.
+3. Apasă **Deschide aplicația**. Pornirea și conectarea sunt automate.
 
-The existing desktop interface runs inside the browser through noVNC. Keep port 6080 **private**. Each tester should create their own Codespace; a private port URL is not a public testing link. Do not expose the desktop publicly: it also provides access to the container and its repository credentials.
+Nu trebuie să rulezi comenzi Python, să alegi un desktop sau să introduci o parolă VNC. Poți salva adresa paginii FlowerMoon în favorite; funcționează cât timp Codespace-ul respectiv este pornit. Pagina `/app` deschide direct Transport.
 
-Codespaces usage is subject to the account's quota and billing settings. Stop the Codespace when finished. This setup does not enable paid plans or alter spending limits.
+**Ai deja un Codespace din versiunea veche?** Acesta păstrează configurația veche până la actualizare și reconstruire. Cea mai simplă variantă este un Codespace nou de pe `main`, din butonul de mai sus. Pentru a păstra datele din cel existent, vezi [actualizarea unei sesiuni existente](docs/CODESPACES.md#actualizarea-unui-codespace-existent).
 
-Saved projects, caches, exports and logs stay inside that Codespace and are excluded from Git. To download an exported workbook, save it under `apps/transport/data/exports`, then use **Download** from the VS Code Explorer. Microsoft Excel is not installed in the container; export remains available.
+Repozitoriul și portul rămân private. Fiecare tester cu acces la repository își creează propriul Codespace; linkul unei sesiuni private nu este un site public. Codespaces folosește cota contului GitHub. Oprește sesiunea când termini testarea.
 
-If the app was closed, run `bash .devcontainer/start.sh` in the terminal. Logs: `apps/transport/data/codespaces.log`.
+## Fișiere organizate
 
-See [GitHub's Codespaces creation guide](https://docs.github.com/en/codespaces/developing-in-a-codespace/creating-a-codespace-for-a-repository) and [desktop-lite documentation](https://github.com/devcontainers/features/tree/main/src/desktop-lite).
+```text
+apps/
+  transport/
+    src/         codul aplicației și interfața
+    assets/      logo, șablon Excel, date geografice și hărți
+    tests/       teste unitare, verificări UI și exemple de date
+    docs/        surse, climă și reguli pentru amplasament
+    vendor/      tema Sun Valley și licența originală
+    run.py       pornirea locală
+    hosted.py    pornirea în browser
+  nesting/       instrumentul HTML existent
+web/portal/      pagina FlowerMoon și serviciul de conectare
+tests/browser/  teste pentru deschidere, reconectare și erori
+scripts/        pornire și verificare a containerului
+docs/           ghid Codespaces și decizii de interfață
+.devcontainer/  configurarea mediului de testare
+.github/        verificări automate GitHub Actions
+```
 
+Proiectele și exporturile rămân în `apps/transport/data/`, în sesiunea ta, și nu sunt încărcate în Git. Pentru descărcarea unui Excel, salvează-l în `apps/transport/data/exports`, apoi alege **Download** din Explorer-ul Codespaces.
+
+[Ghid Transport și limitele datelor](apps/transport/README.md) · [Ghid Codespaces](docs/CODESPACES.md) · [Verificări automate](https://github.com/moontolito/FlowerMoon/actions/workflows/transport-tests.yml)

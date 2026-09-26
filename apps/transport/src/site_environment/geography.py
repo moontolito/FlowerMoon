@@ -4,7 +4,7 @@ import math
 from pathlib import Path
 from functools import lru_cache
 
-ROOT=Path(__file__).parent/'datasets'
+ROOT=Path(__file__).resolve().parents[2]/'assets'/'geography'
 SOURCE='Natural Earth 1:50m · snapshot 2026-09-26'
 COUNTRY_SOURCE='Natural Earth 1:10m · snapshot 2026-09-26'
 SOURCE_URL='https://www.naturalearthdata.com/'

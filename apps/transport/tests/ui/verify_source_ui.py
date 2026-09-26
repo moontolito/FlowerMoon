@@ -5,7 +5,7 @@ from planner_ui import Planner
 import climate,humidity,site_conditions as sc
 from site_environment import service,standards
 
-record=json.loads(Path('source-live-report.json').read_text(encoding='utf-8'))[0]
+record=json.loads((Path(__file__).resolve().parents[1]/'fixtures'/'source-live-report.json').read_text(encoding='utf-8'))[0]
 with tempfile.TemporaryDirectory() as folder:
     app=Planner(Path(folder)/'state.json',offline=True);app.update()
     app.dest_name.set('Constanța');app.dest_coords.set('44.18,28.63')

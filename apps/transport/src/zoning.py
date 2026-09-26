@@ -9,7 +9,7 @@ import math
 import re
 import xml.etree.ElementTree as ET
 
-ROOT=Path(__file__).resolve().parent/'zoning_sources'
+ROOT=Path(__file__).resolve().parents[1]/'assets'/'zoning'
 NS={'k':'http://www.opengis.net/kml/2.2'}
 MAPS={
  'seismic.ag':('ag','ag','g','P100-1/2013'),
