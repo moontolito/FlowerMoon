@@ -40,3 +40,10 @@ jobs:
         run: npx --yes @devcontainers/cli up --workspace-folder .
       - name: Verify browser desktop and automatic app startup
         run: npx --yes @devcontainers/cli exec --workspace-folder . python scripts/check_desktop.py
+      - name: Save desktop rendering evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: transport-desktop-rendering
+          path: .artifacts/
+          retention-days: 7
