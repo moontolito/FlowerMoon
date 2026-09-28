@@ -64,6 +64,30 @@ class PortalTests(AioHTTPTestCase):
             response=await self.client.post('/api/start',headers={'Origin':'https://test-session-8000.app.github.dev'})
             self.assertEqual(response.status,403)
 
+    async def test_codespaces_rewritten_local_origin_with_public_host(self):
+        public='test-session-8000.app.github.dev'
+        with patch.dict(server.os.environ,{'CODESPACE_NAME':'test-session','GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN':'app.github.dev'}):
+            for origin in ('http://localhost:8000','https://localhost:8000','http://127.0.0.1:8000','http://[::1]:8000','http://localhost','https://localhost'):
+                for host,forwarded in ((public,public),('localhost:8000',public),(public,'localhost:8000'),('localhost',public)):
+                    headers={'Host':host,'X-Forwarded-Host':forwarded,'Origin':origin,'X-FlowerMoon-Client':'portal'}
+                    response=await self.client.post('/api/start',headers=headers)
+                    self.assertEqual(response.status,200,(origin,host,forwarded))
+                    response=await self.client.get('/websockify',headers=headers)
+                    self.assertEqual(response.status,503) # passed origin check
+
+    async def test_rewritten_origin_is_limited_to_this_codespace_and_port(self):
+        public='test-session-8000.app.github.dev'
+        with patch.dict(server.os.environ,{'CODESPACE_NAME':'test-session','GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN':'app.github.dev'}):
+            for origin,host in (('http://localhost:9000',public),('http://localhost:8000','other-session-8000.app.github.dev'),('http://localhost:8000/secret',public),('http://user:secret@localhost:8000',public)):
+                response=await self.client.post('/api/start',headers={'Host':host,'X-Forwarded-Host':host,'Origin':origin,'X-FlowerMoon-Client':'portal'})
+                self.assertEqual(response.status,403)
+                body=await response.json()
+                self.assertEqual(body['diagnostics']['portalVersion'],server.PORTAL_VERSION)
+                self.assertNotIn('secret',json.dumps(body['diagnostics']))
+        with patch.dict(server.os.environ,{'CODESPACE_NAME':''}):
+            response=await self.client.post('/api/start',headers={'Host':public,'Origin':'http://localhost:8000','X-FlowerMoon-Client':'portal'})
+            self.assertEqual(response.status,403)
+
     async def test_failure_is_visible_and_not_cached(self):
         self.desktop.state='error'
         response=await self.client.get('/api/status')

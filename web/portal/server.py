@@ -9,6 +9,7 @@ HERE=Path(__file__).resolve().parent
 APP=ROOT/'apps'/'transport'
 RUNTIME=ROOT/'.runtime'
 log=logging.getLogger('flowermoon')
+PORTAL_VERSION='2026-09-28.2'
 
 class Desktop:
     def __init__(self):
@@ -81,15 +82,35 @@ class Desktop:
 def same_origin(request):
     origin=request.headers.get('Origin')
     if not origin:return False
-    # Codespaces may rewrite Host/X-Forwarded-Host to the internal service.
-    # Trust only this session's exact public origin, never a domain wildcard.
+    try:
+        parsed=urlsplit(origin)
+        port=parsed.port
+    except ValueError:return False
+    if parsed.scheme not in ('http','https') or parsed.username or parsed.password or parsed.path or parsed.query or parsed.fragment:return False
     codespace=os.environ.get('CODESPACE_NAME','')
     domain=os.environ.get('GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN','app.github.dev')
-    if codespace and origin==f'https://{codespace}-8000.{domain}':return True
+    public_host=f'{codespace}-8000.{domain}'
     expected=request.headers.get('X-Forwarded-Host',request.host).split(',')[0].strip()
-    try:parsed=urlsplit(origin)
-    except ValueError:return False
-    return parsed.scheme in ('http','https') and not parsed.username and not parsed.password and not parsed.path and not parsed.query and not parsed.fragment and parsed.netloc==expected
+    if codespace:
+        if origin==f'https://{public_host}':return True
+        # The Codespaces tunnel also rewrites Origin to the internal service,
+        # while retaining the public Host or X-Forwarded-Host. Accept only our
+        # own port and a request addressed to this session or its loopback.
+        local_hosts={'localhost','127.0.0.1','[::1]','localhost:8000','127.0.0.1:8000','[::1]:8000'}
+        if parsed.hostname in ('localhost','127.0.0.1','::1') and port in (None,8000):
+            return request.host in local_hosts|{public_host} and expected in local_hosts|{public_host}
+    return parsed.netloc==expected
+
+def rejected_origin(request):
+    # Record routing metadata only; never cookies, tokens, or all request headers.
+    raw=request.headers.get('Origin','')
+    try:
+        parsed=urlsplit(raw)
+        origin=f'{parsed.scheme}://{parsed.hostname or "missing"}:{parsed.port or "default"}'
+    except ValueError:origin='invalid'
+    details=dict(origin=origin,host=request.host[:250],forwardedHost=request.headers.get('X-Forwarded-Host','')[:250],portalVersion=PORTAL_VERSION)
+    log.warning('Portal origin rejected: %s',json.dumps(details))
+    return details
 
 async def index(request):return web.FileResponse(HERE/'static'/'index.html')
 async def workspace(request):return web.FileResponse(HERE/'static'/'workspace.html')
@@ -109,17 +130,20 @@ async def download(request):
 async def status(request):
     data=request.app['desktop'].status()
     data['session']=os.environ.get('CODESPACE_NAME','local')
+    data['portalVersion']=PORTAL_VERSION
     return web.json_response(data,headers={'Cache-Control':'no-store'})
 
 async def start(request):
     if not same_origin(request):
-        return web.json_response(dict(code='origin_mismatch',message='The application address was not accepted. Update the Codespace and restart it, then reopen port 8000.'),status=403,headers={'Cache-Control':'no-store'})
+        return web.json_response(dict(code='origin_mismatch',message='The application address was not accepted. Update the Codespace and restart it, then reopen port 8000.',diagnostics=rejected_origin(request)),status=403,headers={'Cache-Control':'no-store'})
     if request.headers.get('X-FlowerMoon-Client')!='portal':raise web.HTTPForbidden()
     await request.app['desktop'].start()
     return await status(request)
 
 async def websocket(request):
-    if not same_origin(request):raise web.HTTPForbidden()
+    if not same_origin(request):
+        rejected_origin(request)
+        raise web.HTTPForbidden()
     if not request.app['desktop'].ready():raise web.HTTPServiceUnavailable(text='App is starting')
     session=request.app['session']
     try:upstream=await session.ws_connect('http://127.0.0.1:6080/websockify',max_msg_size=32*1024*1024)
