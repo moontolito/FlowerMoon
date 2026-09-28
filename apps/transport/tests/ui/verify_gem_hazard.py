@@ -12,7 +12,12 @@ import gem_hazard
 out=Path(os.environ.get('FLOWERMOON_UI_ARTIFACTS','artifacts'));out.mkdir(parents=True,exist_ok=True)
 def capture(win,name):
     win.update()
-    ImageGrab.grab(window=ctypes.windll.user32.GetAncestor(win.winfo_id(),2)).save(out/name)
+    if os.name == 'nt':
+        screenshot = ImageGrab.grab(window=ctypes.windll.user32.GetAncestor(win.winfo_id(),2))
+    else:
+        x,y = win.winfo_rootx(),win.winfo_rooty()
+        screenshot = ImageGrab.grab(bbox=(x,y,x+win.winfo_width(),y+win.winfo_height()))
+    screenshot.save(out/name)
 
 with tempfile.TemporaryDirectory() as folder,patch('urllib.request.urlopen',side_effect=AssertionError('No network allowed')):
     app=Planner(Path(folder)/'state.json',offline=True);app.update();errors=[]
