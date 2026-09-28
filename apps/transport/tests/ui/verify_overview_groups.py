@@ -25,9 +25,12 @@ with tempfile.TemporaryDirectory() as folder:
     tree.see(GROUP);app.update()
     assert not tree.bbox('deposition.temperature')
     x,y,w,h=tree.bbox(GROUP,'#0')
+    print('Disclosure click target:',dict(bbox=(x,y,w,h),height=tree.winfo_height(),
+        region=tree.identify_region(x+w//2,y+h//2),row=tree.identify_row(y+h//2),
+        column=tree.identify_column(x+w//2)),flush=True)
     tree.event_generate('<ButtonPress-1>',x=x+w//2,y=y+h//2,time=1000)
     tree.event_generate('<ButtonRelease-1>',x=x+w//2,y=y+h//2,time=1030);app.update()
-    assert tree.item(GROUP,'open') and tree.item(GROUP,'text')=='−'
+    assert tree.item(GROUP,'open') and tree.item(GROUP,'text')=='−',dict(open=tree.item(GROUP,'open'),text=tree.item(GROUP,'text'),errors=errors)
     assert not hasattr(win,'value_window')
     win.refresh();app.update()
     assert tree.item(GROUP,'open') and tree.selection()==(GROUP,)
