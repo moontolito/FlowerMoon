@@ -1,6 +1,7 @@
 """Verify data cards, refresh selection and compact editor navigation."""
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from tkinter import ttk
 from planner_ui import Planner
 import site_conditions as sc
 
@@ -18,7 +19,10 @@ with TemporaryDirectory() as folder:
         if app.mode!=mode:app.theme();win=app.open_site()
         for size in ('1120x820','760x600','760x820'):
             win.geometry(size);app.update()
-            assert win.overview.winfo_height()>130,(mode,size,win.overview.winfo_height())
+            row_height=int(ttk.Style(win.overview).lookup(win.overview.cget('style'),'rowheight'))
+            assert win.overview.winfo_height()>=3*row_height,(mode,size,win.overview.winfo_height())
+            assert win.value_button.winfo_viewable()
+            assert win.value_button.winfo_rooty()+win.value_button.winfo_height()<=win.winfo_rooty()+win.winfo_height()
             assert len(win.book.tabs())==1
             assert not hasattr(win,'save_button')
     app.close();assert not errors,errors

@@ -1,6 +1,7 @@
 """Native disclosure interactions, refreshing and light/dark visual artifacts."""
 import os,tempfile,time
 from pathlib import Path
+from tkinter import ttk
 from planner_ui import Planner
 from test_annual import ready,POINT
 from site_overview import CORROSIVITY_GROUP as GROUP,CORROSIVITY_INPUTS
@@ -22,14 +23,15 @@ with tempfile.TemporaryDirectory() as folder:
     assert not tree.item(GROUP,'open') and tree.item(GROUP,'text')=='+'
     assert all(tree.parent(key)==GROUP for key in CORROSIVITY_INPUTS)
     assert not tree.exists('timeOfWetness') and not tree.exists('transport.suggestedProtection')
-    tree.see(GROUP);app.update()
+    tree.see(GROUP);tree.yview_moveto(1.0);app.update()
     assert not tree.bbox('deposition.temperature')
     x,y,w,h=tree.bbox(GROUP,'#0')
-    print('Disclosure click target:',dict(bbox=(x,y,w,h),height=tree.winfo_height(),
-        region=tree.identify_region(x+w//2,y+h//2),row=tree.identify_row(y+h//2),
-        column=tree.identify_column(x+w//2)),flush=True)
-    tree.event_generate('<ButtonPress-1>',x=x+w//2,y=y+h//2,time=1000)
-    tree.event_generate('<ButtonRelease-1>',x=x+w//2,y=y+h//2,time=1030);app.update()
+    # Tk can leave the last row partially visible with different Linux fonts.
+    click_x=x+w//2;click_y=min(y+h//2,tree.winfo_height()-6)
+    assert tree.identify_region(click_x,click_y)=='tree'
+    assert tree.identify_row(click_y)==GROUP
+    tree.event_generate('<ButtonPress-1>',x=click_x,y=click_y,time=1000)
+    tree.event_generate('<ButtonRelease-1>',x=click_x,y=click_y,time=1030);app.update()
     assert tree.item(GROUP,'open') and tree.item(GROUP,'text')=='−',dict(open=tree.item(GROUP,'open'),text=tree.item(GROUP,'text'),errors=errors)
     assert not hasattr(win,'value_window')
     win.refresh();app.update()
@@ -62,7 +64,9 @@ with tempfile.TemporaryDirectory() as folder:
                 from PIL import ImageGrab
                 out=Path(os.environ['FLOWERMOON_UI_ARTIFACTS']);out.mkdir(parents=True,exist_ok=True)
                 ImageGrab.grab(bbox=(win.winfo_rootx(),win.winfo_rooty(),win.winfo_rootx()+win.winfo_width(),win.winfo_rooty()+win.winfo_height())).save(out/f'corrosivity-{mode}-{"expanded" if opened else "collapsed"}.png')
-        win.geometry('760x600');app.update();assert tree.winfo_height()>130
+        win.geometry('760x600');app.update()
+        row_height=int(ttk.Style(tree).lookup(tree.cget('style'),'rowheight'))
+        assert tree.winfo_height()>=3*row_height
         assert win.value_button.winfo_viewable()
     app.close();assert not errors,errors
 print('PASS: +, Space, Left/Right, collapsed inputs, refresh state, destination invalidation, retained provenance and light/dark compact UI')
