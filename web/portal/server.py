@@ -80,8 +80,16 @@ class Desktop:
 
 def same_origin(request):
     origin=request.headers.get('Origin')
+    if not origin:return False
+    # Codespaces may rewrite Host/X-Forwarded-Host to the internal service.
+    # Trust only this session's exact public origin, never a domain wildcard.
+    codespace=os.environ.get('CODESPACE_NAME','')
+    domain=os.environ.get('GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN','app.github.dev')
+    if codespace and origin==f'https://{codespace}-8000.{domain}':return True
     expected=request.headers.get('X-Forwarded-Host',request.host).split(',')[0].strip()
-    return bool(origin) and urlsplit(origin).netloc==expected
+    try:parsed=urlsplit(origin)
+    except ValueError:return False
+    return parsed.scheme in ('http','https') and not parsed.username and not parsed.password and not parsed.path and not parsed.query and not parsed.fragment and parsed.netloc==expected
 
 async def index(request):return web.FileResponse(HERE/'static'/'index.html')
 async def workspace(request):return web.FileResponse(HERE/'static'/'workspace.html')
@@ -104,7 +112,9 @@ async def status(request):
     return web.json_response(data,headers={'Cache-Control':'no-store'})
 
 async def start(request):
-    if not same_origin(request) or request.headers.get('X-FlowerMoon-Client')!='portal':raise web.HTTPForbidden()
+    if not same_origin(request):
+        return web.json_response(dict(code='origin_mismatch',message='The application address was not accepted. Update the Codespace and restart it, then reopen port 8000.'),status=403,headers={'Cache-Control':'no-store'})
+    if request.headers.get('X-FlowerMoon-Client')!='portal':raise web.HTTPForbidden()
     await request.app['desktop'].start()
     return await status(request)
 

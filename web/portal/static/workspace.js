@@ -7,7 +7,11 @@ async function connect(){
   if(rfb){rfb.disconnect();rfb=null;}
   overlay.hidden=false;overlay.classList.remove('error');retry.hidden=true;message.textContent='Opening application…';detail.textContent='The connection starts automatically. No terminal commands or extra passwords are required.';
   try{
-    const started=await fetch('/api/start',{method:'POST',headers:{'X-FlowerMoon-Client':'portal'},signal:AbortSignal.timeout(15000)});if(!started.ok)throw Error('Could not request startup. Reload the page.');
+    const started=await fetch('/api/start',{method:'POST',headers:{'X-FlowerMoon-Client':'portal'},signal:AbortSignal.timeout(15000)});
+    if(!started.ok){
+      let failure;try{failure=await started.json();}catch{}
+      throw Error(failure?.message||(started.status===401||started.status===403?'GitHub did not accept the connection. Reopen port 8000 from Codespaces and sign in again.':`Could not start the application (HTTP ${started.status}). Try again.`));
+    }
     let data;
     for(let i=0;i<100;i++){
       if(mine!==generation)return;const response=await fetch('/api/status',{cache:'no-store',signal:AbortSignal.timeout(15000)});if(!response.ok)throw Error('The service is not responding.');data=await response.json();message.textContent=data.message;

@@ -34,6 +34,17 @@ test('connection failure shows a retry control instead of a blank page',async({p
   await expect(page.locator('body')).toHaveAttribute('data-connected','true',{timeout:30000});
 });
 
+test('startup rejection explains recovery and retry reconnects',async({page})=>{
+  const message='The application address was not accepted. Update the Codespace and restart it, then reopen port 8000.';
+  await page.route('**/api/start',route=>route.fulfill({status:403,json:{code:'origin_mismatch',message}}));
+  await page.goto('/app');
+  await expect(page.locator('#detail')).toHaveText(message);
+  await expect(page.getByRole('button',{name:'Try again'})).toBeVisible();
+  await page.unroute('**/api/start');
+  await page.getByRole('button',{name:'Try again'}).click();
+  await expect(page.locator('body')).toHaveAttribute('data-connected','true',{timeout:30000});
+});
+
 test('completed exports can be downloaded from the browser toolbar',async({page})=>{
   const folder='../../apps/transport/data/exports',name='browser-download-test.xlsx';
   const bytes=Buffer.from('FlowerMoon download transport fixture');

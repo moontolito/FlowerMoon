@@ -39,6 +39,31 @@ class PortalTests(AioHTTPTestCase):
         response=await self.client.post('/api/start',headers={'Origin':'https://example-8000.app.github.dev','X-Forwarded-Host':'example-8000.app.github.dev','X-FlowerMoon-Client':'portal'})
         self.assertEqual(response.status,200)
 
+    async def test_codespaces_public_origin_survives_internal_proxy_host(self):
+        with patch.dict(server.os.environ,{'CODESPACE_NAME':'test-session','GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN':'app.github.dev'}):
+            for forwarded in ({},{'X-Forwarded-Host':'localhost:8000'}):
+                headers={'Host':'localhost:8000','Origin':'https://test-session-8000.app.github.dev','X-FlowerMoon-Client':'portal',**forwarded}
+                response=await self.client.post('/api/start',headers=headers)
+                self.assertEqual(response.status,200)
+                response=await self.client.get('/websockify',headers=headers)
+                self.assertEqual(response.status,503) # origin accepted; desktop not ready
+
+    async def test_codespaces_origin_still_rejects_other_sessions_and_ports(self):
+        with patch.dict(server.os.environ,{'CODESPACE_NAME':'test-session','GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN':'app.github.dev'}):
+            for origin in ('https://other-session-8000.app.github.dev','https://test-session-9000.app.github.dev',
+                           'https://test-session-8000.app.github.dev.attacker.example','http://test-session-8000.app.github.dev','null','https://['):
+                headers={'Host':'localhost:8000','Origin':origin,'X-FlowerMoon-Client':'portal'}
+                response=await self.client.post('/api/start',headers=headers)
+                self.assertEqual(response.status,403,origin)
+                self.assertEqual((await response.json())['code'],'origin_mismatch')
+                response=await self.client.get('/websockify',headers=headers)
+                self.assertEqual(response.status,403,origin)
+
+    async def test_codespaces_origin_does_not_replace_required_client_header(self):
+        with patch.dict(server.os.environ,{'CODESPACE_NAME':'test-session'}):
+            response=await self.client.post('/api/start',headers={'Origin':'https://test-session-8000.app.github.dev'})
+            self.assertEqual(response.status,403)
+
     async def test_failure_is_visible_and_not_cached(self):
         self.desktop.state='error'
         response=await self.client.get('/api/status')
