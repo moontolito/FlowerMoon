@@ -1,0 +1,25 @@
+﻿{
+    "feature":  "Rolling 30-day seasonal corrosion",
+    "date":  "2026-09-27T14:24:58.0887892+03:00",
+    "unitTestsPassed":  93,
+    "uiScriptsPassed":  17,
+    "liveValidation":  "Completed ADS download: 16 variables x 240 samples; exact grid/units/time coverage verified",
+    "periodStart":  "2026-08-28",
+    "periodEnd":  "2026-09-26",
+    "cachedReuseWithoutAPI":  true,
+    "mainCategory":  "C2",
+    "annualizedScenarioMicrometres":  6.1454813260082739,
+    "seasonal":  true,
+    "outsideCalibration":  [
+                               "chlorideDryProxy"
+                           ],
+    "negativeWetSourceSamples":  472,
+    "wetScenarioSuppressed":  true,
+    "rawSamplesClipped":  false,
+    "githubChanged":  false,
+    "projectDataEditedByInstallation":  false,
+    "visualChecks":  [
+                         "Light overview with 30-day labels",
+                         "Dark numerical explanation and calibration warning"
+                     ]
+}

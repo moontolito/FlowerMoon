@@ -29,7 +29,7 @@ with tempfile.TemporaryDirectory() as folder:
     suggestion=dict(label='Constanta, Romania',lat=44.18,lon=28.63,source='Photon / OpenStreetMap')
     destination=entries[1];destination.online=True
     with patch('places.search',return_value=[suggestion]):
-        app.dest_name.set('Constanta');pump(app,lambda:bool(destination.rows))
+        destination.entry.focus_force();app.dest_name.set('Constanta');destination.typed();pump(app,lambda:bool(destination.rows))
         destination.focus_list();destination.choose();app.update()
     assert app.dest_coords.get()=='44.1800000, 28.6300000'
     destination.results.put((destination.token-1,'Old address',[dict(suggestion,label='Wrong')],None))
@@ -41,13 +41,13 @@ with tempfile.TemporaryDirectory() as folder:
     app.site['administrativeRegion']=boundary;app.map.set_region(boundary);app.map.draw()
     assert app.map.find_withtag('delivery-region')
     win=app.open_site();app.update()
-    assert tuple(win.overview['columns'])==('field','value','source','reference')
-    assert win.overview.item('humidity.maximum','values')[2]=='Open-Meteo Historical / ERA5'
-    assert 'Destination' in win.overview.item('humidity.maximum','values')[3]
+    assert tuple(win.overview['columns'])==('field','value','unit','source','meaning','status')
+    assert win.overview.item('humidity.summary','values')[3]=='Open-Meteo Historical / ERA5'
+    assert 'destination' in win.overview.item('humidity.summary','values')[4]
     assert '44.1800000, 28.6300000' in win.summary.cget('text')
-    assert win.overview.item('environment.siteAltitudeM','values')[2]=='Copernicus DEM GLO-90 (2021)'
-    assert win.metrics['route'].value.cget('text')=='24 m'
-    artifacts=Path(__file__).resolve().parents[4]/'.artifacts';artifacts.mkdir(exist_ok=True)
+    assert win.overview.item('environment.siteAltitudeM','values')[3]=='Copernicus DEM GLO-90 (2021)'
+    assert win.overview.item('environment.siteAltitudeM','values')[1:3]==('24','m')
+    artifacts=Path(os.environ.get('FLOWERMOON_UI_ARTIFACTS',str(Path(tempfile.gettempdir())/'flowermoon-test-evidence')));artifacts.mkdir(parents=True,exist_ok=True)
     if os.environ.get('CI') or '--capture' in sys.argv:
         from PIL import ImageGrab
         win.geometry('1260x870+20+20');win.attributes('-topmost',True);app.update()
@@ -65,6 +65,8 @@ with tempfile.TemporaryDirectory() as folder:
     with ZipFile(exported) as z:
         workbook=ET.fromstring(z.read('xl/workbook.xml'));assert [s.attrib['name'] for s in workbook.find('x:sheets',ns)]==['Transport','Routes','Site & Environment']
         site=z.read('xl/worksheets/sheet3.xml').decode();assert 'Constanta, Romania' in site and 'Open-Meteo Historical / ERA5' in site and '44.1800000' in site
+        assert 'Humidity · Max / Mean / Min' in site and 'Delivery terms' not in site
+        assert 'Maximum hourly relative humidity</t>' not in site
         calc=ET.fromstring(z.read('xl/worksheets/sheet1.xml'));assert float(calc.find('.//x:c[@r="L13"]/x:v',ns).text)==870
         assert 'Rute!' not in z.read('xl/worksheets/sheet1.xml').decode()
     app.dest_name.set('Other city');app.update();assert app.map.region is None and 'administrativeRegion' not in app.site

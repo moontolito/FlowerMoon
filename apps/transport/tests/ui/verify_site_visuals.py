@@ -10,8 +10,8 @@ with TemporaryDirectory() as folder:
     app.update();win=app.open_site();win.geometry('1120x820');app.update()
     sc.apply_manual(app.site,{'temperature.maxDesign':'35.85','temperature.minDesign':'-12.97'})
     win.refresh();app.update()
-    assert win.metrics['temperature'].value.cget('text')=='+35.85 / -12.97 °C'
-    assert 'Manual' in win.metrics['temperature'].note.cget('text')
+    assert win.overview.item('design','values')[1:3]==('+35.85 / -12.97','°C')
+    assert win.overview.item('design','values')[3]=='Manual entry'
     win.overview.selection_set('design');win.refresh();app.update()
     assert win.overview.selection()==('design',)
     for mode in ('light','dark'):
@@ -19,11 +19,7 @@ with TemporaryDirectory() as folder:
         for size in ('1120x820','760x600','760x820'):
             win.geometry(size);app.update()
             assert win.overview.winfo_height()>130,(mode,size,win.overview.winfo_height())
-            for tab in (1,2,3):
-                win.book.select(tab);app.update()
-                assert win.save_button.winfo_ismapped()
-                assert win.save_button.winfo_rootx()+win.save_button.winfo_width()<=win.winfo_rootx()+win.winfo_width()
-            win.book.select(0);app.update()
-            assert not win.save_button.winfo_ismapped()
+            assert len(win.book.tabs())==1
+            assert not hasattr(win,'save_button')
     app.close();assert not errors,errors
-print('PASS: manual card values, selection retention, light/dark, three sizes, all editor tabs and Save')
+print('PASS: manual card values, selection retention, light/dark, three sizes, Overview-only layout')

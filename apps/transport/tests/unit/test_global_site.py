@@ -105,7 +105,7 @@ class GlobalSiteTests(unittest.TestCase):
         self.assertIsNone(site['wind']['standard']);self.assertIsNone(site['seismic']['ag']['value'])
 
     def test_no_unsupported_methods_are_selected(self):
-        self.assertEqual(registry.select('air_quality'),[])
+        self.assertEqual([p.id for p in registry.select('air_quality')],['cams-eac4'])
         self.assertEqual(registry.select('structural','JP'),[])
         self.assertTrue(all(v['value'] is None for v in registry.pending_methods().values()))
         site=sc.create();sc.apply_manual(site,{'environment.marineEnvironment':'Yes','transport.maritimeTransport':'Yes'})

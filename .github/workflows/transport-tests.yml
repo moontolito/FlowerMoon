@@ -23,11 +23,12 @@ jobs:
           .venv/bin/python -m pip install -r requirements.txt -r ../../web/portal/requirements.txt
       - name: Unit tests
         run: |
+          .venv/bin/python ../../scripts/prepare_transport_assets.py
           .venv/bin/python -B tests/run_checks.py
           .venv/bin/python -B -m unittest discover -s ../../web/portal/tests -v
       - name: Desktop interaction checks
         run: |
-          xvfb-run -a -s '-screen 0 1600x1000x24' .venv/bin/python -B tests/run_checks.py --ui
+          FLOWERMOON_UI_ARTIFACTS="$GITHUB_WORKSPACE/.artifacts" xvfb-run -a -s '-screen 0 1600x1000x24' .venv/bin/python -B tests/run_checks.py --ui
       - name: Save destination interface evidence
         if: always()
         uses: actions/upload-artifact@v4

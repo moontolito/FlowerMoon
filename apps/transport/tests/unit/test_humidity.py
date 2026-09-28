@@ -56,7 +56,7 @@ class HumidityTests(unittest.TestCase):
         site['snow']['sk']['value']=None
         self.assertEqual(next(r for r in rows(site) if r['key']=='snow.sk')['value'],'2 kN/m²')
         groups=[r['key'] for r in items if r['section']]
-        self.assertEqual(groups,['section_location','section_climate','section_structural','section_exposure','section_additional','section_transport'])
+        self.assertEqual(groups,['section_location','section_climate','section_structural','section_exposure','section_air','section_deposition','section_corrosion','section_additional','section_transport'])
         self.assertFalse(any(r['key'].startswith('humidity.value') for r in items))
 
 if __name__=='__main__':unittest.main()

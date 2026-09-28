@@ -16,11 +16,23 @@ Transport planning, destination environmental data and nesting tools in one priv
 
 No Python commands or extra desktop password are needed. Bookmark the generated FlowerMoon address; add `/app` to open Transport directly. The link works while its Codespace is running.
 
-**Existing Codespace:** pull the latest `main` using Source Control, then stop and restart the Codespace to load the updated application. If it predates the browser portal, use **Codespaces: Rebuild Container** once after pulling. A new Codespace uses the current configuration immediately. Preserve any unsaved work before restarting the app or rebuilding.
+**Existing Codespace:** pull the latest `main` using Source Control, then stop and restart the Codespace to load the updated application. For this update, use **Codespaces: Rebuild Container** after pulling to install the new CAMS dependencies and restore the bundled seismic dataset. A new Codespace uses the current configuration immediately. Preserve any unsaved work before restarting the app or rebuilding.
 
 After exporting in Transport, select **Download Excel** in the browser toolbar. Projects and exports stay in `apps/transport/data/`, inside your session, and are excluded from Git.
 
 The repository and application port remain private. Each tester needs repository access and their own Codespace. Codespaces uses the GitHub account quota; stop the session after testing.
+
+## Current Transport version
+
+This repository includes the installed Transport app as of 28 September 2026: destination selection on the map, crossing-aware route display, the Site & Environment overview, source details, GEM seismic values, and optional annual CAMS/corrosivity assessment.
+
+Codespaces runs the existing Tkinter app through the browser desktop portal on port **8000**. The dataset is bundled as a 34.5 MB gzip archive; setup restores the exact 173 MB raster and checks its SHA-256 against the versioned manifest. No dataset download or API key is needed for the seismic map.
+
+### Optional CAMS access
+
+For CAMS data, add a personal Codespaces secret named **FLOWERMOON_ADS_KEY** and grant it access to this repository, then restart the Codespace. Use your Copernicus ADS personal access token and accept the required dataset terms in your ADS account. The Windows encrypted credential stays on the local computer. Corrosivity assessment is disabled by default; enable it in Application settings when needed. Without ADS access, these results remain unavailable and the rest of Transport can still run.
+
+GitHub secret settings: https://github.com/settings/codespaces
 
 ## Project layout
 

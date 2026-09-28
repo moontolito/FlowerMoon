@@ -1,0 +1,24 @@
+{
+  "checkedAt": "2026-09-27T08:31:25.489793+00:00",
+  "unitTests": 63,
+  "uiScripts": 13,
+  "projectDataUnchanged": true,
+  "credentialScan": "No plaintext ADS key found",
+  "githubUpdated": false,
+  "liveCheck": {
+    "source": "Copernicus CAMS EAC4 / ADS",
+    "sourceUrl": "https://ads.atmosphere.copernicus.eu/datasets/cams-global-reanalysis-eac4-monthly",
+    "dataset": "cams-global-reanalysis-eac4-monthly",
+    "periodStart": "2025-01-01",
+    "periodEnd": "2025-12-31",
+    "unit": "\u00b5g/kg",
+    "gridLatitude": 44.25,
+    "gridLongitude": 28.5,
+    "rawSha256": "853f64a79b0d25dcae71e7c2e3600ea66edbaea0fe4061b77da2915be319367a"
+  },
+  "annualMeans": {
+    "so2": 1.682578791059787,
+    "seaSalt": 3.4599968269293964,
+    "seaSaltDry": 0.8046504248673015
+  }
+}

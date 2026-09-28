@@ -18,6 +18,8 @@ import zoning
 from site_environment import standards,service as site_service
 import climate
 import humidity
+import cams
+import annual_deposition as deposition
 from site_ui import SiteWindow
 
 class Form(tk.Toplevel):
@@ -58,7 +60,10 @@ class App(tk.Tk):
         self.product_vars={k:tk.StringVar(value=str(v)) for k,v in self.state.data['product'].items()}
         for v in self.product_vars.values():v.trace_add('write',self.invalidate)
         self.origin_name=tk.StringVar(value=self.state.data['origin_name']);self.origin_coords=tk.StringVar(value=self.state.data['origin_coords'])
-        self.site=self.state.data['siteConditions'];self.site_window=None;self.site_timer=None;self.site_token=0;self.site_cache={};self.site_inflight=set();self.climate_inflight=set();self.humidity_inflight=set()
+        self.site=self.state.data['siteConditions'];self.site_window=None;self.site_timer=None;self.site_token=0;self.site_cache={};self.site_inflight=set();self.climate_inflight=set();self.humidity_inflight=set();self.cams_inflight=set();self.cams_timer=None
+        self.deposition_inflight=set();self.deposition_timer=None
+        self.corrosion_epoch=0;self.corrosion_cancel=threading.Event()
+        sc.recommendation(self.site)
         self.dest_name=tk.StringVar(value=self.site['destinationAddress']);self.dest_coords=tk.StringVar(value=self.site['destinationCoordinates']);self.via=tk.StringVar()
         for v in (self.origin_name,self.origin_coords,self.dest_name,self.dest_coords,self.via):v.trace_add('write',self.invalidate_route)
         for v in (self.origin_name,self.origin_coords,self.dest_name,self.dest_coords):v.trace_add('write',self.site_location_changed)
@@ -66,7 +71,14 @@ class App(tk.Tk):
         self.poll_id=self.after(100,self.poll);self.protocol('WM_DELETE_WINDOW',self.close)
 
     def site_location_changed(self,*_):
+        if (self.site['destinationAddress'],self.site['destinationCoordinates'])!=(self.dest_name.get(),self.dest_coords.get()):
+            self.corrosion_cancel.set();self.corrosion_cancel=threading.Event();self.corrosion_epoch+=1
+        if (self.site['destinationAddress'],self.site['destinationCoordinates'])!=(self.dest_name.get(),self.dest_coords.get()) and self.deposition_timer:
+            self.after_cancel(self.deposition_timer);self.deposition_timer=None
+        if (self.site['destinationAddress'],self.site['destinationCoordinates'])!=(self.dest_name.get(),self.dest_coords.get()) and self.cams_timer:
+            self.after_cancel(self.cams_timer);self.cams_timer=None
         sc.sync(self.site,self.origin_name.get(),self.dest_name.get(),self.origin_coords.get(),self.dest_coords.get())
+        self.refresh_local_hazard()
         self.site['lookupState']='Updating destination data…' if self.dest_coords.get() else 'Select an address suggestion or a delivery point on the map.'
         self.state.data.update(origin_name=self.origin_name.get(),origin_coords=self.origin_coords.get())
         self.site_token+=1
@@ -93,6 +105,7 @@ class App(tk.Tk):
             self.site_timer=self.after(1200,self.site_location_ready)
     def open_site(self):
         sc.sync(self.site,self.origin_name.get(),self.dest_name.get(),self.origin_coords.get(),self.dest_coords.get())
+        self.refresh_local_hazard()
         try:
             destination=coordinates(self.dest_coords.get())
             site_service.apply_context(self.site,site_service.context(destination))
@@ -102,8 +115,17 @@ class App(tk.Tk):
         self.site_window=SiteWindow(self);self.refresh_humidity();self.refresh_climate();self.refresh_site_sources();return self.site_window
     def refresh_site_window(self):
         if self.site_window and self.site_window.winfo_exists():self.site_window.refresh()
+    def refresh_local_hazard(self):
+        import gem_hazard
+        try:point=coordinates(self.dest_coords.get())
+        except ValueError:
+            self.site.pop('seismicHazard',None);return
+        self.site['seismicHazard']=gem_hazard.lookup(point)
     def refresh_site_sources(self,force=False):
+        self.refresh_local_hazard();self.refresh_site_window()
         if force:self.refresh_climate(force=True);self.refresh_humidity(force=True)
+        self.refresh_air_quality(force=force)
+        self.refresh_deposition(force=force)
         if self.offline:return
         try:destination=coordinates(self.dest_coords.get())
         except ValueError:return
@@ -136,7 +158,7 @@ class App(tk.Tk):
         if self.offline:return
         try:destination=coordinates(self.dest_coords.get())
         except ValueError:return
-        location=(self.dest_name.get(),self.dest_coords.get())
+        location=self.dest_coords.get()
         if location in self.humidity_inflight:return
         existing=self.site.get('humidityAnalysis',{})
         if not force and existing.get('status')=='unavailable':return
@@ -144,7 +166,7 @@ class App(tk.Tk):
         self.humidity_inflight.add(location);self.site['humidityAnalysis']={'status':'loading'};self.refresh_site_window()
         def done(result):
             self.humidity_inflight.discard(location)
-            if location!=(self.dest_name.get(),self.dest_coords.get()):return
+            if location!=self.dest_coords.get():return
             if 'error' in result:self.site['humidityAnalysis']={'status':'unavailable','message':result['error']}
             else:humidity.apply(self.site,result)
             self.state.save();self.refresh_site_window()
@@ -157,7 +179,7 @@ class App(tk.Tk):
         if self.offline:return
         try:destination=coordinates(self.dest_coords.get())
         except ValueError:return
-        location=(self.dest_name.get(),self.dest_coords.get())
+        location=self.dest_coords.get()
         if location in self.climate_inflight:return
         existing=self.site.get('climate',{})
         if not force and existing.get('status')=='unavailable':return
@@ -165,7 +187,7 @@ class App(tk.Tk):
         self.climate_inflight.add(location);self.site['climate']={'status':'loading'};self.refresh_site_window()
         def done(result):
             self.climate_inflight.discard(location)
-            if location!=(self.dest_name.get(),self.dest_coords.get()):return
+            if location!=self.dest_coords.get():return
             if 'error' in result:self.site['climate']={'status':'unavailable','message':result['error']}
             else:climate.apply(self.site,result)
             self.state.save();self.refresh_site_window()
@@ -174,7 +196,79 @@ class App(tk.Tk):
             except Exception as error:result={'error':str(error)}
             self.site_jobs.put((done,result,None))
         threading.Thread(target=worker,daemon=True).start()
+    def refresh_air_quality(self,force=False):
+        if self.offline or not cams.enabled() or not self.site.get('corrosivityEnabled',False):return
+        try:destination=coordinates(self.dest_coords.get())
+        except ValueError:return
+        location=self.dest_coords.get();epoch=self.corrosion_epoch;cancel=self.corrosion_cancel
+        job_key=(location,epoch)
+        if job_key in self.cams_inflight:return
+        existing=self.site.get('airQuality',{})
+        if not force and existing.get('status')=='unavailable':return
+        if not force and existing.get('status')=='ready' and existing.get('methodVersion')==cams.VERSION and existing.get('periodEnd')==f'{cams.YEAR}-12-31' and existing.get('requestedCoordinates')==destination:return
+        if self.cams_timer:self.after_cancel(self.cams_timer);self.cams_timer=None
+        force=force and existing.get('status') not in ('queued','running')
+        self.cams_inflight.add(job_key)
+        self.site['airQuality']=dict(cams.base_result(cams.request_for(destination)),status='loading',requestedCoordinates=destination,message='Loading CAMS atmospheric exposure…')
+        self.refresh_site_window()
+        def done(result):
+            self.cams_inflight.discard(job_key)
+            if location!=self.dest_coords.get() or epoch!=self.corrosion_epoch or not self.site.get('corrosivityEnabled',False):return
+            self.site['airQuality']=result;self.state.save();self.refresh_site_window()
+            if result.get('status') in ('queued','running'):
+                self.cams_timer=self.after(20000,self.refresh_air_quality)
+        def worker():
+            if cancel.is_set():
+                self.site_jobs.put((done,dict(status='disabled'),None));return
+            try:result=cams.lookup(destination,self.state.path.parent/'cams-cache',force=force)
+            except Exception as error:
+                safe=cams.safe_error(error)
+                result=dict(cams.base_result(cams.request_for(destination)),status='unavailable',errorCode=safe.code,message=str(safe),requestedCoordinates=destination)
+            self.site_jobs.put((done,result,None))
+        threading.Thread(target=worker,daemon=True).start()
+
+    def refresh_deposition(self,force=False):
+        if self.offline or not cams.enabled() or not self.site.get('corrosivityEnabled',False):return
+        try:destination=coordinates(self.dest_coords.get())
+        except ValueError:return
+        location=self.dest_coords.get();epoch=self.corrosion_epoch;cancel=self.corrosion_cancel
+        job_key=(location,epoch)
+        if job_key in self.deposition_inflight:return
+        existing=self.site.get('deposition',{})
+        current=deposition.base(destination)
+        same_window=all(existing.get(k)==current.get(k) for k in ('methodVersion','periodStart','periodEnd','requestedCoordinates'))
+        if not force and same_window and existing.get('status')=='unavailable' and not existing.get('retryable'):return
+        if not force and deposition.is_current(existing,destination):
+            sc.recommendation(self.site);return
+        if self.deposition_timer:self.after_cancel(self.deposition_timer);self.deposition_timer=None
+        self.deposition_inflight.add(job_key)
+        if existing.get('jobs') and same_window:
+            # Preserve the last server state during a poll instead of flashing
+            # back to an uninformative loading message every twenty seconds.
+            self.site['deposition']=dict(existing,polling=True)
+        else:
+            self.site['deposition']=dict(current,status='loading',message='Checking the full-year CAMS requests…')
+        sc.recommendation(self.site);self.refresh_site_window()
+        def done(result):
+            self.deposition_inflight.discard(job_key)
+            if location!=self.dest_coords.get() or epoch!=self.corrosion_epoch or not self.site.get('corrosivityEnabled',False):return
+            self.site['deposition']=result;sc.recommendation(self.site);self.state.save();self.refresh_site_window()
+            if result.get('status') in ('queued','running'):
+                self.deposition_timer=self.after(20000,self.refresh_deposition)
+            elif result.get('retryable'):
+                self.deposition_timer=self.after(120000,self.refresh_deposition)
+        def worker():
+            if cancel.is_set():
+                self.site_jobs.put((done,dict(status='disabled'),None));return
+            try:result=deposition.lookup(destination,self.state.path.parent/'annual-deposition-cache',force=force,cancelled=cancel.is_set)
+            except Exception as error:result=deposition.error_result(destination,error)
+            self.site_jobs.put((done,result,None))
+        threading.Thread(target=worker,daemon=True).start()
+
     def close(self):
+        self.corrosion_cancel.set()
+        if self.deposition_timer:self.after_cancel(self.deposition_timer);self.deposition_timer=None
+        if self.cams_timer:self.after_cancel(self.cams_timer);self.cams_timer=None
         if self.site_timer:self.after_cancel(self.site_timer);self.site_timer=None
         sc.sync(self.site,self.origin_name.get(),self.dest_name.get(),self.origin_coords.get(),self.dest_coords.get())
         self.state.data.update(origin_name=self.origin_name.get(),origin_coords=self.origin_coords.get())
@@ -196,6 +290,7 @@ class App(tk.Tk):
             sc.invalidate(self.site,sc.ROUTE_KEYS);self.refresh_site_window()
         self.generation+=1;self.route_results=[];self.route_context=None
         if hasattr(self,'route_tree') and self.route_tree.winfo_exists():self.route_tree.delete(*self.route_tree.get_children())
+        if hasattr(self,'route_details') and self.route_details.winfo_exists():self.route_details.configure(text='')
         if hasattr(self,'map') and self.map.winfo_exists():self.map.set_content([],fit=False)
     def entry(self,parent,label,var,row,col=0,width=20):
         box=ttk.Frame(parent,style='Panel.TFrame');box.grid(row=row,column=col,sticky='ew',padx=(0,12),pady=(0,12));parent.columnconfigure(col,weight=1)
@@ -354,6 +449,7 @@ class App(tk.Tk):
             if text.strip():via.append(coordinates(text))
         payload=route_request(origin,destination,self.active['loaded'],via)
         self.route_results=[];self.route_context=None;self.route_tree.delete(*self.route_tree.get_children());self.map.set_content([dict(origin,label='Departure'),dict(destination,label='Delivery')])
+        if hasattr(self,'route_details'):self.route_details.configure(text='')
         context={'product':deepcopy(self.state.data['product']),'vehicle':deepcopy(self.active['vehicle']),'loaded':deepcopy(self.active['loaded']),'origin':dict(origin,name=self.origin_name.get()),'destination':dict(destination,name=self.dest_name.get()),'request':payload,'calculated_at':stamp(),'server':self.state.data['server']}
         context['vehicleConfirmed']=self.accept.get()
         generation=self.generation;server=self.state.data['server']
@@ -362,14 +458,15 @@ class App(tk.Tk):
             if self.generation!=generation:self.status.set('Inputs changed during the request. Recalculate the route.');return
             if isinstance(results,dict) and 'routeUnavailable' in results:
                 self.site['routeLookup']={'status':'unavailable','detail':results['routeUnavailable']}
-                self.status.set('Road route unavailable. Destination data loads independently.')
+                self.status.set(results['routeUnavailable'])
                 self.state.save();self.refresh_site_window();return
             self.site['routeLookup']={'status':'ready'}
+            context['origin']['name']=self.origin_name.get();context['destination']['name']=self.dest_name.get()
             self.route_results=results;self.route_context=context
             if self.step==2:
                 for i,r in enumerate(results):self.route_tree.insert('','end',iid=str(i),values=(r['name'],f"{r['distance_km']:.2f}",f"{r['hours']:.2f}"))
                 self.route_tree.selection_set('0');self.show_route()
-            self.status.set('Valhalla route ready. Select an option and export Excel. Validate the proposed route.')
+            self.status.set('Route ready, including the detected ferry crossing.' if any(r.get('ferryDetected') for r in results) else 'Valhalla route ready. Select an option and export Excel. Validate the proposed route.')
         def work():
             try:return routing.route(server,payload)
             except Exception as error:
@@ -384,7 +481,10 @@ class App(tk.Tk):
         if changed:
             self.site_route_key=route_key;self.site_token+=1
             sc.invalidate(self.site,sc.ROUTE_KEYS)
-        sc.automatic(self.site,'transport.distanceKm',r['distance_km'],'Valhalla · selected road route','CALCULATED')
+        from route_segments import route_description
+        detail=route_description(r)
+        sc.automatic(self.site,'transport.distanceKm',r['distance_km'],'Valhalla / OpenStreetMap','CALCULATED',detail=detail)
+        if hasattr(self,'route_details'):self.route_details.configure(text=detail)
         sc.automatic(self.site,'transport.maritimeTransport',r.get('maritimeTransport','Unknown'),'Valhalla route ferry evidence' if r.get('maritimeTransport')=='Yes' else 'No reliable maritime evidence in route response','VERIFY')
         self.site['transport']['ferryDetected']=r.get('ferryDetected',False)
         if r.get('ferryDetected'):
@@ -455,13 +555,32 @@ class App(tk.Tk):
         ttk.Button(bar,text='Archive',command=lambda:self.safe(remove)).pack(side='left');ttk.Button(bar,text='Restore last',command=lambda:self.safe(restore)).pack(side='left',padx=6)
         ttk.Button(bar,text='Export Excel',style='Brand.TButton',command=lambda:self.safe(export)).pack(side='right')
         refresh();return win
+    def set_corrosivity_enabled(self,enabled):
+        enabled=bool(enabled)
+        if enabled==self.site.get('corrosivityEnabled',False):return
+        self.corrosion_epoch+=1;self.corrosion_cancel.set();self.corrosion_cancel=threading.Event()
+        for name in ('cams_timer','deposition_timer'):
+            timer=getattr(self,name)
+            if timer:self.after_cancel(timer);setattr(self,name,None)
+        self.site['corrosivityEnabled']=enabled
+        sc.recommendation(self.site);self.state.save();self.refresh_site_window()
+        if enabled:self.refresh_air_quality();self.refresh_deposition()
+
     def settings(self):
         def save(values):
             from urllib.parse import urlparse
-            p=urlparse(values['server'])
-            if p.scheme not in ('https','http') or not p.netloc:raise ValueError('Invalid server address.')
-            self.state.data['server']=values['server'].rstrip('/');self.state.save();self.invalidate_route()
-        Form(self,'Valhalla settings',[('server','Server address')],self.state.data,save,'The public server needs no API key and has usage limits. Contact its operator before distributing the app; use your own server for heavy usage. Only coordinates and vehicle parameters are sent, not product names.')
+            address=values['server'].strip();parsed=urlparse(address)
+            if parsed.scheme not in ('https','http') or not parsed.netloc or parsed.username or parsed.password:raise ValueError('Invalid server address.')
+            if parsed.scheme=='http' and parsed.hostname not in ('localhost','127.0.0.1'):raise ValueError('Use HTTPS for external servers.')
+            changed=address.rstrip('/')!=self.state.data['server']
+            self.state.data['server']=address.rstrip('/')
+            self.set_corrosivity_enabled(values['corrosivityEnabled'])
+            self.state.save()
+            if changed:self.invalidate_route()
+        values=dict(self.state.data,corrosivityEnabled=self.site.get('corrosivityEnabled',False))
+        year=deposition.reference_year()
+        return Form(self,'Application settings',[('server','Valhalla server address'),('corrosivityEnabled',f'Calculate annual corrosivity ({year})','bool')],values,save,
+            f'Annual corrosivity is optional and off by default. Enabling it retrieves all 12 months of {year} from Copernicus ADS. A category appears only after the full year is verified. Downloads are cached and resumed; ADS processing may be slow. Disabling stops new submissions and polling; requests already sent may finish on ADS. The result remains an estimate using model proxies. Other destination data loads independently.')
 
 if __name__=='__main__':
     import argparse

@@ -10,6 +10,9 @@ def configure_site(root, c):
     style.configure('Site.TNotebook.Tab', padding=(16, 10), font=(FONT, 10, 'bold'))
     style.map('Site.TNotebook.Tab', foreground=[('selected', c['primary'])])
     style.configure('SiteSummary.Treeview', rowheight=32, font=(FONT, 10))
+    # A literal + / minus control replaces the theme's disclosure arrow.
+    style.layout('SiteSummary.Treeview.Item', [('Treeitem.padding', {'sticky':'nswe','children':[
+        ('Treeitem.text', {'sticky':'nswe'})]})])
     style.map('SiteSummary.Treeview', background=[('selected', c['selection'])], foreground=[('selected', c['text'])])
     style.configure('SiteSummary.Treeview.Heading', font=(FONT, 10, 'bold'), padding=(8, 8))
     style.configure('SiteValue.TLabel', background=c['surface'], foreground=c['primary'], font=(FONT, 17, 'bold'))

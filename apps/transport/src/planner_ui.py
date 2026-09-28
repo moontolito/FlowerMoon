@@ -7,11 +7,13 @@ import threading,regions
 
 class Planner(App):
     def __init__(self,*args,**kwargs):
-        self.panel='route';self.ready=False;self.manual=False
+        self.panel='route';self.ready=False;self.manual=False;self.address_enrichment=False;self.hazard_visible=False
         super().__init__(*args,**kwargs)
+        from map_address import MapAddressLookup
+        self.map_addresses=MapAddressLookup(self)
         self.title('FlowerMoon • Transport');self.minsize(1000,700)
         for name,coords in ((self.origin_name,self.origin_coords),(self.dest_name,self.dest_coords)):
-            name.trace_add('write',lambda *_,c=coords:c.set(''))
+            name.trace_add('write',lambda *_,c=coords:None if self.address_enrichment else c.set(''))
         self.ready=True;self.choose_recommended();self.status.set('Choose the destination, then calculate the route.')
 
     def build(self):
@@ -59,9 +61,18 @@ class Planner(App):
         self.pick_mode=tk.StringVar(value='Destination')
         ttk.Combobox(tools,textvariable=self.pick_mode,values=['Destination','Departure'],state='readonly',width=12).pack()
         self.label(tools,'Click on the map','PanelMuted').pack(pady=(4,0))
+        hazard_var=tk.BooleanVar(value=self.hazard_visible)
+        def toggle_hazard():
+            self.hazard_visible=hazard_var.get();self.map.set_hazard(self.hazard_visible)
+        ttk.Checkbutton(tools,text='Seismic PGA',variable=hazard_var,command=toggle_hazard).pack(pady=(6,0))
+        self.hazard_var=hazard_var
+        self.map.set_hazard(self.hazard_visible)
         self.results_panel=ttk.Frame(right,style='Panel.TFrame',padding=14)
-        self.route_tree=self.table(self.results_panel,[('route','Route options',170),('km','Distance · km',140),('time','Driving · hours',130)],[(i,(r['name'],f"{r['distance_km']:.1f}",f"{r['hours']:.1f}")) for i,r in enumerate(self.route_results)],3)
+        self.route_tree=self.table(self.results_panel,[('route','Route options',170),('km','Total distance · km',140),('time','Travel estimate · h',140)],[(i,(r['name'],f"{r['distance_km']:.1f}",f"{r['hours']:.1f}")) for i,r in enumerate(self.route_results)],3)
         self.route_tree.bind('<<TreeviewSelect>>',self.show_route)
+        self.route_details=self.label(self.results_panel,'','PanelMuted',wraplength=580,justify='left')
+        self.route_details.pack(anchor='w',fill='x',pady=(8,0))
+        self.results_panel.bind('<Configure>',lambda e:self.route_details.configure(wraplength=max(260,e.width-30)))
         ttk.Button(self.results_panel,text='Export Excel',style='Brand.TButton',command=lambda:self.safe(self.export_transport)).pack(anchor='e',pady=(10,0))
         if self.route_results:self.results_panel.grid(row=1,column=0,sticky='ew',pady=(10,0));self.route_tree.selection_set('0');self.show_route()
         else:self.place_markers()
@@ -75,9 +86,9 @@ class Planner(App):
     def route_controls(self,parent):
         for key,title,var in [('origin','A  Departure',self.origin_name),('destination','B  Destination',self.dest_name)]:
             self.label(parent,title,'PanelMuted').pack(anchor='w',pady=(8,4))
-            row=ttk.Frame(parent,style='Panel.TFrame');row.pack(fill='x')
-            entry=AddressEntry(row,var,lambda point,k=key:self.select_address(k,point),online=not self.offline);entry.pack(side='left',fill='x',expand=True)
-            ttk.Button(row,text='Search',command=lambda k=key:self.search(k)).pack(side='right',padx=(6,0))
+            row=ttk.Frame(parent,style='Panel.TFrame');row.pack(fill='x');row.columnconfigure(0,weight=1)
+            entry=AddressEntry(row,var,lambda point,k=key:self.select_address(k,point),online=not self.offline);entry.grid(row=0,column=0,sticky='ew')
+            ttk.Button(row,text='Search',width=8,command=lambda k=key:self.search(k)).grid(row=0,column=1,padx=(6,0),sticky='n')
         ttk.Button(parent,text='Exact coordinates / via',command=self.location_details).pack(anchor='w',pady=(8,0))
         self.section(parent,'What are we transporting?')
         p=self.state.data['product']
@@ -104,6 +115,10 @@ class Planner(App):
         self.place_markers();self.status.set('Address selected. Destination data will load automatically.')
 
     def site_location_changed(self,*args):
+        if self.address_enrichment:return
+        for key,name,coords in [('departureAddressLookup',self.origin_name,self.origin_coords),('destinationAddressLookup',self.dest_name,self.dest_coords)]:
+            record=self.site.get(key,{})
+            if record and (record.get('coordinates')!=coords.get() or record.get('label',name.get())!=name.get()):self.site.pop(key,None)
         old=self.site.get('destinationCoordinates','')
         super().site_location_changed(*args)
         if old!=self.dest_coords.get():
@@ -203,9 +218,28 @@ class Planner(App):
             except ValueError:pass
         self.map.set_content(markers,fit=len(markers)>1)
     def pick(self,lat,lon):
-        name,coords=(self.origin_name,self.origin_coords) if self.pick_mode.get()=='Departure' else (self.dest_name,self.dest_coords)
+        target='origin' if self.pick_mode.get()=='Departure' else 'destination'
+        name,coords=(self.origin_name,self.origin_coords) if target=='origin' else (self.dest_name,self.dest_coords)
         name.set('Point selected on map');coords.set(f'{lat:.7f}, {lon:.7f}');self.place_markers();self.status.set('Point selected. You can calculate the route.')
+        self.map_addresses.selected(target,lat,lon)
+    def apply_map_address(self,target,label):
+        # Label enrichment is not a new location: preserve routes, source values,
+        # running requests and exact coordinates, and do not open autocomplete.
+        self.address_enrichment=True
+        try:
+            if target=='origin':
+                self.origin_name.set(label);self.site['departureAddress']=label
+                self.state.data['origin_name']=label
+            else:
+                self.dest_name.set(label);self.site['destinationAddress']=label
+            if self.route_context:self.route_context['origin' if target=='origin' else 'destination']['name']=label
+        finally:self.address_enrichment=False
+        self.state.save();self.refresh_site_window()
+    def close(self):
+        if hasattr(self,'map_addresses'):self.map_addresses.close()
+        super().close()
     def invalidate_route(self,*args):
+        if self.address_enrichment:return
         super().invalidate_route(*args)
         if hasattr(self,'results_panel') and self.results_panel.winfo_exists():self.results_panel.grid_remove()
     def calculate_route(self):
@@ -223,7 +257,6 @@ class Planner(App):
         def finished(result):
             done(result)
             if self.route_results:self.results_panel.grid(row=1,column=0,sticky='ew',pady=(10,0))
-            if not self.route_results:self.status.set('Select an address from the results.')
         super().start_job(work,finished)
 
 if __name__=='__main__':

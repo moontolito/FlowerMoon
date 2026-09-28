@@ -1,37 +1,35 @@
-"""Real Tk widgets; temporary data and mocked providers only."""
-import tempfile
+"""Overview-only site window: read-only data, provenance and export."""
+import os,json,tempfile
 from pathlib import Path
 from unittest.mock import patch
-from planner_ui import Planner,Form
+from tkinter import ttk
+from planner_ui import Planner
 import site_conditions as sc
 
-with tempfile.TemporaryDirectory() as folder, patch('site_sources.lookup',return_value={}):
-    app=Planner(Path(folder)/'state.json',offline=True);errors=[]
-    app.report_callback_exception=lambda *args:errors.append(args)
-    app.update();app.dest_name.set('Site A');app.dest_coords.set('44.17,28.65')
+def walk(widget):
+    for child in widget.winfo_children():
+        yield child
+        yield from walk(child)
+
+with tempfile.TemporaryDirectory() as folder:
+    app=Planner(Path(folder)/'state.json',offline=True);app.update()
+    errors=[];app.report_callback_exception=lambda *args:errors.append(args)
+    sc.apply_manual(app.site,{'wind.qb':'.4'})
     win=app.open_site();app.update()
-    win.vars['wind.qb'].set('0.4');win.vars['environment.marineEnvironment'].set('Possible');assert win.save()
-    assert 'Marine environment detected' in win.warning.cget('text')
-    win.vars['temperature.maxDesign'].set('40');win.vars['temperature.minDesign'].set('60');assert not win.save()
-    win.vars['temperature.maxDesign'].set('');win.vars['temperature.minDesign'].set('')
-    app.dest_name.set('Site B');app.dest_coords.set('45,25');app.update()
-    assert win.badges['wind.qb'].cget('text')=='Manual entry'
-    assert 'Previous destination' in win.overview.item('wind.qb','values')[3]
-    assert sc.get(app.site,'wind.qb')['value']==.4
-    win.destroy();win=app.open_site();win.reviews['wind.qb'].set(True);assert win.save()
-    assert not sc.get(app.site,'wind.qb')['reviewRequired']
-    win.destroy();app.accept.set(True)
-    response=[dict(name='Test',distance_km=677,hours=12,geometry=dict(type='LineString',coordinates=[[26.75,47.85],[25,45]]))]
-    app.start_job=lambda work,done:done(work())
-    with patch('routing.route',return_value=response):app.calculate_route()
-    app.update();assert sc.get(app.site,'transport.distanceKm')['value']==677
-    app.transfer();form=next(w for w in app.winfo_children() if isinstance(w,Form));form.submit();app.update()
-    assert app.state.data['deliveries'][0]['siteConditions']['wind']['qb']['value']==.4
-    app.theme();win=app.open_site();win.geometry('760x600');app.update()
-    assert win.warning.winfo_ismapped()
-    # Saving and reopening retains site data; legacy deliveries remain untouched.
-    app.close();assert not errors,errors
-    reopened=Planner(Path(folder)/'state.json',offline=True);reopened.update()
-    assert reopened.dest_name.get()=='Site B';assert sc.get(reopened.site,'wind.qb')['value']==.4
-    reopened.close()
-print('PASS: site editor, validation, warnings, review, route reuse, delivery snapshot, dark/minimum size, save/load')
+    assert len(win.book.tabs())==1 and win.book.tab(0,'text')=='Overview'
+    assert not any(isinstance(w,(ttk.Entry,ttk.Combobox,ttk.Checkbutton)) for w in walk(win))
+    assert not any(isinstance(w,ttk.Button) and w.cget('text')=='Save changes' for w in walk(win))
+    assert win.overview.item('wind.qb','values')[1:3]==('0.4','kPa')
+    assert win.overview.item('wind.qb','values')[3]=='Manual entry'
+    assert sc.get(app.site,'wind.qb')['manualOverride']
+    win.overview.selection_set('wind.qb');win.overview_detail();assert 'Reference wind pressure' in win.detail.cget('text')
+    target=Path(folder)/'conditions.json'
+    with patch('site_ui.filedialog.asksaveasfilename',return_value=str(target)):win.export()
+    assert json.loads(target.read_text(encoding='utf-8'))['wind']['qb']['value']==.4
+    if os.environ.get('FLOWERMOON_UI_ARTIFACTS'):
+        from PIL import ImageGrab
+        out=Path(os.environ['FLOWERMOON_UI_ARTIFACTS']);out.mkdir(parents=True,exist_ok=True)
+        win.geometry('1120x820+30+30');win.lift();app.update()
+        ImageGrab.grab(bbox=(win.winfo_rootx(),win.winfo_rooty(),win.winfo_rootx()+win.winfo_width(),win.winfo_rooty()+win.winfo_height())).save(out/'overview-only.png')
+    win.destroy();app.close();assert not errors,errors
+print('PASS: Overview is the only tab, no manual editor controls, existing values retained, provenance and JSON export')

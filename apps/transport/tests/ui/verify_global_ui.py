@@ -27,10 +27,10 @@ with tempfile.TemporaryDirectory() as folder:
         assert not app.route_context
         assert app.site['routeLookup']['status']=='unavailable'
         assert sc.get(app.site,'seismic.ag')['value'] is None
-        assert 'P100' not in win.overview.item('seismic.ag','values')[0]
-        assert win.overview.item('seismic.ag','values')[2]=='No source for this region'
+        assert not win.overview.exists('seismic.ag')
+        assert win.overview.item('seismic.nationalUnavailable','values')[1]=='Not available'
         assert win.overview.item('country','values')[1]=='Japan'
-        assert 'Japan' in win.structural_context.cget('text')
+        assert len(win.book.tabs())==1
         assert 'coastalDistance' in json.loads(app.state.path.read_text(encoding='utf-8'))['siteConditions']
         app.offline=True
         if '--capture' in sys.argv:

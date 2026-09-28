@@ -69,9 +69,9 @@ def coordinates(text):
 
 def route_request(origin,destination,loaded,via=None):
     truck={k:num(loaded.get(k),k,.001,k=='axle_count') for k in ('length','width','height','weight','axle_load','axle_count')}
-    truck.update(ignore_restrictions=False,ignore_access=False,ignore_closures=False,hgv_no_access_penalty=43200)
+    truck.update(ignore_restrictions=False,ignore_access=False,ignore_closures=False,hgv_no_access_penalty=43200,use_ferry=0.5)
     points=[dict(origin,type='break'),*[dict(p,type='via') for p in (via or [])],dict(destination,type='break')]
-    return {'locations':points,'costing':'truck','costing_options':{'truck':truck},'units':'kilometers','language':'ro-RO','format':'osrm','shape_format':'geojson','alternates':0 if via else 2}
+    return {'locations':points,'costing':'truck','costing_options':{'truck':truck},'units':'kilometers','language':'en-GB','format':'osrm','shape_format':'geojson','alternates':0 if via else 2}
 
 def parse_response(data):
     if data.get('code')!='Ok':raise ValueError('Valhalla found no route for the submitted configuration. '+str(data.get('error') or data.get('message') or ''))
@@ -81,6 +81,14 @@ def parse_response(data):
         if geometry.get('type')!='LineString' or len(geometry.get('coordinates',[]))<2:raise ValueError('Response contains no valid geometry.')
         rows.append({'name':f'Option {i}','distance_km':num(r.get('distance'),'Distance',.001)/1000,'hours':num(r.get('duration'),'Time',0)/3600,'geometry':geometry})
         rows[-1]['ferryDetected']=any(step.get('mode')=='ferry' or any('ferry' in intersection.get('classes',[]) for intersection in step.get('intersections',[])) for leg in r.get('legs',[]) for step in leg.get('steps',[]))
+        steps=[s for leg in r.get('legs',[]) for s in leg.get('steps',[])]
+        crossings=[s for s in steps if s.get('mode')=='ferry']
+        rows[-1]['crossings']=[dict(name=s.get('name') or 'Unnamed ferry / vehicle crossing',distance_km=num(s['distance'],'Crossing distance',0)/1000 if s.get('distance') is not None else None,hours=num(s['duration'],'Crossing time',0)/3600 if s.get('duration') is not None else None) for s in crossings]
+        # Split only when the step distances cover the whole response. A missing
+        # step list must not be presented as proof that a route is all road.
+        if steps and all(s.get('mode') in ('driving','ferry') and s.get('distance') is not None for s in steps) and abs(sum(float(s['distance']) for s in steps)/1000-rows[-1]['distance_km'])<0.1:
+            crossing_km=sum(c['distance_km'] for c in rows[-1]['crossings'])
+            rows[-1].update(crossing_distance_km=crossing_km,road_distance_km=max(0,rows[-1]['distance_km']-crossing_km))
     if not rows:raise ValueError('The service returned no routes.')
     return rows
 

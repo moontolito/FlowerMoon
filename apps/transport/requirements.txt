@@ -1,2 +1,9 @@
 # Copernicus GLO-90 GeoTIFF reader. Use the same Python as Porneste.cmd.
 Pillow==12.3.0
+
+# Copernicus ADS retrieval and NetCDF decoding.
+cdsapi==0.7.7
+netCDF4==1.7.4
+
+# ECMWF GRIB reader for deposition fields.
+eccodes==2.48.0

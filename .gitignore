@@ -17,3 +17,9 @@ node_modules/
 **/sources-dark.png
 **/humidity-light.png
 **/humidity-dark.png
+**/artifacts/
+**/assets/datasets/gem-gshm-2023.1/*.tif
+**/.cdsapirc
+**/ads.json
+*.pem
+*.key

@@ -16,10 +16,11 @@ with tempfile.TemporaryDirectory() as folder:
     service.apply_context(app.site,service.context(record['coordinates']))
     sc.apply_zoning(app.site,standards.lookup(record['coordinates'],record['elevation']['values'][0]))
     win=app.open_site();win.geometry('1260x870+20+20');app.update()
-    assert 'Open-Meteo' in win.overview_sources['humidity.maximum']
+    assert 'Open-Meteo' in win.overview_sources['humidity.summary']
     assert 'Copernicus' in win.overview_sources['environment.siteAltitudeM']
-    assert win.overview.item('humidity.maximum','values')[1]=='100 %'
-    assert win.overview.item('humidity.minimum','values')[1]=='30 %'
+    humidity_values=win.overview.item('humidity.summary','values')[1].removesuffix(' %').split(' / ')
+    assert humidity_values[0]=='100' and humidity_values[2]=='30'
+    assert len(humidity_values)==3
     assert 'NASA' not in win.progress.cget('text')
     win.sources();app.update()
     for child in win.winfo_children():
@@ -29,7 +30,7 @@ with tempfile.TemporaryDirectory() as folder:
         from PIL import ImageGrab
         for mode in ('light','dark'):
             if app.mode!=mode:app.theme();win=app.open_site();win.geometry('1260x870+20+20')
-            win.attributes('-topmost',True);win.overview.see('humidity.minimum')
+            win.attributes('-topmost',True);win.overview.see('humidity.summary')
             for _ in range(5):app.update();time.sleep(.15)
             ImageGrab.grab(bbox=(win.winfo_rootx(),win.winfo_rooty(),win.winfo_rootx()+win.winfo_width(),win.winfo_rooty()+win.winfo_height())).save('sources-'+mode+'.png')
     app.close()

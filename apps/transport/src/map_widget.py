@@ -39,6 +39,7 @@ class Map(tk.Canvas):
         self.on_pick=on_pick; self.online=online; self.zoom=6; self.lat=46.3; self.lon=25
         self.tiles={}; self.pending=set(); self.results=queue.Queue(); self.pool=ThreadPoolExecutor(max_workers=2)
         self.markers=[]; self.geometry=[];self.region=None; self.error=''; self.alive=True; self.redraw_id=None
+        self.hazard_visible=False;self.hazard_key=None;self.hazard_image=None;self.hazard_error=''
         self.bind('<Configure>',lambda e:self.schedule())
         self.bind('<ButtonPress-1>',self.press); self.bind('<B1-Motion>',self.drag); self.bind('<ButtonRelease-1>',self.release)
         self.bind('<MouseWheel>',lambda e:self.change_zoom(1 if e.delta>0 else -1))
@@ -103,6 +104,44 @@ class Map(tk.Canvas):
     def set_region(self,region):
         self.region=region;self.schedule()
 
+    def set_hazard(self,enabled):
+        self.hazard_visible=bool(enabled);self.schedule()
+
+    def draw_hazard(self,w,h,ox,oy):
+        import gem_hazard
+        key=(self.zoom,ox,oy,w,h)
+        if key!=self.hazard_key:
+            self.hazard_error=''
+            try:
+                from PIL import ImageTk
+                self.hazard_image=ImageTk.PhotoImage(gem_hazard.overlay(self.zoom,ox,oy,w,h),master=self)
+            except Exception as error:
+                self.hazard_image=None;self.hazard_error='Seismic layer unavailable: '+str(error)
+            self.hazard_key=key
+        if self.hazard_image:self.create_image(0,0,image=self.hazard_image,anchor='nw',tags='seismic-hazard')
+
+    def hazard_legend(self,w,h):
+        import gem_hazard
+        if self.hazard_error:
+            self.create_rectangle(5,48,min(w-5,420),100,fill=self.c['surface'],outline=self.c['border'])
+            self.create_text(12,55,text=self.hazard_error,anchor='nw',width=min(w-24,395),fill=self.c['warning'])
+            return
+        columns=2 if w>=560 else 1
+        rows=6 if columns==2 else 11
+        boxheight=rows*15+66;boxwidth=536 if columns==2 else min(w-16,350)
+        if w<360 or h<boxheight+110:
+            self.create_text(10,60,text='GEM 2023.1 · PGA (g) · rock · 475 years\nPGA bands and names: open Value details.',anchor='nw',fill=self.c['text'],tags='seismic-legend');return
+        y=h-boxheight-61
+        self.create_rectangle(8,y,8+boxwidth,y+boxheight,fill=self.c['surface'],outline=self.c['border'],tags='seismic-legend')
+        self.create_text(16,y+8,text='GEM 2023.1 · PGA (g) · rock · 475 years',anchor='nw',fill=self.c['text'],font=('Segoe UI',9,'bold'))
+        self.create_text(16,y+25,text='Relative PGA · application labels',anchor='nw',fill=self.c['secondary'],font=('Segoe UI',8))
+        for i,((interval,name),(_,rgb)) in enumerate(zip(gem_hazard.band_labels(),gem_hazard.PALETTE)):
+            x=16+(i//rows)*268;yy=y+45+(i%rows)*15
+            label=interval+' · '+name
+            self.create_rectangle(x,yy,x+13,yy+10,fill='#%02x%02x%02x'%rgb,outline=self.c['border'])
+            self.create_text(x+18,yy+5,text=label,anchor='w',fill=self.c['text'],font=('Segoe UI',8))
+        self.create_text(16,y+boxheight-10,text='© GEM · CC BY-NC-SA 4.0',anchor='w',fill=self.c['secondary'],font=('Segoe UI',8))
+
     def poll(self):
         if not self.alive:return
         changed=False
@@ -132,6 +171,7 @@ class Map(tk.Canvas):
                     self.create_rectangle(x,y,x+256,y+256,outline=self.c['border'])
                     if self.online and key not in self.tiles and key not in self.pending:
                         self.pending.add(key);self.pool.submit(self.fetch,key)
+        if self.hazard_visible:self.draw_hazard(w,h,ox,oy)
         if self.region and self.region.get('status')=='ready':
             shape=self.region['geometry'];polygons=[shape['coordinates']] if shape['type']=='Polygon' else shape['coordinates']
             for polygon in polygons:
@@ -154,6 +194,7 @@ class Map(tk.Canvas):
             self.create_text(12,20,text=self.error or 'Offline test mode · no map downloads',anchor='w',width=max(100,w-24),fill=self.c['secondary'])
         if any(abs(p['lat'])>85.0511 for p in self.markers):
             self.create_text(12,52,text='Polar region: Mercator cannot display latitudes above ±85°. Coordinates remain valid.',anchor='w',width=max(100,w-24),fill=self.c['warning'])
+        if self.hazard_visible:self.hazard_legend(w,h)
         if self.region:
             text=('Delivery region: '+self.region['name']+' · geoBoundaries gbOpen / ADM1') if self.region.get('status')=='ready' else 'Delivery region boundary unavailable'
             self.create_rectangle(0,h-53,w,h-25,fill=self.c['surface'],outline='')

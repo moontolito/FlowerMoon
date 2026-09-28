@@ -33,3 +33,14 @@ Hook-urile `postStartCommand` și `postAttachCommand` pornesc idempotent servici
 GitHub Actions verifică testele Transport, contractul portalului, containerul real desktop-lite și conectarea efectivă în Chromium prin noVNC. Artefactul `flowermoon-browser-verification` conține capturi și raportul ferestrei. Aceasta verifică aplicația și configurația containerului; autentificarea și interfața GitHub Codespaces sunt gestionate de GitHub.
 
 Referințe: [crearea unui Codespace](https://docs.github.com/en/codespaces/developing-in-a-codespace/creating-a-codespace-for-a-repository), [configurația devcontainer](https://containers.dev/implementors/json_reference/), [desktop-lite](https://github.com/devcontainers/features/tree/main/src/desktop-lite), [API noVNC](https://github.com/novnc/noVNC/blob/v1.6.0/docs/API.md).
+
+
+## Transport update: 28 September 2026
+
+After pulling this update, rebuild the container. It installs `cdsapi`, `netCDF4` and `eccodes`, then restores and verifies the bundled GEM raster. Existing project data remains in `apps/transport/data/`.
+
+The current desktop application is available through port 8000. No Streamlit conversion is required for this Codespaces setup.
+
+Optional CAMS access uses the personal Codespaces secret `FLOWERMOON_ADS_KEY`. Authorize this repository for that secret and restart the Codespace. Credentials encrypted on Windows cannot be reused in the Linux container. Corrosivity assessment starts only when enabled in Application settings; dataset access also requires the appropriate ADS terms to be accepted.
+
+Asset setup can be repeated safely with `python scripts/prepare_transport_assets.py`. It checks the existing raster first, and validates a new extraction before replacing a damaged copy.

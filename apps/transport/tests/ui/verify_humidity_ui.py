@@ -24,10 +24,10 @@ with tempfile.TemporaryDirectory() as folder:
     result=humidity.summarize(fixture(),START,END)
     with patch('humidity.lookup',return_value=result):
         app.refresh_humidity();pump(app,lambda:not app.humidity_inflight)
-    assert win.overview.item('humidity.maximum','values')[1]=='90 %'
-    assert win.overview.item('humidity.maximum','values')[2]=='Open-Meteo Historical / ERA5'
+    assert win.overview.item('humidity.summary','values')[1:3]==('90 / 66.67 / 40','%')
+    assert win.overview.item('humidity.summary','values')[3]=='Open-Meteo Historical / ERA5'
     assert json.loads(app.state.path.read_text(encoding='utf-8'))['siteConditions']['humidity']['mean']['value']==200/3
-    win.vars['humidity.mean'].set('55');assert win.save()
+    sc.apply_manual(app.site,{'humidity.mean':'55'});win.refresh()
     with patch('humidity.lookup',return_value=result):
         app.refresh_humidity(force=True);pump(app,lambda:not app.humidity_inflight)
     assert sc.get(app.site,'humidity.mean')['value']==55
@@ -52,7 +52,7 @@ with tempfile.TemporaryDirectory() as folder:
         real=json.loads((Path(__file__).resolve().parents[1]/'fixtures'/'source-live-report.json').read_text(encoding='utf-8'))[0]['humidity'];humidity.apply(app.site,real)
         sc.apply_zoning(app.site,zoning.lookup(dict(lat=44.18,lon=28.63),1200))
         service.apply_context(app.site,service.context(dict(lat=44.18,lon=28.63)))
-        for mode,anchor in [('light','humidity.minimum'),('dark','wind.qb')]:
+        for mode,anchor in [('light','humidity.summary'),('dark','wind.qb')]:
             if app.mode!=mode:app.theme();win=app.open_site()
             win.refresh();win.geometry('1250x850+20+20');win.attributes('-topmost',True)
             app.update();win.overview.see(anchor)

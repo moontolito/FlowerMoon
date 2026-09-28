@@ -7,4 +7,4 @@
 *.png binary
 *.xlsx binary
 *.tif binary
-
+*.gz binary

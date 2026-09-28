@@ -36,7 +36,7 @@ def field(value=None, source='unavailable', status='VERIFY', **extra):
 def get(site,key):
     group,name=key.split('.');return site[group][name]
 def create():
-    site={'schemaVersion':2,'departureAddress':'','destinationAddress':'','destinationCoordinates':'','departureCoordinates':''}
+    site={'corrosivityEnabled':False,'schemaVersion':2,'departureAddress':'','destinationAddress':'','destinationCoordinates':'','departureCoordinates':''}
     for key,(_,unit,default,_) in FIELDS.items():
         group,name=key.split('.')
         site.setdefault(group,{})[name]=field(default,'Project default' if default not in (None,'Manual / Unknown') else 'unavailable','DEFAULT' if default not in (None,'Unknown','Manual / Unknown') else 'VERIFY',unit=unit)
@@ -77,6 +77,11 @@ def migrate(raw=None):
                         result['legacyDefaults'][key]=deepcopy(f)
                         result[group][key.split('.')[1]]=field(unit=f.get('unit',''))
                     else:f['reviewRequired']=True
+    if result.get('corrosionPolicyVersion')!='optional-annual-v1':
+        if result.get('corrosionAssessment'):
+            result.setdefault('sourceHistory',[]).append(dict(archivedAt=now(),data={'corrosionAssessment':deepcopy(result['corrosionAssessment']),'suggestedCorrosivity':deepcopy(result['environment']['suggestedCorrosivity'])}))
+        result['corrosionPolicyVersion']='optional-annual-v1'
+        result['corrosivityEnabled']=False
     result['schemaVersion']=2
     # Preserve previous source results as history, never silently relabel them.
     if result.get('sourcePolicyVersion')!='suggested-sources-v1':
@@ -118,6 +123,10 @@ def sync(site,departure,destination,origin_coords,dest_coords):
         invalidate(site,list(FIELDS)+['environment.suggestedCorrosivity','environment.siteAltitudeM','transport.suggestedProtection'])
         site['climate']={'status':'pending'}
         site['humidityAnalysis']={'status':'pending'}
+        site['airQuality']={'status':'pending'}
+        site['deposition']={'status':'pending'}
+        site.pop('corrosionAssessment',None)
+        site.pop('seismicHazard',None)
         site.pop('administrativeRegion',None)
         site.pop('locationContext',None);site.pop('coastalDistance',None);site.pop('weather',None);site.pop('elevationAnalysis',None)
         for group in ('seismic','snow','wind'):site[group]['standard']=None;site[group]['jurisdiction']=None
@@ -157,10 +166,18 @@ def apply_manual(site,values,confirmed=()):
     site.clear();site.update(candidate)
 def badge(f):return f['status']+(' · Review required' if f.get('reviewRequired') else '')
 def recommendation(site):
-    # No validated mapping from coast, shipping or climate to an ISO category.
+    import annual_corrosion as corrosion
+    from domain import coordinates
+    try:point=coordinates(site.get('destinationCoordinates',''))
+    except ValueError:point={}
+    estimate=corrosion.evaluate(site.get('deposition',{}),point) if site.get('corrosivityEnabled',False) else dict(status='disabled',category=None,reason='Enable annual corrosivity in Settings to download data and calculate.')
+    site['corrosionAssessment']=estimate
+    value=estimate.get('category')
     automatic(site,'environment.suggestedCorrosivity',None,
-              'Classification method not validated. Coastal distance does not determine C3/C5.',
-              'VERIFY',availability='method_not_validated',methodStatus='not_validated')
+              corrosion.SOURCE,'VERIFY',availability='unavailable',methodStatus='screening_proxy',detail=estimate.get('reason',''))
+    if value:
+        automatic(site,'environment.suggestedCorrosivity',value,corrosion.SOURCE,'VERIFY',availability='available',methodStatus='screening_proxy',
+                  detail=estimate['assumptions']+' '+('Outside calibration ranges: '+', '.join(estimate['outsideCalibration'])+'. ' if estimate.get('outsideCalibration') else '')+estimate['formula'])
     automatic(site,'transport.suggestedProtection',None,
               'Transport protection requires a specification; maritime transport does not automatically assign C5.',
               'VERIFY',availability='method_not_validated',methodStatus='not_validated')

@@ -1,0 +1,42 @@
+{
+  "checkedAt": "2026-09-27T09:09:20.179103+00:00",
+  "unitTests": 74,
+  "uiScripts": 14,
+  "visualChecks": [
+    "light",
+    "dark-small"
+  ],
+  "projectDataUnchanged": true,
+  "plaintextCredentialScan": "passed",
+  "githubUpdated": false,
+  "realProbe": {
+    "variable": "dry_deposition_of_sea_salt_aerosol_0.03-0.5um",
+    "dataset": "cams-global-atmospheric-composition-forecasts",
+    "grid": [
+      45.2,
+      24
+    ],
+    "date": "2025-01-01",
+    "leadHour": 24,
+    "units": "kg m**-2 s**-1",
+    "stepType": "instant",
+    "value": 2.720169399515575e-14,
+    "rawSha256": "7fb95b58f6d3ebfe128d5a41a7a06c37bbcf655225ba83e6ef7685caa9ab256f"
+  },
+  "annualLiveValidation": "pending ADS completion; no annual real-data category verified",
+  "liveJobs": [
+    {
+      "file": "probe-full-job.json",
+      "status": "running"
+    },
+    {
+      "file": "live-cache\\87dafa6ad713407b33eba6c1\\01-job.json",
+      "status": "running"
+    },
+    {
+      "file": "live-cache\\87dafa6ad713407b33eba6c1\\02-job.json",
+      "status": "running"
+    }
+  ],
+  "methodLimit": "ISO 9223 equation/threshold implementation tested. CAMS ground-flux to ISO wet-candle equivalence is unvalidated; results remain preliminary screening."
+}

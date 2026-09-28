@@ -31,8 +31,8 @@ with tempfile.TemporaryDirectory() as d:
         assert sc.get(app.site,'snow.sk')['value']==2
         assert sc.get(app.site,'wind.qb')['value']==.5
         assert app.site_window.winfo_exists()
-        assert 'humidity.maximum' in app.site_window.overview.get_children()
-        assert 'section_structural' in app.site_window.overview.get_children()
+        assert 'humidity.summary' in app.site_window.overview.get_children()
+        assert 'wind.qb' in app.site_window.overview.get_children()
         assert route.call_count==1
         assert json.loads(path.read_text(encoding='utf-8'))['siteConditions']['seismic']['ag']['value']==.3
         sc.apply_manual(app.site,{'wind.qb':.9})

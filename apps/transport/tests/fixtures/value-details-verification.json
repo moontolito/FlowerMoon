@@ -1,0 +1,16 @@
+﻿{
+    "feature":  "Per-value provenance details",
+    "date":  "2026-09-27T12:55:28.4417826+03:00",
+    "unitTestsPassed":  82,
+    "uiScriptsPassed":  15,
+    "savedProjectRowsChecked":  42,
+    "savedProjectSha256":  "EB91740C6E310B5AD0C03BD396BF267B048F8363D8F05FD8CFA99D367FDDB722",
+    "savedProjectUnchanged":  true,
+    "githubChanged":  false,
+    "visualChecks":  [
+                         "Light theme full window",
+                         "Dark theme numerical corrosion explanation",
+                         "Compact 620x420 dialog"
+                     ],
+    "scope":  "Read-only provenance UI. Existing scientific calculations unchanged. UI fixtures are illustrative, not live annual validation."
+}

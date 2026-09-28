@@ -7,7 +7,7 @@ from pathlib import Path
 from zipfile import ZipFile,ZIP_DEFLATED
 import xml.etree.ElementTree as ET
 from domain import calculate,cash
-from site_overview import rows as site_rows
+from site_overview import display_rows as site_rows
 NS='http://schemas.openxmlformats.org/spreadsheetml/2006/main'
 ET.register_namespace('',NS)
 def tag(n):return '{'+NS+'}'+n
@@ -43,13 +43,15 @@ def export_workbook(path,rows,rates):
     labels={'B3':'Loaded rate (EUR/km)','E3':'Fixed costs: permits, escort, tolls, crane and other costs per trip.','B4':'Empty rate (EUR/km)','B5':'Fixed costs (EUR/trip)','E5':'Yellow = editable assumptions. One product per trip. Confirm return distance separately.','B6':'Markup on cost','B7':'VAT','A12':'No.','B12':'Destination','C12':'One-way km','D12':'Products','E12':'Trips','F12':'Return km/trip','G12':'Positioning km/trip','H12':'Billable km','I12':'Cost EUR','J12':'Net EUR','K12':'VAT EUR','L12':'Total EUR'}
     for cell,value in labels.items():put(calc,cell,value)
     put(source,'B1','Transport routes and vehicle configurations');put(source,'B2','Source: Valhalla route response and the selected vehicle profile. Proposed routes require carrier and permit verification.')
-    headings=['No.','Product','Vehicle','Departure','Destination','One-way km','Driving hours','Total length m','Total width m','Total height m','Total weight t','Axles','Max t/axle','Route date','Profile type','Assumptions / coordinates','Total product quantity']
+    headings=['No.','Product','Vehicle','Departure','Destination','Total one-way km','Travel estimate hours','Total length m','Total width m','Total height m','Total weight t','Axles','Max t/axle','Route date','Profile type','Assumptions / coordinates','Total product quantity']
     for col,value in zip('ABCDEFGHIJKLMNOPQ',headings):put(source,col+'4',value)
     for n,k in enumerate(('loaded','empty','fixed','markup','vat'),3):put(calc,f'C{n}',rates[k]/100 if k in ('markup','vat') else rates[k])
     total=0
     for i,row in enumerate(rows):
         s=i+5;r=i+13;d=row['loaded'];c=calculate(row,rates);total+=c['total']
         notes=f"{row.get('notes','')} Origin {row['origin']['lat']}, {row['origin']['lon']}; destination {row['destination']['lat']}, {row['destination']['lon']}. Server: {row['server']}"
+        from route_segments import route_description
+        notes+=' '+route_description(row)
         values=[i+1,row['product']['name'],row['vehicle']['name'],row['origin']['name'],row['destination']['name'],row['distance_km'],row['hours'],d['length'],d['width'],d['height'],d['weight'],d['axle_count'],d['axle_load'],row['calculated_at'],'Unconfirmed example' if row['vehicle']['example'] else 'User input',notes,row['product']['quantity']]
         for col,v in zip('ABCDEFGHIJKLMNOPQ',values):put(source,f'{col}{s}',v)
         for col,v in [('A',i+1),('B',row['destination']['name']),('C',row['distance_km']),('E',row['quantity']),('H',c['billable_km']),('I',c['cost']),('J',c['net']),('K',c['vat']),('L',c['total'])]:put(calc,f'{col}{r}',v if rates['loaded']>0 or col in 'ABCEH' else '',True)

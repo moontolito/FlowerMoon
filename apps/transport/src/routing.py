@@ -10,6 +10,11 @@ from domain import parse_response
 
 AGENT='FlowerMoonTransportSimple/1.0 (personal desktop planner)'
 _lock=threading.Lock();_last=0
+
+class RoutingServiceError(ValueError):
+    def __init__(self, message, provider_code=None):
+        super().__init__(message)
+        self.provider_code=provider_code
 def request(url,payload=None):
     global _last
     with _lock:
@@ -22,14 +27,28 @@ def request(url,payload=None):
             with urlopen(req,timeout=45) as response:return json.load(response)
         except HTTPError as e:
             if e.code==429:raise ValueError('Public service rate limit reached. Try later or configure your own server.') from None
-            raise ValueError(f'Service returned HTTP {e.code}. No route was saved.') from None
+            try:detail=json.loads(e.read(4096))
+            except (ValueError,OSError):detail={}
+            if not isinstance(detail,dict):detail={}
+            code=detail.get('code')
+            if code=='DistanceExceeded' or detail.get('error_code')==154:
+                raise RoutingServiceError('Valhalla server distance limit exceeded.', 'DistanceExceeded') from None
+            message=str(detail.get('message') or detail.get('error') or 'No route was saved.')[:400]
+            raise RoutingServiceError(f'Service returned HTTP {e.code}: {message}',code) from None
         except (URLError,TimeoutError,OSError):raise ValueError('Connection unavailable. Check internet access and network permissions.') from None
 
 def route(server,payload):
     parsed=urlparse(server)
     if parsed.scheme not in ('http','https') or not parsed.netloc or parsed.username or parsed.password:raise ValueError('Invalid Valhalla server address.')
     if parsed.scheme=='http' and parsed.hostname not in ('localhost','127.0.0.1'):raise ValueError('Use HTTPS for external servers.')
-    return parse_response(request(server.rstrip('/')+'/route',payload))
+    fetch=lambda body:request(server.rstrip('/')+'/route',body)
+    try:return parse_response(fetch(payload))
+    except RoutingServiceError as error:
+        if error.provider_code!='DistanceExceeded':raise
+    from route_segments import segmented_route
+    try:return segmented_route(payload,fetch,parse_response)
+    except ValueError as error:
+        raise ValueError('Long-distance truck route unavailable: '+str(error)+' Use Coordinates / waypoints to choose a suitable intermediate road location. Truck restrictions were not relaxed.') from None
 
 def geocode(query):
     from places import search
