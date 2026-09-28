@@ -15,10 +15,20 @@ for attempt in range(60):
             assert response.status==200
             assert b'novnc' in response.read().lower()
         windows=subprocess.check_output(['xwininfo','-root','-tree'],text=True)
-        match=re.search(r'(0x[0-9a-f]+) "FlowerMoon[^\n]*',windows)
-        assert match,'No FlowerMoon window exists'
-        info=subprocess.check_output(['xwininfo','-id',match[1]],text=True)
-        assert 'Map State: IsViewable' in info,'FlowerMoon window is not viewable'
+        (artifacts/'x-windows.txt').write_text(windows)
+        candidates=list(re.finditer(r'(0x[0-9a-f]+) "FlowerMoon[^\n]*',windows))
+        assert candidates,'No FlowerMoon window exists'
+        # Address suggestion popups inherit the app title but stay withdrawn.
+        # Select the mapped main window, not the first matching X11 window.
+        visible=[]
+        for candidate in candidates:
+            details=subprocess.check_output(['xwininfo','-id',candidate[1]],text=True)
+            if 'Map State: IsViewable' not in details:continue
+            w=int(re.search(r'Width:\s+(\d+)',details)[1])
+            h=int(re.search(r'Height:\s+(\d+)',details)[1])
+            if w>=1000 and h>=700:visible.append((w*h,candidate,details))
+        assert visible,'No full-size FlowerMoon window is viewable'
+        _,match,info=max(visible,key=lambda item:item[0])
         left=int(re.search(r'Absolute upper-left X:\s+(-?\d+)',info)[1])
         top=int(re.search(r'Absolute upper-left Y:\s+(-?\d+)',info)[1])
         width=int(re.search(r'Width:\s+(\d+)',info)[1]);height=int(re.search(r'Height:\s+(\d+)',info)[1])
@@ -33,5 +43,7 @@ for attempt in range(60):
         print('PASS: noVNC HTTP, mapped FlowerMoon window and nonblank rendered pixels',report)
         break
     except (OSError,AssertionError,subprocess.CalledProcessError):
-        if attempt==59:raise
+        if attempt==59:
+            ImageGrab.grab().save(artifacts/'desktop-failure.png')
+            raise
         time.sleep(1)
