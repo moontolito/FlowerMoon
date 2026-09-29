@@ -23,6 +23,7 @@ COPY scripts/prepare_transport_assets.py scripts/prepare_transport_assets.py
 COPY deploy/render/supervisord.conf deploy/render/supervisord.conf
 COPY deploy/render/check_runtime.py deploy/render/check_runtime.py
 RUN python scripts/prepare_transport_assets.py \
+    && chmod -R a+rX /opt/flowermoon/apps/transport/assets \
     && useradd --create-home --uid 10001 flowermoon \
     && mkdir -p /usr/local/novnc /opt/flowermoon/.runtime /opt/flowermoon/apps/transport/data \
     && ln -s /usr/share/novnc /usr/local/novnc/noVNC-packaged \

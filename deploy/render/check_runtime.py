@@ -17,7 +17,11 @@ def check(name, call, summarize):
     started = time.monotonic()
     try:
         value = call()
-        report.append(dict(check=name, status='ready', seconds=round(time.monotonic()-started, 2), **summarize(value)))
+        summary = summarize(value)
+        status = 'ready'
+        if summary.get('providerStatus') not in (None, 'ready') or summary.get('complete') is False:
+            status = 'unavailable'
+        report.append(dict(check=name, status=status, seconds=round(time.monotonic()-started, 2), **summary))
         return value
     except Exception as error:
         # Do not include request URLs or environment variables in reports.
@@ -47,7 +51,7 @@ def tile():
 check('Map tile', tile, lambda v: dict(bytes=v))
 routes = check('Truck route', lambda: routing.route(state.data['server'], domain.route_request(origin, destination, loaded)),
                lambda v: dict(routes=len(v), distanceKm=v[0]['distance_km']))
-check('GEM PGA', lambda: gem_hazard.lookup(destination), lambda v: dict(providerStatus=v.get('status'), value=v.get('value')))
+check('GEM PGA', lambda: gem_hazard.lookup(destination), lambda v: dict(providerStatus=v.get('status'), value=v.get('value'), detail=v.get('message')))
 check('Copernicus elevation', lambda: elevation.samples([destination], CACHE/'elevation'),
       lambda v: dict(complete=v['complete'], values=v['values']))
 check('30-year temperature', lambda: climate.lookup(destination, CACHE/'climate'),
@@ -59,3 +63,5 @@ report.append(dict(check='Optional credentials', adsConfigured=bool(os.environ.g
 target = ROOT / '.runtime/render-providers.json'
 target.write_text(json.dumps(report, indent=2), encoding='utf-8')
 print('Provider report saved.', flush=True)
+if any(item.get('status') == 'unavailable' for item in report):
+    raise SystemExit('One or more provider checks were unavailable; inspect the report before deployment.')
