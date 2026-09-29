@@ -1,0 +1,57 @@
+name: Render container
+on:
+  push:
+    branches: ['hosting/render']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  container:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Build unchanged app and portal
+        run: docker build -f deploy/render/Dockerfile -t flowermoon-transport .
+      - name: Start with Render Free resource limits
+        run: |
+          mkdir -p .artifacts apps/transport/data
+          chmod 777 apps/transport/data
+          docker run -d --name flowermoon-transport -p 8000:8000 --memory=512m --cpus=0.1 --volume "$PWD/apps/transport/data:/opt/flowermoon/apps/transport/data" flowermoon-transport
+          for attempt in {1..60}; do
+            if curl --silent --fail http://127.0.0.1:8000/api/status; then exit 0; fi
+            sleep 2
+          done
+          exit 1
+      - name: Install existing browser checks
+        working-directory: tests/browser
+        run: |
+          npm install --no-package-lock --ignore-scripts
+          npx playwright install --with-deps chromium
+      - name: Record resource use
+        run: docker stats --format '{{json .}}' flowermoon-transport > .artifacts/render-resources.jsonl &
+      - name: Run existing browser checks against the real desktop
+        working-directory: tests/browser
+        env:
+          FLOWERMOON_TEST_URL: http://127.0.0.1:8000
+        run: npm test
+      - name: Check live API calls and datasets in the container
+        run: timeout 600 docker exec flowermoon-transport python -B deploy/render/check_runtime.py
+      - name: Capture resource and application evidence
+        if: always()
+        run: |
+          mkdir -p .artifacts
+          docker logs flowermoon-transport > .artifacts/render-container.log 2>&1
+          docker inspect --format '{{json .State}}' flowermoon-transport > .artifacts/render-container-state.json
+          docker cp flowermoon-transport:/opt/flowermoon/.runtime .artifacts/runtime
+          docker exec flowermoon-transport sh -c 'cat /sys/fs/cgroup/memory.peak /sys/fs/cgroup/memory.events' > .artifacts/render-memory.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: render-verification
+          path: .artifacts/
+          include-hidden-files: true
+          retention-days: 7
