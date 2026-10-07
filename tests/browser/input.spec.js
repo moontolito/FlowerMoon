@@ -10,7 +10,10 @@ test('browser clicks change the actual Transport sidebar',async({page})=>{
     record('websocket-open');
     socket.on('framesent',frame=>{
       if(Buffer.isBuffer(frame.payload)){
-        if(frame.payload[0]===5)report.pointerMessages++;
+        if(frame.payload[0]===5){
+          report.pointerMessages++;
+          record('pointer',{bytes:frame.payload.length,mask:frame.payload[1],x:frame.payload.readUInt16BE(2),y:frame.payload.readUInt16BE(4)});
+        }
         if(frame.payload[0]===4)report.keyMessages++;
       }
     });
@@ -32,9 +35,8 @@ test('browser clicks change the actual Transport sidebar',async({page})=>{
     const click=async(x,y)=>{
       const box=await canvas.boundingBox();
       const size=await canvas.evaluate(c=>({width:c.width,height:c.height}));
-      await page.mouse.click(box.x+x*box.width/size.width,box.y+y*box.height/size.height);
-      // Move away so a hover style cannot be mistaken for selection.
-      await page.mouse.move(1400,20);
+      record('click',{x,y,box,size});
+      await page.mouse.click(box.x+x*box.width/size.width,box.y+y*box.height/size.height,{delay:120});
     };
     await click(100,141);
     await expect.poll(()=>purpleAt(65),{timeout:30000,message:'Route tab did not respond'}).toBe(true);
