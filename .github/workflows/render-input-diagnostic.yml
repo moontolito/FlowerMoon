@@ -1,8 +1,5 @@
 name: Public Render input diagnostic
 on:
-  push:
-    branches: ['hosting/render']
-    paths: ['tests/browser/input.spec.js', '.github/workflows/render-input-diagnostic.yml']
   workflow_dispatch:
 permissions:
   contents: read

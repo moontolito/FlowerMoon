@@ -38,12 +38,13 @@ test('browser clicks change the actual Transport sidebar',async({page})=>{
       record('click',{x,y,box,size});
       await page.mouse.click(box.x+x*box.width/size.width,box.y+y*box.height/size.height,{delay:120});
     };
-    await click(100,141);
     await expect.poll(()=>purpleAt(65),{timeout:30000,message:'Route tab did not respond'}).toBe(true);
-    record('route-selected');
+    record('initial-route-visible');
     await click(265,141);
     await expect.poll(()=>purpleAt(205),{timeout:30000,message:'Vehicle tab did not respond'}).toBe(true);
     record('vehicle-selected');
+    // The selected tab is painted before Tk finishes rebuilding its controls.
+    await page.waitForTimeout(2000);
     await page.screenshot({path:'../../.artifacts/input-vehicle.png',fullPage:true});
     await click(100,141);
     await expect.poll(()=>purpleAt(65),{timeout:30000,message:'Route tab did not respond after Vehicle'}).toBe(true);
