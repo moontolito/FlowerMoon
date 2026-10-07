@@ -1,0 +1,26 @@
+[
+  {
+    "file": "jspdf.umd.min.js",
+    "url": "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js",
+    "sha256": "98ccf17aa10c20bb1301762618fcc9b6ab3a4e7f26b6071d64d0b41154df3875",
+    "bytes": 364463
+  },
+  {
+    "file": "xlsx.bundle.js",
+    "url": "https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js",
+    "sha256": "1c7abf2993ff2cd61e508f9268e9acda0098c9796f3925d2ba0d2579072653e2",
+    "bytes": 425020
+  },
+  {
+    "file": "jspdf-LICENSE.txt",
+    "url": "https://cdn.jsdelivr.net/npm/jspdf@2.5.1/LICENSE",
+    "sha256": "2d26bfab8a36d2250602c7a7597237e180c5cd3517acc108126e3cb399f483c8",
+    "bytes": 1142
+  },
+  {
+    "file": "xlsx-js-style-LICENSE.txt",
+    "url": "https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/LICENSE",
+    "sha256": "4d2a38ac35cda06a555c84074a819d413339cd3691b822cae50f8f322fe01f64",
+    "bytes": 11355
+  }
+]

@@ -1,0 +1,2 @@
+# Preserve release and vendor bytes so published checksums remain reproducible.
+* -text
