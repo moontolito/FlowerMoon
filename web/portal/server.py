@@ -9,7 +9,7 @@ HERE=Path(__file__).resolve().parent
 APP=ROOT/'apps'/'transport'
 RUNTIME=ROOT/'.runtime'
 log=logging.getLogger('flowermoon')
-PORTAL_VERSION='2026-09-28.2'
+PORTAL_VERSION='2026-10-07.1'
 
 class Desktop:
     def __init__(self):
