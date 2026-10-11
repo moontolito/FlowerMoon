@@ -1,6 +1,6 @@
 > Actualizare surse 2026-09-26: [SOURCE_ALIGNMENT.md](SOURCE_ALIGNMENT.md). Descrierile NASA / Valhalla DEM de mai jos sunt istorice; sursele active sunt Open-Meteo Historical si Copernicus GLO-90.
 
-> Update 2026-09-26: [HUMIDITY_AND_OBSERVATIONS.md](HUMIDITY_AND_OBSERVATIONS.md) adds automatic daily RH statistics and retains sourced map values with verification notes.
+> Update 2026-09-26: [HUMIDITY_AND_OBSERVATIONS.md](archive/HUMIDITY_AND_OBSERVATIONS.md) (archived; humidity now uses Open-Meteo hourly ERA5) adds automatic daily RH statistics and retains sourced map values with verification notes.
 
 # Global Site & Environment — implementation 2026-09-26
 

@@ -1,0 +1,6 @@
+# Browser version (Render / any Python host). No Tk, VNC or desktop needed.
+fastapi==0.143.0
+uvicorn==0.54.0
+# Copernicus GLO-90 tiles and the GEM seismic map layer.
+Pillow==12.3.0
+numpy==2.5.4

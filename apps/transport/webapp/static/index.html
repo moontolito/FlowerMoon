@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FlowerMoon Transport</title>
+<meta name="description" content="Transport planning with destination site and environment data.">
+<link rel="icon" href="/logo.png">
+<link rel="stylesheet" href="/static/vendor/leaflet/leaflet.css">
+<link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+<div class="progress" id="progress" hidden></div>
+<header class="app-header">
+  <div class="brand">
+    <span class="logo-frame"><img src="/logo.png" alt="FlowerMoon logo" width="34" height="34"></span>
+    <span class="brand-name">FlowerMoon <span class="brand-sep">/</span> Transport</span>
+  </div>
+  <nav class="header-actions" aria-label="Application">
+    <button type="button" class="btn" data-action="export">Export Excel</button>
+    <button type="button" class="btn" data-action="site">Site &amp; Environment</button>
+    <div class="menu">
+      <button type="button" class="btn" id="more-button" aria-haspopup="true" aria-expanded="false">More ···</button>
+      <div class="menu-list" id="more-menu" role="menu" hidden>
+        <button type="button" role="menuitem" data-action="deliveries">Saved deliveries</button>
+        <button type="button" role="menuitem" data-action="coordinates">Coordinates / waypoints</button>
+        <button type="button" role="menuitem" data-action="theme">Light / dark theme</button>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<main class="workspace">
+  <aside class="sidebar" aria-label="Transport inputs">
+    <div class="tabs" role="tablist">
+      <button type="button" role="tab" class="tab" data-panel="route" aria-selected="true">Route</button>
+      <button type="button" role="tab" class="tab" data-panel="vehicle" aria-selected="false">Vehicle</button>
+    </div>
+    <div class="sidebar-body">
+      <section id="panel-route" class="panel">
+        <div class="field address" data-target="origin">
+          <label class="label" for="origin-input"><span class="pin">A</span> Departure</label>
+          <input id="origin-input" type="text" autocomplete="off" spellcheck="false" placeholder="City or address" role="combobox" aria-expanded="false" aria-controls="origin-list" aria-autocomplete="list">
+          <ul class="suggestions" id="origin-list" role="listbox" hidden></ul>
+          <div class="coords" id="origin-coords"></div>
+        </div>
+        <div class="field address" data-target="destination">
+          <label class="label" for="destination-input"><span class="pin pin-b">B</span> Destination</label>
+          <input id="destination-input" type="text" autocomplete="off" spellcheck="false" placeholder="City or address" role="combobox" aria-expanded="false" aria-controls="destination-list" aria-autocomplete="list">
+          <ul class="suggestions" id="destination-list" role="listbox" hidden></ul>
+          <div class="coords" id="destination-coords"></div>
+        </div>
+        <button type="button" class="link-btn" data-action="coordinates">Exact coordinates / via</button>
+
+        <h2 class="section-title">What are we transporting?</h2>
+        <div class="row-between">
+          <strong id="product-name"></strong>
+          <button type="button" class="btn btn-sm" data-action="product">Edit</button>
+        </div>
+        <p class="muted" id="product-dims"></p>
+
+        <h2 class="section-title">Transport type</h2>
+        <select class="select preset-select" aria-label="Vehicle preset"></select>
+        <div class="truck truck-compact" aria-hidden="true"></div>
+        <p class="muted pre" id="profile-summary"></p>
+        <button type="button" class="btn btn-block" data-panel-switch="vehicle">Adjust vehicle →</button>
+      </section>
+
+      <section id="panel-vehicle" class="panel" hidden>
+        <h2 class="section-title">Loaded vehicle</h2>
+        <select class="select preset-select" aria-label="Vehicle preset"></select>
+        <div class="truck" aria-hidden="true"></div>
+        <div id="vehicle-adjust"></div>
+      </section>
+    </div>
+    <div class="sidebar-action">
+      <button type="button" class="btn btn-primary btn-block" id="calculate">Calculate route →</button>
+    </div>
+  </aside>
+
+  <section class="map-area">
+    <div class="map-wrap">
+      <div id="map" aria-label="Map. Click to choose the selected point."></div>
+      <div class="map-tools">
+        <div class="segmented" role="radiogroup" aria-label="Map click selects">
+          <button type="button" role="radio" aria-checked="true" data-pick="destination">Destination</button>
+          <button type="button" role="radio" aria-checked="false" data-pick="origin">Departure</button>
+        </div>
+        <span class="tool-hint">Click on the map</span>
+        <label class="check"><input type="checkbox" id="hazard-toggle"> Seismic PGA</label>
+      </div>
+      <div class="hazard-legend" id="hazard-legend" hidden></div>
+      <div class="region-label" id="region-label" hidden></div>
+    </div>
+    <div class="results" id="results" hidden>
+      <table class="table" aria-label="Route options">
+        <thead><tr><th>Route options</th><th class="num">Total distance · km</th><th class="num">Travel estimate · h</th></tr></thead>
+        <tbody id="route-rows"></tbody>
+      </table>
+      <p class="muted pre" id="route-detail"></p>
+      <div class="row-end">
+        <button type="button" class="btn" data-action="save-delivery">Save delivery</button>
+        <button type="button" class="btn btn-primary" data-action="export">Export Excel</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="app-footer">
+  <span id="status" role="status" aria-live="polite"></span>
+  <span class="muted">Preliminary route · carrier / permit verification</span>
+</footer>
+
+<section class="site" id="site" hidden aria-labelledby="site-title">
+  <header class="site-header">
+    <div>
+      <h1 id="site-title">Site &amp; Environment</h1>
+      <p class="muted">Environmental data for the delivery destination</p>
+    </div>
+    <button type="button" class="btn" data-action="close-site">Back to map →</button>
+  </header>
+  <div class="site-context">
+    <p class="site-address" id="site-address"></p>
+    <p class="muted" id="site-summary"></p>
+    <p class="site-progress" id="site-progress"></p>
+  </div>
+  <div class="site-table-wrap">
+    <table class="table site-table">
+      <thead><tr><th class="toggle-col"></th><th>Parameter</th><th class="num">Value</th><th>Unit</th><th>Source</th><th class="wide">Meaning / use</th><th>Status</th></tr></thead>
+      <tbody id="site-rows"></tbody>
+    </table>
+  </div>
+  <footer class="site-footer">
+    <p class="warning" id="site-warnings"></p>
+    <p class="muted" id="site-meaning">Select a row for its meaning; open Details for sources and formulas.</p>
+    <div class="row-start">
+      <button type="button" class="btn" id="value-button" disabled>Value details</button>
+      <button type="button" class="btn" data-action="refresh-site">Refresh data</button>
+      <a class="btn" href="/api/site/json" download>Export JSON</a>
+    </div>
+  </footer>
+</section>
+
+<dialog id="dialog" class="dialog">
+  <form method="dialog" class="dialog-form" novalidate>
+    <h2 class="dialog-title"></h2>
+    <p class="muted dialog-help"></p>
+    <div class="dialog-body"></div>
+    <p class="error dialog-error" role="alert"></p>
+    <div class="dialog-actions">
+      <button type="button" class="btn" value="cancel" data-close>Cancel</button>
+      <button type="submit" class="btn btn-primary dialog-submit">Save</button>
+    </div>
+  </form>
+</dialog>
+
+<script src="/static/vendor/leaflet/leaflet.js"></script>
+<script src="/static/app.js"></script>
+</body>
+</html>

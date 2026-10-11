@@ -1,4 +1,4 @@
-> Actualizare surse 2026-09-26: [SOURCE_ALIGNMENT.md](SOURCE_ALIGNMENT.md). Descrierile NASA / Valhalla DEM de mai jos sunt istorice; sursele active sunt Open-Meteo Historical si Copernicus GLO-90.
+> Actualizare surse 2026-09-26: [SOURCE_ALIGNMENT.md](../SOURCE_ALIGNMENT.md). Descrierile NASA / Valhalla DEM de mai jos sunt istorice; sursele active sunt Open-Meteo Historical si Copernicus GLO-90.
 
 # Umiditate automată și observații — 2026-09-26
 

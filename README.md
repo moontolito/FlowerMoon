@@ -1,58 +1,71 @@
 # FlowerMoon
 
-Transport planning, destination environmental data and nesting tools in one private workspace.
+Transport planning with destination environmental data, plus an HTML nesting tool.
 
-- **Transport:** find departure and delivery addresses with suggestions, select a vehicle, check routes and highlight the delivery region. Site & Environment identifies the destination coordinates and the actual sources for elevation, temperature, humidity and available structural zoning.
-- **Excel:** export directly from Transport. The workbook includes route costs, vehicle details and destination conditions with source references.
-- **Nesting:** open the existing part-arrangement tool from the same home page.
+- **Transport:** departure and delivery addresses with suggestions or map picking, vehicle selection for the product, truck routes and the delivery region.
+- **Site & Environment:** for the delivery point — elevation, historical temperature and humidity, GEM seismic PGA, Romanian seismic / snow / wind zoning and coastal distance, each with its source.
+- **Excel:** route costs, vehicle details and destination conditions with source references.
+- **Nesting:** the existing part-arrangement tool (`apps/nesting/`).
 
-## Open in your browser
+## Ways to run Transport
+
+| | Where | Use it for |
+| --- | --- | --- |
+| **Web app** (recommended) | Render, free plan — `apps/transport/webapp/` | Colleagues and demos: open a link, nothing to install. [Setup](docs/RENDER.md) |
+| **Desktop app** | Windows, local — `apps/transport/run.py` | Full feature set, including vehicle profile editing and optional CAMS corrosivity. [Guide](apps/transport/README.md) |
+| **Desktop in Codespaces** | GitHub Codespaces | Testing the desktop app from a browser without installing Python. [Guide](docs/CODESPACES.md) |
+
+Both versions share the same engineering code in `apps/transport/src/`; the web app
+only replaces the Tk interface with a browser page and a JSON API.
+
+### Web app on Render
+
+Render → **New → Blueprint** → this repository. `render.yaml` builds and starts it.
+Locally:
+
+```bash
+cd apps/transport
+python -m pip install -r webapp/requirements.txt
+python ../../scripts/prepare_transport_assets.py
+uvicorn webapp.server:app --reload --port 8000
+```
+
+### Desktop in Codespaces
 
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/moontolito/FlowerMoon?quickstart=1)
 
-1. Create a Codespace using the button above. You need access to this private repository.
-2. Wait for initial setup. The FlowerMoon page opens automatically. If your browser blocks this, select **Open in Browser** for **8000 — FlowerMoon** in **Ports**.
-3. Select **Open application**. Startup and connection are automatic.
+Create a Codespace; the FlowerMoon page opens on port **8000**. Select **Open application**.
+After exporting, use **Download Excel** in the browser toolbar. Details, rebuilds and
+the optional `FLOWERMOON_ADS_KEY` secret for CAMS: [docs/CODESPACES.md](docs/CODESPACES.md).
 
-No Python commands or extra desktop password are needed. Bookmark the generated FlowerMoon address; add `/app` to open Transport directly. The link works while its Codespace is running.
+## Data
 
-**Existing Codespace:** pull the latest `main` using Source Control, then stop and restart the Codespace to load the updated application. For this update, use **Codespaces: Rebuild Container** after pulling to install the new CAMS dependencies and restore the bundled seismic dataset. A new Codespace uses the current configuration immediately. Preserve any unsaved work before restarting the app or rebuilding.
-
-After exporting in Transport, select **Download Excel** in the browser toolbar. Projects and exports stay in `apps/transport/data/`, inside your session, and are excluded from Git.
-
-The repository and application port remain private. Each tester needs repository access and their own Codespace. Codespaces uses the GitHub account quota; stop the session after testing.
-
-## Current Transport version
-
-This repository includes the installed Transport app as of 28 September 2026: destination selection on the map, crossing-aware route display, the Site & Environment overview, source details, GEM seismic values, and optional annual CAMS/corrosivity assessment.
-
-Codespaces runs the existing Tkinter app through the browser desktop portal on port **8000**. The dataset is bundled as a 34.5 MB gzip archive; setup restores the exact 173 MB raster and checks its SHA-256 against the versioned manifest. No dataset download or API key is needed for the seismic map.
-
-### Optional CAMS access
-
-For CAMS data, add a personal Codespaces secret named **FLOWERMOON_ADS_KEY** and grant it access to this repository, then restart the Codespace. Use your Copernicus ADS personal access token and accept the required dataset terms in your ADS account. The Windows encrypted credential stays on the local computer. Corrosivity assessment is disabled by default; enable it in Application settings when needed. Without ADS access, these results remain unavailable and the rest of Transport can still run.
-
-GitHub secret settings: https://github.com/settings/codespaces
+The GEM seismic raster is bundled as a 34.5 MB gzip archive;
+`scripts/prepare_transport_assets.py` restores the 173 MB raster and verifies its SHA-256
+(Render, Codespaces and CI run it automatically). No API key is needed except for the
+optional CAMS assessment. Provider details and limits: [apps/transport/docs/](apps/transport/docs/README.md).
 
 ## Project layout
 
 ```text
 apps/
   transport/
-    src/         application and shared interface code
-    assets/      logo, Excel template, geography and zoning data
-    tests/       unit tests, UI checks and source fixtures
-    docs/        source and engineering notes
-    vendor/      Sun Valley theme with original licence
-    run.py       local desktop entry point
-    hosted.py    managed browser entry point
-  nesting/       existing HTML nesting tool
-web/portal/      home page, connection service and downloads
-tests/browser/  real browser connection and recovery tests
-scripts/        startup and verification utilities
-docs/           workflow and Codespaces documentation
-.devcontainer/  testing environment configuration
-.github/        automated checks
+    src/          shared engineering, routing, source and export code
+    webapp/       browser version: FastAPI server, static page, tests
+    assets/       logo, Excel template, geography, zoning and GEM data
+    tests/        desktop unit tests, UI checks and source fixtures
+    docs/         technical notes (changes/ and archive/ inside)
+    vendor/       Sun Valley theme with original licence
+    run.py        desktop entry point · Porneste.cmd Windows launcher
+    hosted.py     desktop entry point used by Codespaces
+  nesting/        HTML nesting tool
+web/portal/       Codespaces home page and desktop connection service
+tests/browser/    Codespaces portal browser tests
+scripts/          asset preparation, startup and verification utilities
+docs/             Render, Codespaces and destination workflow guides
+.devcontainer/    Codespaces environment
+.github/          automated checks
+render.yaml       Render Blueprint for the web app
 ```
 
-[Transport guide](apps/transport/README.md) · [Destination, sources and export](docs/DESTINATION_WORKFLOW.md) · [Codespaces guide](docs/CODESPACES.md) · [Automated checks](https://github.com/moontolito/FlowerMoon/actions/workflows/transport-tests.yml)
+[Destination, sources and export](docs/DESTINATION_WORKFLOW.md) · [Automated checks](https://github.com/moontolito/FlowerMoon/actions/workflows/transport-tests.yml)
