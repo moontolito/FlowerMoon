@@ -1,6 +1,6 @@
 # FlowerMoon Transport — testing build
 
-Python/Tkinter transport planner with the existing FlowerMoon / Sun Valley interface. For browser testing, use [the Codespaces instructions](../../README.md).
+Python/Tkinter transport planner with the existing FlowerMoon / Sun Valley interface. The browser version for colleagues lives in [`webapp/`](../../docs/RENDER.md) and reuses the same `src/` code; the desktop app can also run in [Codespaces](../../docs/CODESPACES.md).
 
 ## Windows
 
@@ -31,7 +31,7 @@ Open `Porneste.cmd`. Install dependencies with the same interpreter used by the 
 - Routes: OSM / the configured Valhalla server. Public endpoints can throttle or fail; no car-route substitution is used.
 - Country/coast: Natural Earth GIS. Structural maps currently cover Romania only.
 - Address suggestions: Photon / OpenStreetMap. Delivery region: geoBoundaries gbOpen ADM1, where available. See [destination and source details](../../docs/DESTINATION_WORKFLOW.md).
-- Optional CAMS data and the annual corrosivity assessment are available through the Application settings opt-in. Configure `FLOWERMOON_ADS_KEY` in Codespaces secrets. See [CAMS integration](docs/CAMS_INTEGRATION.md) and [annual assessment](docs/annual-overview-2026-09-27.md) for assumptions and limits.
+- Optional CAMS data and the annual corrosivity assessment are available through the Application settings opt-in. Configure `FLOWERMOON_ADS_KEY` in Codespaces secrets. See [CAMS integration](docs/CAMS_INTEGRATION.md) and [annual assessment](docs/changes/2026-09-27-annual-overview.md) for assumptions and limits.
 - GEM Global Seismic Hazard Map 2023.1 is bundled with its original license and attribution. Run the asset preparation command above after a local clone; Codespaces does this automatically. National structural zoning remains separate from GEM PGA.
 
 The [source alignment document](docs/SOURCE_ALIGNMENT.md) records actual providers and their limits. For commercial Open-Meteo usage, configure the appropriate access through a Codespaces secret named `FLOWERMOON_CLIMATE_API_KEY`; never commit credentials. `FLOWERMOON_CLIMATE_URL` can override the historical endpoint. No credentials are shipped in this repository.
@@ -46,4 +46,4 @@ python tests/run_checks.py --ui
 
 GUI checks require a desktop/X display. GitHub Actions runs them under Xvfb on Ubuntu. The Sun Valley theme is vendored with its original MIT license; FlowerMoon branding and application code have not been relicensed as open source.
 
-Source lives in `src/`, assets in `assets/`, technical notes in `docs/`, third-party theme in `vendor/`. Start locally with `python run.py` (or `python run.py --offline` for an offline session). `hosted.py` is the managed Codespaces entry point; testers use the browser portal. Existing project data remains in `data/`.
+Source lives in `src/`, the browser version in `webapp/`, assets in `assets/`, technical notes in [`docs/`](docs/README.md), third-party theme in `vendor/`. Start locally with `python run.py` (or `python run.py --offline` for an offline session). `hosted.py` is the managed Codespaces entry point; testers use the browser portal. Existing project data remains in `data/`.

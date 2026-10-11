@@ -44,3 +44,5 @@ The current desktop application is available through port 8000. No Streamlit con
 Optional CAMS access uses the personal Codespaces secret `FLOWERMOON_ADS_KEY`. Authorize this repository for that secret and restart the Codespace. Credentials encrypted on Windows cannot be reused in the Linux container. Corrosivity assessment starts only when enabled in Application settings; dataset access also requires the appropriate ADS terms to be accepted.
 
 Asset setup can be repeated safely with `python scripts/prepare_transport_assets.py`. It checks the existing raster first, and validates a new extraction before replacing a damaged copy.
+
+The repository and port 8000 stay private. Each tester needs repository access and their own Codespace, which uses the GitHub account quota; stop the Codespace after testing.
