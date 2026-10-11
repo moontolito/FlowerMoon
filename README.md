@@ -9,6 +9,7 @@ tools.js          list of tools shown on the home page
 logo.png          FlowerMoon logo
 flowercutter/     FlowerCutter 1.0.0 — sheet cutting and layout planning
 painting/         Painting calculator v18 — paint quantities and cost
+                  Transport is linked from tools.js; it runs on Render (main branch)
 ```
 
 ## Add a tool

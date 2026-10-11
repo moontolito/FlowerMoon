@@ -55,6 +55,7 @@ main { flex: 1; padding: 36px 0 48px; }
 .meta { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 2px; }
 .tag { font-size: 12px; padding: 1px 8px; border-radius: 999px; background: var(--raised); color: var(--secondary); }
 .card p { margin: 0; color: var(--secondary); flex: 1; }
+.note { color: var(--secondary); font-size: 12.5px; padding-left: 10px; border-left: 2px solid var(--selection); }
 .open { align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 8px; background: var(--primary); color: var(--on-primary); font-weight: 600; font-size: 14px; }
 .card:hover .open { background: var(--primary-hover); }
 .empty { color: var(--secondary); padding: 24px 0; }
@@ -73,7 +74,7 @@ footer { padding: 16px 0 24px; color: var(--secondary); font-size: 13px; border-
   <div class="intro">
     <div>
       <h2>Choose a tool</h2>
-      <p>Browser tools for production engineering. Each one runs in your browser, nothing to install.</p>
+      <p>Browser tools for production engineering. Open in your browser, nothing to install.</p>
     </div>
     <input class="search" id="search" type="search" placeholder="Search tools" aria-label="Search tools">
   </div>
@@ -89,6 +90,7 @@ footer { padding: 16px 0 24px; color: var(--secondary); font-size: 13px; border-
   var ICONS = {
     cutter: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="1.5"/><path d="M3 10h11M14 3v18M14 14h7"/></svg>',
     paint: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="15" height="6" rx="1.5"/><path d="M18 6h2.5v5H11v3"/><rect x="9" y="14" width="4" height="7" rx="1"/></svg>',
+    route: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="19" r="2"/><circle cx="18" cy="5" r="2"/><path d="M8 19h7.5a3.5 3.5 0 0 0 0-7h-7a3.5 3.5 0 0 1 0-7H16"/></svg>',
     generic: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/></svg>'
   };
   var tools = window.FLOWERMOON_TOOLS || [];
@@ -118,6 +120,7 @@ footer { padding: 16px 0 24px; color: var(--secondary); font-size: 13px; border-
     top.appendChild(head);
     a.appendChild(top);
     a.appendChild(el('p', '', t.description));
+    if (t.note) a.appendChild(el('small', 'note', t.note));
     a.appendChild(el('span', 'open', 'Open →'));
     li.appendChild(a);
     return li;
