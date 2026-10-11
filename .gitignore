@@ -1,0 +1,17 @@
+# Local leftovers from the main branch checkout; the Pages site never needs them.
+__pycache__/
+*.py[cod]
+.venv*/
+.pytest_cache/
+.agents/
+.runtime/
+.artifacts/
+**/data/
+src/
+apps/
+scripts/
+tests/
+web/
+docs/
+.devcontainer/
+.github/
