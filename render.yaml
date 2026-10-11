@@ -2,9 +2,10 @@
 # The browser renders the map and tables; the server only answers JSON requests.
 services:
   - type: web
-    name: flowermoon-transport
+    name: flowermoon-web
     runtime: python
     plan: free
+    region: frankfurt
     buildCommand: pip install -r apps/transport/webapp/requirements.txt && python scripts/prepare_transport_assets.py
     startCommand: cd apps/transport && uvicorn webapp.server:app --host 0.0.0.0 --port $PORT --workers 1 --proxy-headers --forwarded-allow-ips '*'
     healthCheckPath: /healthz

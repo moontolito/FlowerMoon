@@ -22,7 +22,7 @@ Excel template.
 ## Deploy
 
 **New service (recommended):** Render Dashboard → **New → Blueprint** → select this
-repository. Render reads `render.yaml` and creates `flowermoon-transport` on the
+repository. Render reads `render.yaml` and creates `flowermoon-web` on the
 free plan.
 
 **Existing service:** open the service → **Settings** and set
