@@ -1,0 +1,5 @@
+# Binare mari, distribuite separat (pachetul portabil / GitHub Releases)
+wheels/
+build/wheels/
+runtime/
+dist/

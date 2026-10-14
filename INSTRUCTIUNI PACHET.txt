@@ -1,0 +1,57 @@
+PDF ANALYZER PORTABIL - 0.26.0-m4a - REVIZIA r2
+================================================
+
+CERINTE
+- Windows 10/11, 64-bit
+- Python 64-bit 3.10 sau mai nou
+- Nu este necesara conexiune la internet
+- Nu este necesara instalarea separata a Tesseract
+- Nu este necesar Microsoft Excel pentru folosirea aplicatiei
+
+PORNIRE
+1. Extrage complet arhiva ZIP intr-un folder local.
+2. Dublu click pe "PORNESTE PDF ANALYZER.bat".
+3. La prima pornire, asteapta pregatirea mediului Python local.
+4. Aplicatia va porni automat dupa instalarea pachetelor offline.
+5. Citeste "GHID RAPID PDF ANALYZER.pdf" pentru workflow si shortcut-uri.
+
+IMPORTANT
+- Nu porni aplicatia direct din interiorul arhivei ZIP.
+- Nu muta BAT-ul separat de restul folderelor.
+- Documentele PDF raman locale si nu sunt trimise in cloud.
+- Aplicatia nu modifica PDF-urile deschise.
+- Aplicatia nu contine un EXE propriu. Porneste prin Python.
+- Folderul runtime contine tesseract.exe, componenta open-source folosita exclusiv
+  pentru OCR local.
+- Folderul wheels contine librariile Python necesare instalarii offline.
+- Mediul Python este creat intr-o cale scurta:
+  %LOCALAPPDATA%\PDFAnalyzer\venv-0.26.0-m4a
+- Librariile offline sunt copiate automat intr-un cache scurt:
+  %LOCALAPPDATA%\PDFAnalyzer\wheels-0.26.0-m4a
+  Aceste doua cai evita eroarea Windows "No such file or directory" produsa de
+  limita pentru cai foarte lungi din PySide6.
+- Exportul Excel creeaza fisiere .xlsx; Excel este necesar numai pentru a le
+  deschide sau edita ulterior.
+- Analizele Categories si Standards salveaza automat toate rezultatele drept
+  note cu taguri; notele nedorite pot fi eliminate ulterior.
+- Din Dashboard, "Analyze Selected" analizeaza toate PDF-urile bifate intr-o
+  singura operatie si reutilizeaza OCR-ul deja salvat.
+- Exportul "Management report" include dashboardul, toate categoriile si toate
+  standardele analizate, indiferent de filtrul de taguri afisat.
+- Rapoartele PDF afiseaza integral numele documentelor, tagurile, comentariile
+  si citatele. Randurile se extind automat.
+- Raportul managerial contine campuri editabile "Delegated To" si
+  "Manager Comment". Editarile facute in PDF nu se sincronizeaza inapoi.
+- Exportul Excel trateaza textul PDF, comentariile si tagurile ca text literal,
+  inclusiv atunci cand incep cu semnul egal.
+
+RESETARE
+Daca prima instalare este intrerupta:
+1. Apasa Win+R.
+2. Introdu %LOCALAPPDATA%\PDFAnalyzer
+3. Sterge folderul venv-0.26.0-m4a. Daca problema persista, sterge si
+   wheels-0.26.0-m4a.
+4. Ruleaza din nou "PORNESTE PDF ANALYZER.bat".
+
+Un folder .venv ramas de la revizia anterioara poate fi sters. Revizia r2 nu il
+mai foloseste.

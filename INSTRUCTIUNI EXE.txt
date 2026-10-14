@@ -1,0 +1,30 @@
+PDF ANALYZER - VARIANTA EXE - 0.26.0-m4a
+========================================
+
+CONSTRUIRE (o singura data, pe un calculator cu Python 64-bit 3.10+)
+1. Dublu click pe "CONSTRUIESTE EXE.bat".
+2. La final se deschide folderul dist\PDF Analyzer.
+   Pachetele se instaleaza offline din "wheels" si "build\wheels";
+   daca lipsesc, se descarca de pe internet.
+
+FOLOSIRE (pe orice Windows 10/11 64-bit, fara Python)
+1. Copiaza INTREG folderul "PDF Analyzer" intr-un folder local
+   (ex. D:\Apps\PDF Analyzer). Nu muta EXE-ul separat de folderul _internal.
+2. Dublu click pe "PDF Analyzer.exe".
+3. Optional: click dreapta pe EXE -> Send to -> Desktop (create shortcut).
+
+WINDOWS DEFENDER / SMARTSCREEN
+- Build-ul este de tip folder (onedir) si fara compresie UPX, ca sa reduca
+  alarmele false. EXE-ul nu este semnat digital, deci o alarma nu poate fi
+  exclusa complet.
+- SmartScreen "Windows protected your PC": More info -> Run anyway.
+- Daca Defender il pune in carantina: Windows Security -> Protection history
+  -> Restore, apoi trimite fisierul ca fals pozitiv la
+  https://www.microsoft.com/wdsi/filesubmission
+- Pe calculatoare de firma, cere IT-ului o exceptie pentru folderul aplicatiei
+  sau semnarea EXE-ului cu certificatul firmei.
+
+DATE
+- Notele, profilurile si cache-ul OCR raman in %LOCALAPPDATA%\PDF Analyzer,
+  la fel ca la varianta cu BAT. Varianta EXE si cea BAT le folosesc pe aceleasi.
+- OCR-ul (Tesseract) este inclus in _internal\runtime\Tesseract-OCR.
