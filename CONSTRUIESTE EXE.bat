@@ -38,6 +38,7 @@ set "BUILD_WHEELS=%VENV_BASE%\build-wheels-0.26.0-m4a"
 set "WORK_DIR=%VENV_BASE%\build-work-0.26.0-m4a"
 set "DIST_DIR=%~dp0dist"
 set "APP_DIR=%~dp0dist\PDF Analyzer"
+set "ZIP_FILE=%~dp0dist\PDF-Analyzer-0.26.0-m4a-win64.zip"
 
 if not exist "runtime\Tesseract-OCR\tesseract.exe" (
     echo [ATENTIE] runtime\Tesseract-OCR lipseste. EXE-ul va fi construit fara OCR inclus;
@@ -85,11 +86,17 @@ if exist "GHID RAPID PDF ANALYZER.pdf" copy /Y "GHID RAPID PDF ANALYZER.pdf" "%A
 if exist "INSTRUCTIUNI EXE.txt" copy /Y "INSTRUCTIUNI EXE.txt" "%APP_DIR%\" >nul
 
 echo.
+echo Se creeaza arhiva ZIP pentru distribuire...
+if exist "%ZIP_FILE%" del /q "%ZIP_FILE%"
+tar -a -c -f "%ZIP_FILE%" -C "%DIST_DIR%" "PDF Analyzer"
+if errorlevel 1 echo [ATENTIE] Arhiva ZIP nu a putut fi creata. Folderul EXE este totusi gata.
+
+echo.
 echo ===============================================================
 echo  GATA: "%APP_DIR%\PDF Analyzer.exe"
 echo  Copiaza tot folderul "PDF Analyzer", nu doar EXE-ul.
 echo ===============================================================
-start "" explorer "%APP_DIR%"
+start "" explorer "%DIST_DIR%"
 pause
 exit /b 0
 

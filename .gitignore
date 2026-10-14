@@ -3,3 +3,5 @@ wheels/
 build/wheels/
 runtime/
 dist/
+__pycache__/
+*.py[cod]
